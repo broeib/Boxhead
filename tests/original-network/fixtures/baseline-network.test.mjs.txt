@@ -1,0 +1,2462 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { once } from 'node:events';
+import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
+import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
+import { createHash } from 'node:crypto';
+import { WebSocket } from 'ws';
+import { createOriginalServer } from '../../apps/original-server/service.mjs';
+import { parseArguments } from '../../apps/original-server/index.mjs';
+
+const SWF_HASH = 'a'.repeat(64);
+const CREATE = { type: 'create', swfHash: SWF_HASH, mode: 'Coop', map: 'Boxy', characters: [0, 3] };
+const SETTINGS = { difficulty: 0, speed: 1, devils: 1, collisions: 1, damage: 1, gameAmount: 1 };
+const matches = (expected, actual) => Array.isArray(expected) ? expected.includes(actual) : expected === actual;
+
+class Inbox {
+  constructor(ws) {
+    this.ws = ws;
+    this.messages = [];
+    this.waiters = [];
+    this.closed = new Promise((resolve) => ws.once('close', (code) => resolve(code)));
+    ws.on('error', () => {});
+    ws.on('message', (data) => {
+      const message = JSON.parse(data.toString());
+      const index = this.waiters.findIndex((waiter) => matches(waiter.type, message.type));
+      if (index < 0) this.messages.push(message);
+      else {
+        const [waiter] = this.waiters.splice(index, 1);
+        clearTimeout(waiter.timer);
+        waiter.resolve(message);
+      }
+    });
+  }
+
+  send(message) {
+    this.ws.send(JSON.stringify(message));
+  }
+
+  next(type, timeout = 2000) {
+    const index = this.messages.findIndex((message) => matches(type, message.type));
+    if (index >= 0) return Promise.resolve(this.messages.splice(index, 1)[0]);
+    return new Promise((resolve, reject) => {
+      const waiter = { type, resolve, timer: undefined };
+      waiter.timer = setTimeout(() => {
+        const position = this.waiters.indexOf(waiter);
+        if (position >= 0) this.waiters.splice(position, 1);
+        reject(Object.assign(new Error(`Timed out waiting for ${type}`), { code: 'WAIT_TIMEOUT' }));
+      }, timeout);
+      this.waiters.push(waiter);
+    });
+  }
+
+  async absent(type, timeout = 70) {
+    await assert.rejects(this.next(type, timeout), { code: 'WAIT_TIMEOUT' });
+  }
+
+  async close() {
+    if (this.ws.readyState === WebSocket.CLOSED) return;
+    this.ws.close();
+    await this.closed;
+  }
+}
+
+async function fixture(t, options = {}) {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'original-network-'));
+  const webRoot = path.join(directory, 'web');
+  await mkdir(webRoot);
+  await writeFile(path.join(webRoot, 'index.html'), '<!doctype html><title>Original lockstep fixture</title>');
+  await writeFile(path.join(webRoot, 'engine.wasm'), Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]));
+  await writeFile(path.join(directory, 'secret.txt'), 'outside-root-secret');
+  const service = createOriginalServer({
+    host: '127.0.0.1', port: 0, webRoot, shutdownGraceMs: 300, ...options,
+  });
+  t.after(async () => {
+    await service.close();
+    await rm(directory, { recursive: true, force: true });
+  });
+  await service.listen();
+  const address = service.address();
+  const origin = `http://127.0.0.1:${address.port}`;
+  return { service, directory, webRoot, address, origin, url: `ws://127.0.0.1:${address.port}/original-ws` };
+}
+
+// Pin the prior32/64 transport configuration for every existing regression.
+// New default64/128 cases below deliberately use fixture() directly.
+async function fixture32(t, options = {}) {
+  return fixture(t, { maxReplayInFlightFrames: 64, maxReplayBatchFrames: 32, ...options });
+}
+
+async function connect(t, fixture) {
+  const ws = new WebSocket(fixture.url, { origin: fixture.origin });
+  const inbox = new Inbox(ws);
+  t.after(() => inbox.close());
+  await once(ws, 'open');
+  return inbox;
+}
+
+async function pair(t, fixture, create = CREATE) {
+  const host = await connect(t, fixture);
+  host.send(create);
+  const invite = await host.next('joined');
+  assert.equal(invite.slot, 1);
+  assert.match(invite.room, /^[A-Za-z0-9_-]{12}$/);
+  assert.match(invite.token, /^[A-Za-z0-9_-]{43}$/);
+  const guest = await connect(t, fixture);
+  guest.send({ type: 'join', room: invite.room, token: invite.token, swfHash: create.swfHash });
+  const joined = await guest.next('joined');
+  assert.equal(joined.slot, 2);
+  assert.equal(joined.room, invite.room);
+  assert.deepEqual(await host.next('peer'), { type: 'peer', slot: 2, connected: true });
+  return { host, guest, invite };
+}
+
+async function prepare(players) {
+  players.host.send({ type: 'start' });
+  const [hostPrepare, guestPrepare] = await Promise.all([
+    players.host.next('prepare'), players.guest.next('prepare'),
+  ]);
+  assert.deepEqual(hostPrepare, guestPrepare);
+  assert.equal(hostPrepare.swfHash, SWF_HASH);
+  assert.equal(hostPrepare.mode, 'Coop');
+  assert.equal(hostPrepare.map, 'Boxy');
+  assert.deepEqual(hostPrepare.characters, [0, 3]);
+  assert.ok(Number.isInteger(hostPrepare.seed) && hostPrepare.seed > 0 && hostPrepare.seed < 2147483647);
+  return hostPrepare;
+}
+
+async function begin(players) {
+  await prepare(players);
+  players.host.send({ type: 'input', seq: 1, mask: 17 });
+  players.guest.send({ type: 'input', seq: 1, mask: 8 });
+  players.host.send({ type: 'ready' });
+  players.guest.send({ type: 'ready' });
+  const frames = await Promise.all([players.host.next('frame'), players.guest.next('frame')]);
+  assert.deepEqual(frames[0], { type: 'frame', tick: 1, p1: 17, p2: 8 });
+  assert.deepEqual(frames[0], frames[1]);
+  return frames[0];
+}
+
+async function beginNeutral(players) {
+  await prepare(players);
+  players.host.send({ type: 'ready' });
+  players.guest.send({ type: 'ready' });
+  const first = await players.host.next('frame');
+  assert.deepEqual(first, { type: 'frame', tick: 1, p1: 0, p2: 0 });
+  assert.deepEqual(await players.guest.next('frame'), first);
+}
+
+async function acknowledgeAndNext(players, tick) {
+  for (const player of [players.host, players.guest]) player.send({ type: 'ack', tick, digest: `native-${tick}` });
+  const frame = await players.host.next('frame');
+  assert.equal(frame.tick, tick + 1);
+  assert.deepEqual(await players.guest.next('frame'), frame);
+  return frame;
+}
+
+function request(fixture, target, method = 'GET') {
+  return new Promise((resolve, reject) => {
+    const outgoing = http.request({
+      hostname: '127.0.0.1', port: fixture.address.port, path: target, method,
+    }, (response) => {
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () => resolve({
+        status: response.statusCode, headers: response.headers, body: Buffer.concat(chunks).toString('utf8'),
+      }));
+      response.on('error', reject);
+    });
+    outgoing.on('error', reject);
+    outgoing.end();
+  });
+}
+
+async function deniedJoin(t, fixture, message, code) {
+  const client = await connect(t, fixture);
+  client.send(message);
+  assert.equal((await client.next('error')).code, code);
+  assert.equal(await client.closed, 1008);
+}
+
+test('invite secrets bind to one room; hashes, capacity and one owned slot are enforced', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  const anotherHost = await connect(t, fixtureValue);
+  anotherHost.send(CREATE);
+  const otherInvite = await anotherHost.next('joined');
+  assert.notEqual(otherInvite.token, players.invite.token);
+  await deniedJoin(t, fixtureValue, {
+    type: 'join', room: players.invite.room, token: otherInvite.token, swfHash: SWF_HASH,
+  }, 'join_denied');
+  await deniedJoin(t, fixtureValue, {
+    type: 'join', room: players.invite.room, token: players.invite.token, swfHash: 'b'.repeat(64),
+  }, 'swf_mismatch');
+  await deniedJoin(t, fixtureValue, {
+    type: 'join', room: players.invite.room, token: players.invite.token, swfHash: SWF_HASH,
+  }, 'room_full');
+  assert.equal(fixtureValue.service.stats().rooms, 2);
+  await begin(players);
+});
+
+test('live room directory exposes only opted-in free compatible rooms without invite secrets', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const privateHost = await connect(t, fixtureValue);
+  privateHost.send(CREATE);
+  const privateInvite = await privateHost.next('joined');
+  const incompatibleHost = await connect(t, fixtureValue);
+  incompatibleHost.send({ ...CREATE, swfHash: 'b'.repeat(64), listed: true, name: 'Other version' });
+  const incompatibleInvite = await incompatibleHost.next('joined');
+
+  const watcher = await connect(t, fixtureValue);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  assert.deepEqual(await watcher.next('rooms'), { type: 'rooms', rooms: [] });
+
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true, name: 'Комната друзей' });
+  const invite = await host.next('joined');
+  const listed = await watcher.next('rooms');
+  assert.deepEqual(listed, { type: 'rooms', rooms: [{
+    room: invite.room, name: 'Комната друзей', mode: 'Coop', map: 'Boxy', players: 1, capacity: 2,
+  }] });
+  const publicText = JSON.stringify(listed);
+  for (const secret of [privateInvite.token, incompatibleInvite.token, invite.token]) {
+    assert.equal(publicText.includes(secret), false, 'room directory must never contain an invitation secret');
+  }
+  assert.equal(publicText.includes(privateInvite.room), false);
+  assert.equal(publicText.includes(incompatibleInvite.room), false);
+
+  watcher.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  assert.equal((await watcher.next('joined')).slot, 2);
+  assert.deepEqual(await host.next('peer'), { type: 'peer', slot: 2, connected: true });
+  const observer = await connect(t, fixtureValue);
+  observer.send({ type: 'list', swfHash: SWF_HASH });
+  assert.deepEqual(await observer.next('rooms'), { type: 'rooms', rooms: [] });
+  host.send({ type: 'start' });
+  assert.deepEqual(await host.next('prepare'), await watcher.next('prepare'));
+  assert.deepEqual(await observer.next('rooms'), { type: 'rooms', rooms: [] });
+  await watcher.absent('rooms', 30);
+});
+
+test('simultaneous open-room clicks claim one slot and keep the losing browser usable', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true });
+  const invite = await host.next('joined');
+  const first = await connect(t, fixtureValue);
+  const second = await connect(t, fixtureValue);
+  for (const client of [first, second]) client.send({ type: 'list', swfHash: SWF_HASH });
+  for (const client of [first, second]) {
+    const { rooms } = await client.next('rooms');
+    assert.equal(rooms.length, 1);
+    assert.equal(rooms[0].name, 'Boxhead Coop');
+  }
+  for (const client of [first, second]) client.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  const outcomes = await Promise.all([first.next(['joined', 'join_failed']), second.next(['joined', 'join_failed'])]);
+  assert.equal(outcomes.filter((message) => message.type === 'joined').length, 1);
+  assert.equal(outcomes.filter((message) => message.type === 'join_failed').length, 1);
+  const loserIndex = outcomes.findIndex((message) => message.type === 'join_failed');
+  const loser = [first, second][loserIndex];
+  assert.deepEqual(outcomes[loserIndex], { type: 'join_failed', room: invite.room, code: 'unavailable' });
+  assert.deepEqual(await host.next('peer'), { type: 'peer', slot: 2, connected: true });
+  assert.deepEqual(await loser.next('rooms'), { type: 'rooms', rooms: [] });
+  assert.equal(loser.ws.readyState, WebSocket.OPEN);
+  await host.absent('peer', 25);
+
+  // The list can contain a second empty update from the first successful claim.
+  while (loser.messages.some((message) => message.type === 'rooms')) await loser.next('rooms');
+  const anotherHost = await connect(t, fixtureValue);
+  anotherHost.send({ ...CREATE, listed: true, name: 'Next available game' });
+  const anotherInvite = await anotherHost.next('joined');
+  assert.equal((await loser.next('rooms')).rooms[0].room, anotherInvite.room);
+  loser.send({ type: 'join_open', room: anotherInvite.room, swfHash: SWF_HASH });
+  assert.equal((await loser.next('joined')).room, anotherInvite.room);
+  assert.deepEqual(await anotherHost.next('peer'), { type: 'peer', slot: 2, connected: true });
+  assert.equal(fixtureValue.service.stats().rooms, 2);
+});
+
+test('open-room clicks cannot bypass private invitations or original-SWF compatibility', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: false, name: 'Private room' });
+  const privateInvite = await host.next('joined');
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: privateInvite.room, swfHash: SWF_HASH });
+  assert.deepEqual(await guest.next('join_failed'), { type: 'join_failed', room: privateInvite.room, code: 'unavailable' });
+  assert.deepEqual(await guest.next('rooms'), { type: 'rooms', rooms: [] });
+  guest.send({ type: 'join', room: privateInvite.room, token: privateInvite.token, swfHash: SWF_HASH });
+  assert.equal((await guest.next('joined')).slot, 2);
+  assert.equal((await host.next('peer')).connected, true);
+
+  const publicHost = await connect(t, fixtureValue);
+  publicHost.send({ ...CREATE, listed: true });
+  const publicInvite = await publicHost.next('joined');
+  const incompatible = await connect(t, fixtureValue);
+  incompatible.send({ type: 'join_open', room: publicInvite.room, swfHash: 'b'.repeat(64) });
+  assert.deepEqual(await incompatible.next('join_failed'), { type: 'join_failed', room: publicInvite.room, code: 'swf_mismatch' });
+  assert.deepEqual(await incompatible.next('rooms'), { type: 'rooms', rooms: [] });
+  await publicHost.absent('peer', 25);
+  incompatible.send({ type: 'join_open', room: publicInvite.room, swfHash: SWF_HASH });
+  assert.equal((await incompatible.next('joined')).slot, 2);
+});
+
+test('host disconnect removes a listed room and a stale click can create a fresh room', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true });
+  const invite = await host.next('joined');
+  const watcher = await connect(t, fixtureValue);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  assert.equal((await watcher.next('rooms')).rooms[0].room, invite.room);
+  await host.close();
+  assert.deepEqual(await watcher.next('rooms'), { type: 'rooms', rooms: [] });
+  watcher.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  assert.deepEqual(await watcher.next('join_failed'), { type: 'join_failed', room: invite.room, code: 'unavailable' });
+  assert.deepEqual(await watcher.next('rooms'), { type: 'rooms', rooms: [] });
+  watcher.send({ ...CREATE, listed: true });
+  assert.equal((await watcher.next('joined')).slot, 1);
+  await watcher.absent('rooms', 25);
+});
+
+test('room-directory browsing has a refreshable finite TTL independent of ping/pong', async (t) => {
+  const fixtureValue = await fixture32(t, { authenticationTimeoutMs: 30, lobbyTtlMs: 200, housekeepingMs: 5, heartbeatMs: 25 });
+  const watcher = await connect(t, fixtureValue);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  assert.deepEqual(await watcher.next('rooms'), { type: 'rooms', rooms: [] });
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true });
+  await host.next('joined');
+  assert.equal((await watcher.next('rooms')).rooms.length, 1);
+  await watcher.absent('error', 80);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  assert.equal((await watcher.next('rooms')).rooms.length, 1);
+  assert.equal((await host.next('paused')).reason, 'lobby_timeout');
+  assert.deepEqual(await watcher.next('rooms'), { type: 'rooms', rooms: [] });
+  assert.equal(watcher.ws.readyState, WebSocket.OPEN, 'refresh keeps browsing alive past the initial deadline');
+  assert.equal(await watcher.closed, 1000);
+  assert.equal(watcher.messages.some((message) => message.type === 'error'), false);
+});
+
+test('expired open rooms cannot be claimed between housekeeping passes', async (t) => {
+  const fixtureValue = await fixture32(t, { lobbyTtlMs: 50, housekeepingMs: 1000 });
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true });
+  const invite = await host.next('joined');
+  await host.absent('paused', 65);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  assert.equal((await guest.next('join_failed')).code, 'unavailable');
+  assert.equal((await host.next('paused')).reason, 'lobby_timeout');
+  assert.deepEqual(await guest.next('rooms'), { type: 'rooms', rooms: [] });
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+});
+
+test('room-directory metadata and requests are bounded before creating or claiming a room', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const cases = [
+    [{ ...CREATE, listed: true, name: '' }, 'invalid_create'],
+    [{ ...CREATE, listed: true, name: 'x'.repeat(49) }, 'invalid_create'],
+    [{ ...CREATE, listed: true, name: ' room' }, 'invalid_create'],
+    [{ ...CREATE, listed: true, name: 'room\nname' }, 'invalid_create'],
+    [{ ...CREATE, listed: 'true' }, 'invalid_create'],
+    [{ type: 'list', swfHash: 'invalid' }, 'invalid_list'],
+    [{ type: 'list', swfHash: SWF_HASH, token: 'not-a-list-field' }, 'invalid_message'],
+    [{ type: 'join_open', room: 'invalid', swfHash: SWF_HASH }, 'invalid_join'],
+    [{ type: 'join_open', room: 'a'.repeat(12), swfHash: SWF_HASH, slot: 2 }, 'invalid_message'],
+  ];
+  for (const [message, code] of cases) {
+    const client = await connect(t, fixtureValue);
+    client.send(message);
+    assert.equal((await client.next('error')).code, code);
+    assert.equal(await client.closed, 1008);
+  }
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+});
+
+test('a configured one-frame window waits for both identical ACKs and preserves pacing', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await prepare(players);
+  players.host.send({ type: 'input', seq: 0, mask: 17 });
+  players.guest.send({ type: 'input', seq: 0, mask: 8 });
+  players.host.send({ type: 'ready' });
+  await players.host.absent('frame');
+  await players.guest.absent('frame', 20);
+  players.guest.send({ type: 'ready' });
+  const first = await players.host.next('frame');
+  assert.deepEqual(first, { type: 'frame', tick: 1, p1: 17, p2: 8 });
+  assert.deepEqual(await players.guest.next('frame'), first);
+  players.host.send({ type: 'ack', tick: 1, digest: 'native-world-1' });
+  players.host.send({ type: 'input', seq: 1, mask: 2 });
+  await players.host.absent('frame');
+  players.guest.send({ type: 'ack', tick: 1, digest: 'native-world-1' });
+  const second = await players.host.next('frame');
+  const receivedSecond = performance.now();
+  assert.deepEqual(second, { type: 'frame', tick: 2, p1: 2, p2: 8 });
+  assert.deepEqual(await players.guest.next('frame'), second);
+  players.host.send({ type: 'ack', tick: 2, digest: 'native-world-2' });
+  players.guest.send({ type: 'ack', tick: 2, digest: 'native-world-2' });
+  await players.host.absent('frame', 20);
+  const third = await players.host.next('frame');
+  assert.equal(third.tick, 3);
+  assert.deepEqual(await players.guest.next('frame'), third);
+  assert.ok(performance.now() - receivedSecond >= 30, 'loopback receipt interval should reflect the 40 ms server pacing');
+});
+
+test('default two-frame live window maintains cadence without ACKs and bounds a slow peer', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  const [hostSecond, guestSecond] = await Promise.all([players.host.next('frame'), players.guest.next('frame')]);
+  assert.equal(hostSecond.tick, 2);
+  assert.deepEqual(hostSecond, guestSecond);
+  // One fast participant alone must not release any window capacity.
+  for (let tick = 1; tick <= 2; tick += 1) players.guest.send({ type: 'ack', tick, digest: `native-${tick}` });
+  await players.host.absent('frame');
+  players.host.send({ type: 'input', seq: 2, mask: 2 });
+  players.host.send({ type: 'ack', tick: 1, digest: 'native-1' });
+  const third = await players.host.next('frame');
+  assert.deepEqual(third, { type: 'frame', tick: 3, p1: 2, p2: 8 });
+  assert.deepEqual(await players.guest.next('frame'), third);
+  await players.host.absent('frame');
+});
+
+test('original settings reach both clients and select 12.5, 25 or 50 Hz pacing', async (t) => {
+  for (const [speed, frameMs] of [80, 40, 20].entries()) {
+    await t.test(`speed ${speed}`, async (subtest) => {
+      const fixtureValue = await fixture32(subtest);
+      const settings = { ...SETTINGS, speed, difficulty: 3, devils: 0, collisions: 0, damage: 0, gameAmount: 2 };
+      const players = await pair(subtest, fixtureValue, { ...CREATE, settings });
+      const prepared = await prepare(players);
+      assert.deepEqual(prepared.settings, settings);
+      assert.equal(prepared.frameMs, frameMs);
+      players.host.send({ type: 'ready' });
+      players.guest.send({ type: 'ready' });
+      await players.host.next('frame');
+      const received = performance.now();
+      const second = await players.host.next('frame');
+      assert.equal(second.tick, 2);
+      assert.ok(performance.now() - received >= frameMs - 10, 'game speed must pace emitted frames');
+    });
+  }
+  await t.test('omitted settings use original defaults', async (subtest) => {
+    const fixtureValue = await fixture32(subtest);
+    const players = await pair(subtest, fixtureValue);
+    const prepared = await prepare(players);
+    assert.deepEqual(prepared.settings, SETTINGS);
+    assert.equal(prepared.frameMs, 40);
+  });
+});
+
+test('invalid and extra original settings are rejected before room creation', async (t) => {
+  const invalid = [null, [], { ...SETTINGS, speed: 3 }, { ...SETTINGS, difficulty: -1 },
+    { ...SETTINGS, damage: true }, { ...SETTINGS, collisions: 0.5 },
+    { ...SETTINGS, gameAmount: 4 }, { ...SETTINGS, positions: [] }, { speed: 1 }];
+  for (const settings of invalid) {
+    await t.test(JSON.stringify(settings), async (subtest) => {
+      const fixtureValue = await fixture32(subtest);
+      const host = await connect(subtest, fixtureValue);
+      host.send({ ...CREATE, settings });
+      assert.equal((await host.next('error')).code, 'invalid_create');
+      assert.equal(await host.closed, 1008);
+      assert.equal(fixtureValue.service.stats().rooms, 0);
+    });
+  }
+});
+
+test('a matched native completion retires outstanding later frames without a false error', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 8 });
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  for (let tick = 2; tick <= 8; tick += 1) {
+    assert.equal((await players.host.next('frame')).tick, tick);
+    assert.equal((await players.guest.next('frame')).tick, tick);
+  }
+  for (let tick = 1; tick <= 2; tick += 1) {
+    for (const player of [players.host, players.guest]) player.send({ type: 'ack', tick, digest: `native-${tick}` });
+  }
+  players.host.send({ type: 'ack', tick: 3, digest: 'native-final', complete: 'player dead' });
+  players.guest.send({ type: 'ack', tick: 3, digest: 'native-final', complete: 'player dead' });
+  const completed = await players.host.next('completed');
+  assert.deepEqual(completed, { type: 'completed', tick: 3, complete: 'player dead' });
+  assert.deepEqual(await players.guest.next('completed'), completed);
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+  await players.host.absent('error', 20);
+  await players.guest.absent('error', 20);
+  // A new game uses a new room and secret on the same still-open connection.
+  players.host.send(CREATE);
+  const newInvite = await players.host.next('joined');
+  assert.notEqual(newInvite.room, players.invite.room);
+  assert.notEqual(newInvite.token, players.invite.token);
+});
+
+test('terminal reason disagreement fails closed even when digests match', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  players.host.send({ type: 'ack', tick: 1, digest: 'native-final', complete: 'player dead' });
+  players.guest.send({ type: 'ack', tick: 1, digest: 'native-final' });
+  const paused = await players.host.next('paused');
+  assert.equal(paused.reason, 'completion_mismatch');
+  assert.equal(paused.tick, 1);
+  assert.deepEqual(await players.guest.next('paused'), paused);
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+});
+
+test('windowed digests compare corresponding ticks and reject reordered ACKs', async (t) => {
+  await t.test('late mismatch after several frames were issued', async (subtest) => {
+    const fixtureValue = await fixture32(subtest);
+    const players = await pair(subtest, fixtureValue);
+    await begin(players);
+    await players.host.next('frame');
+    await players.guest.next('frame');
+    players.host.send({ type: 'ack', tick: 1, digest: 'native-1' });
+    players.host.send({ type: 'ack', tick: 2, digest: 'native-2-A' });
+    players.guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+    players.guest.send({ type: 'ack', tick: 2, digest: 'native-2-B' });
+    const paused = await players.host.next('paused');
+    assert.equal(paused.reason, 'digest_mismatch');
+    assert.equal(paused.tick, 2);
+    assert.deepEqual(await players.guest.next('paused'), paused);
+  });
+  await t.test('an issued later tick cannot skip the first ACK', async (subtest) => {
+    const fixtureValue = await fixture32(subtest);
+    const players = await pair(subtest, fixtureValue);
+    await begin(players);
+    await players.host.next('frame');
+    players.host.send({ type: 'ack', tick: 2, digest: 'native-2' });
+    assert.equal((await players.host.next('error')).code, 'invalid_ack');
+    assert.equal((await players.guest.next('paused')).reason, 'protocol_error');
+  });
+});
+
+test('stale held input expires while acknowledged simulation continues', async (t) => {
+  const fixtureValue = await fixture32(t, { inputTimeoutMs: 80, maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  for (let tick = 2; tick <= 5; tick += 1) {
+    const first = await acknowledgeAndNext(players, tick - 1);
+    if (tick === 5) assert.deepEqual([first.p1, first.p2], [0, 0]);
+  }
+});
+
+test('short FIRE, NEXT and PREV taps survive press and release between frames', async (t) => {
+  for (const [name, bit] of [['FIRE', 16], ['NEXT', 32], ['PREV', 64]]) {
+    await t.test(name, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1 });
+      const players = await pair(subtest, fixtureValue);
+      await beginNeutral(players);
+      players.host.send({ type: 'input', seq: 0, mask: bit });
+      players.host.send({ type: 'input', seq: 1, mask: 0 });
+      assert.equal((await acknowledgeAndNext(players, 1)).p1, bit);
+      assert.equal((await acknowledgeAndNext(players, 2)).p1, 0);
+      assert.equal((await acknowledgeAndNext(players, 3)).p1, 0);
+    });
+  }
+});
+
+test('a repeated weapon tap exposes release before the next press and cannot stick', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await beginNeutral(players);
+  players.host.send({ type: 'input', seq: 0, mask: 16 });
+  assert.equal((await acknowledgeAndNext(players, 1)).p1, 16);
+  players.host.send({ type: 'input', seq: 1, mask: 0 });
+  players.host.send({ type: 'input', seq: 2, mask: 16 });
+  players.host.send({ type: 'input', seq: 3, mask: 0 });
+  assert.equal((await acknowledgeAndNext(players, 2)).p1, 0);
+  assert.equal((await acknowledgeAndNext(players, 3)).p1, 16);
+  assert.equal((await acknowledgeAndNext(players, 4)).p1, 0);
+  assert.equal((await acknowledgeAndNext(players, 5)).p1, 0);
+});
+
+test('many rapid taps coalesce into a bounded pulse instead of delayed weapon backlog', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await beginNeutral(players);
+  for (let seq = 0; seq < 30; seq += 1) players.host.send({ type: 'input', seq, mask: seq % 2 === 0 ? 112 : 0 });
+  assert.equal((await acknowledgeAndNext(players, 1)).p1, 112);
+  for (let tick = 2; tick <= 5; tick += 1) assert.equal((await acknowledgeAndNext(players, tick)).p1, 0);
+});
+
+test('focus clear discards a pending tap and exposes a neutral boundary before fresh input', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await beginNeutral(players);
+  players.host.send({ type: 'input', seq: 0, mask: 112 });
+  players.host.send({ type: 'input', seq: 1, mask: 0 });
+  players.host.send({ type: 'input', seq: 2, mask: 0, clear: true });
+  assert.equal((await acknowledgeAndNext(players, 1)).p1, 0);
+  assert.equal((await acknowledgeAndNext(players, 2)).p1, 0);
+  players.host.send({ type: 'input', seq: 3, mask: 0, clear: true });
+  players.host.send({ type: 'input', seq: 4, mask: 16 });
+  assert.equal((await acknowledgeAndNext(players, 3)).p1, 0);
+  assert.equal((await acknowledgeAndNext(players, 4)).p1, 16);
+  players.host.send({ type: 'input', seq: 5, mask: 0, clear: true });
+  assert.equal((await acknowledgeAndNext(players, 5)).p1, 0);
+  assert.equal((await acknowledgeAndNext(players, 6)).p1, 0);
+});
+
+test('completion keeps debrief idle past authentication timeout and later closes normally', async (t) => {
+  const fixtureValue = await fixture32(t, { authenticationTimeoutMs: 100, lobbyTtlMs: 350, housekeepingMs: 10 });
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  for (const player of [players.host, players.guest]) {
+    player.send({ type: 'ack', tick: 1, digest: 'final', complete: 'player dead' });
+  }
+  await players.host.next('completed');
+  await players.guest.next('completed');
+  await players.host.absent('error', 180);
+  assert.equal(await players.host.closed, 1000);
+  assert.equal(await players.guest.closed, 1000);
+});
+
+test('divergent digests retire the room, clear held input, and never issue a subsequent frame', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  players.host.send({ type: 'ack', tick: 1, digest: 'native-world-A' });
+  players.guest.send({ type: 'ack', tick: 1, digest: 'native-world-B' });
+  const paused = await players.host.next('paused');
+  assert.deepEqual(paused, { type: 'paused', reason: 'digest_mismatch', tick: 1, p1: 0, p2: 0 });
+  assert.deepEqual(await players.guest.next('paused'), paused);
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+  await players.host.absent('frame');
+  await players.guest.absent('frame', 20);
+  await deniedJoin(t, fixtureValue, {
+    type: 'join', room: players.invite.room, token: players.invite.token, swfHash: SWF_HASH,
+  }, 'join_denied');
+  players.host.send(CREATE);
+  const freshInvite = await players.host.next('joined');
+  assert.notEqual(freshInvite.token, players.invite.token);
+});
+
+test('invalid ownership, masks, sequence numbers and ACK ticks freeze an active room', async (t) => {
+  const cases = [
+    [{ type: 'input', seq: 2, mask: 0, slot: 2 }, 'invalid_message'],
+    [{ type: 'input', seq: 2, mask: 131072 }, 'invalid_input'],
+    [{ type: 'input', seq: 2, mask: -1 }, 'invalid_input'],
+    [{ type: 'input', seq: 2, mask: 0.5 }, 'invalid_input'],
+    [{ type: 'input', seq: 1, mask: 0 }, 'invalid_input'],
+    [{ type: 'input', seq: 2147483648, mask: 0 }, 'invalid_input'],
+    [{ type: 'input', seq: 2, mask: 16, clear: true }, 'invalid_input'],
+    [{ type: 'input', seq: 2, mask: 0, clear: false }, 'invalid_input'],
+    [{ type: 'ack', tick: 1, digest: 'native', complete: 'error' }, 'invalid_ack'],
+    [{ type: 'ack', tick: 2, digest: 'native' }, 'invalid_ack'],
+  ];
+  for (const [message, code] of cases) {
+    await t.test(JSON.stringify(message), async (subtest) => {
+      const fixtureValue = await fixture32(subtest);
+      const players = await pair(subtest, fixtureValue);
+      await begin(players);
+      players.host.send(message);
+      assert.equal((await players.host.next('error')).code, code);
+      assert.deepEqual(await players.guest.next('paused'), {
+        type: 'paused', reason: 'protocol_error', tick: 1, p1: 0, p2: 0,
+      });
+      assert.equal(await players.host.closed, 1008);
+      assert.equal(fixtureValue.service.stats().rooms, 0);
+      await players.guest.absent('frame', 30);
+    });
+  }
+});
+
+test('malformed, binary and oversized messages reject the sender and pause its peer', async (t) => {
+  for (const kind of ['json', 'binary', 'oversize']) {
+    await t.test(kind, async (subtest) => {
+      const fixtureValue = await fixture32(subtest);
+      const players = await pair(subtest, fixtureValue);
+      await begin(players);
+      if (kind === 'json') players.host.ws.send('{broken');
+      else if (kind === 'binary') players.host.ws.send(Buffer.from([1, 2, 3]));
+      else players.host.ws.send('x'.repeat(4096));
+      if (kind !== 'oversize') {
+        assert.equal((await players.host.next('error')).code, kind === 'json' ? 'invalid_json' : 'binary_not_allowed');
+      }
+      assert.equal(await players.host.closed, kind === 'oversize' ? 1009 : kind === 'binary' ? 1003 : 1008);
+      const paused = await players.guest.next('paused');
+      assert.equal(paused.reason, 'protocol_error');
+      assert.equal(paused.p1, 0);
+      assert.equal(paused.p2, 0);
+      assert.equal(fixtureValue.service.stats().rooms, 0);
+    });
+  }
+});
+
+test('disconnect clears input, invalidates the invite and stops the surviving client', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  await players.guest.close();
+  assert.deepEqual(await players.host.next('paused'), {
+    type: 'paused', reason: 'peer_disconnected', tick: 1, p1: 0, p2: 0,
+  });
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+  await players.host.absent('frame');
+  await deniedJoin(t, fixtureValue, {
+    type: 'join', room: players.invite.room, token: players.invite.token, swfHash: SWF_HASH,
+  }, 'join_denied');
+});
+
+test('missing ready and missing ACK cause explicit bounded pauses', async (t) => {
+  await t.test('ready timeout', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { readyTimeoutMs: 150 });
+    const players = await pair(subtest, fixtureValue);
+    await prepare(players);
+    players.host.send({ type: 'ready' });
+    const paused = await players.host.next('paused');
+    assert.equal(paused.reason, 'ready_timeout');
+    assert.equal(paused.tick, 0);
+    assert.deepEqual(await players.guest.next('paused'), paused);
+    await players.host.absent('frame', 20);
+  });
+  await t.test('ACK timeout', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { ackTimeoutMs: 150 });
+    const players = await pair(subtest, fixtureValue);
+    await begin(players);
+    players.host.send({ type: 'ack', tick: 1, digest: 'native' });
+    const paused = await players.host.next('paused');
+    assert.equal(paused.reason, 'ack_timeout');
+    assert.deepEqual(await players.guest.next('paused'), paused);
+    assert.equal(fixtureValue.service.stats().rooms, 0);
+  });
+});
+
+test('room capacity, lobby TTL, session TTL, authentication TTL and message rate are bounded', async (t) => {
+  await t.test('room capacity', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { maxRooms: 1 });
+    const host = await connect(subtest, fixtureValue);
+    host.send(CREATE);
+    await host.next('joined');
+    const other = await connect(subtest, fixtureValue);
+    other.send(CREATE);
+    assert.equal((await other.next('error')).code, 'room_capacity');
+    assert.equal(await other.closed, 1008);
+    assert.equal(fixtureValue.service.stats().rooms, 1);
+  });
+  await t.test('lobby TTL', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { lobbyTtlMs: 150, housekeepingMs: 10 });
+    const host = await connect(subtest, fixtureValue);
+    host.send(CREATE);
+    await host.next('joined');
+    assert.equal((await host.next('paused')).reason, 'lobby_timeout');
+    assert.equal(fixtureValue.service.stats().rooms, 0);
+  });
+  await t.test('session TTL', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { roomTtlMs: 150, housekeepingMs: 10 });
+    const host = await connect(subtest, fixtureValue);
+    host.send(CREATE);
+    await host.next('joined');
+    assert.equal((await host.next('paused')).reason, 'room_expired');
+  });
+  await t.test('authentication TTL', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { authenticationTimeoutMs: 100, housekeepingMs: 10 });
+    const idle = await connect(subtest, fixtureValue);
+    assert.equal((await idle.next('error')).code, 'authentication_timeout');
+    assert.equal(await idle.closed, 1008);
+  });
+  await t.test('message rate', async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { messagesPerSecond: 1, messageBurst: 2 });
+    const host = await connect(subtest, fixtureValue);
+    host.send(CREATE);
+    await host.next('joined');
+    host.send({ type: 'input', seq: 0, mask: 1 });
+    host.send({ type: 'input', seq: 1, mask: 0 });
+    assert.equal((await host.next('error')).code, 'rate_limited');
+    assert.equal(await host.closed, 1008);
+    assert.equal(fixtureValue.service.stats().rooms, 0);
+  });
+});
+
+test('static serving includes WASM MIME and health without tokens; traversal and symlink escape fail', async (t) => {
+  const fixtureValue = await fixture32(t);
+  await symlink(path.join(fixtureValue.directory, 'secret.txt'), path.join(fixtureValue.webRoot, 'escape.txt'));
+  await writeFile(path.join(fixtureValue.webRoot, '.env'), 'hidden-secret');
+  const index = await request(fixtureValue, '/');
+  assert.equal(index.status, 200);
+  assert.match(index.headers['content-type'], /^text\/html/);
+  assert.match(index.body, /Original lockstep fixture/);
+  const wasm = await request(fixtureValue, '/engine.wasm');
+  assert.equal(wasm.status, 200);
+  assert.equal(wasm.headers['content-type'], 'application/wasm');
+  const head = await request(fixtureValue, '/engine.wasm', 'HEAD');
+  assert.equal(head.status, 200);
+  assert.equal(head.body, '');
+  assert.equal(Number(head.headers['content-length']), 8);
+  for (const endpoint of ['/healthz', '/readyz?token=must-never-appear']) {
+    const response = await request(fixtureValue, endpoint);
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(response.body), { ok: true, service: 'original-lockstep' });
+    assert.ok(!response.body.includes('must-never-appear'));
+  }
+  for (const target of [
+    '/../secret.txt', '/%2e%2e/secret.txt', '/%2e%2e%2fsecret.txt',
+    '/..%5csecret.txt', '/%00', '/escape.txt', '/.env', '/%E0%A4%A',
+  ]) {
+    const response = await request(fixtureValue, target);
+    assert.ok([400, 403].includes(response.status), `${target}: ${response.status}`);
+    assert.ok(!response.body.includes('outside-root-secret'));
+    assert.ok(!response.body.includes('hidden-secret'));
+  }
+  assert.equal((await request(fixtureValue, '/', 'POST')).status, 405);
+});
+
+test('cross-origin upgrades and excess connections are rejected before room creation', async (t) => {
+  const fixtureValue = await fixture32(t, { maxConnections: 2 });
+  async function upgradeStatus(origin) {
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(fixtureValue.url, { origin });
+      ws.on('error', () => {});
+      ws.once('open', () => { ws.terminate(); reject(new Error('Unexpected accepted upgrade')); });
+      ws.once('unexpected-response', (_request, response) => {
+        response.resume();
+        const status = response.statusCode;
+        ws.terminate();
+        resolve(status);
+      });
+    });
+  }
+  assert.equal(await upgradeStatus('https://unrelated.example'), 403);
+  const players = await pair(t, fixtureValue);
+  assert.equal(await upgradeStatus(fixtureValue.origin), 429);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  await begin(players);
+});
+
+test('shutdown pauses both peers, clears rooms, closes sockets and is idempotent', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const players = await pair(t, fixtureValue);
+  await begin(players);
+  const closing = fixtureValue.service.close();
+  const paused = await players.host.next('paused');
+  assert.deepEqual(paused, { type: 'paused', reason: 'server_shutdown', tick: 1, p1: 0, p2: 0 });
+  assert.deepEqual(await players.guest.next('paused'), paused);
+  await closing;
+  assert.equal(await players.host.closed, 1001);
+  assert.equal(await players.guest.closed, 1001);
+  assert.deepEqual(fixtureValue.service.stats(), { rooms: 0, connections: 0, closing: true });
+  assert.equal(fixtureValue.service.address(), null);
+  await fixtureValue.service.close();
+});
+
+test('CLI parses environment and explicit flags without shell or URL execution', () => {
+  assert.deepEqual(parseArguments([], { HOST: '127.0.0.1', PORT: '7788', WEB_ROOT: '/private/web' }), {
+    host: '127.0.0.1', port: 7788, webRoot: '/private/web',
+  });
+  assert.deepEqual(parseArguments(['--host', '0.0.0.0', '--port', '0', '--web-root', './web'], {}), {
+    host: '0.0.0.0', port: 0, webRoot: './web',
+  });
+  assert.equal(parseArguments(['--help'], {}), null);
+  assert.throws(() => parseArguments(['--port', '1;anything'], {}));
+  assert.throws(() => parseArguments(['--web-root'], {}));
+  assert.throws(() => parseArguments(['--unknown', 'value'], {}));
+});
+
+// These socket regressions verify ordering and failure isolation. Synthetic
+// digests are intentional here; original-SWF replay is a separate browser gate.
+async function beginSolo(t, fixtureValue, options = {}) {
+  const host = await connect(t, fixtureValue);
+  host.send({ ...CREATE, listed: true, dropIn: true, ...options });
+  const invite = await host.next('joined');
+  host.send({ type: 'start' });
+  const prepared = await host.next('prepare');
+  assert.equal(prepared.initialPlayers, 1);
+  assert.equal(prepared.replay, false);
+  assert.equal(prepared.personalProgression, true);
+  host.send({ type: 'ready' });
+  const first = await host.next('frame');
+  assert.deepEqual(first, { type: 'frame', tick: 1, p1: 0, p2: 0 });
+  return { host, invite, prepared, first };
+}
+
+async function advanceSolo(host, held, count, records = new Map()) {
+  let frame = held;
+  for (let index = 0; index < count; index += 1) {
+    records.set(frame.tick, frame);
+    host.send({ type: 'ack', tick: frame.tick, digest: `native-${frame.tick}` });
+    frame = await host.next('frame');
+    assert.equal(frame.p2, 0);
+    assert.equal(frame.join, undefined);
+  }
+  records.set(frame.tick, frame);
+  return frame;
+}
+
+function acknowledgeSoloHost(t, host, first) {
+  const records = new Map([[first.tick, first]]);
+  let lastTick = first.tick, joined = false;
+  const listener = (data) => {
+    const frame = JSON.parse(data.toString());
+    if (frame.type !== 'frame') return;
+    records.set(frame.tick, frame);
+    lastTick = frame.tick;
+    if (frame.join) joined = true;
+    if (!joined && host.ws.readyState === WebSocket.OPEN) {
+      host.send({ type: 'ack', tick: frame.tick, digest: `native-${frame.tick}` });
+    }
+  };
+  host.ws.on('message', listener);
+  t.after(() => host.ws.off('message', listener));
+  host.send({ type: 'ack', tick: first.tick, digest: `native-${first.tick}` });
+  return { records, get lastTick() { return lastTick; } };
+}
+
+async function hostFrameAtLeast(host, tick) {
+  for (;;) {
+    const frame = await host.next('frame');
+    if (frame.tick >= tick) return frame;
+  }
+}
+
+async function syncState(client, state, timeout = 2000) {
+  for (;;) {
+    const message = await client.next('join_sync', timeout);
+    if (message.state === state) return message;
+  }
+}
+
+test('catch-up barrier and absolute budgets reject nonfinite or unbounded configuration', () => {
+  for (const key of ['maxCatchupBarrierMs', 'maxCatchupMs']) {
+    for (const value of [0, -1, NaN, Infinity, 1.5, '3000', 2147483648]) {
+      assert.throws(() => createOriginalServer({ [key]: value }), new RegExp('Invalid ' + key));
+    }
+  }
+  assert.throws(() => createOriginalServer({ maxCatchupMs: 180001 }), /Invalid maxCatchupMs/);
+  assert.throws(() => createOriginalServer({ maxCatchupBarrierMs: 5001 }), /Invalid maxCatchupBarrierMs/);
+  // The final barrier uses the smaller remaining absolute budget at runtime.
+  assert.doesNotThrow(() => createOriginalServer({ maxCatchupMs: 100, maxCatchupBarrierMs: 5000 }));
+});
+
+test('distant replay stays live beyond three seconds and only the final small gap pauses the host', async (t) => {
+  const fixtureValue = await fixture32(t, { maxCatchupMs: 8000, ackTimeoutMs: 1000 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const live = acknowledgeSoloHost(t, host, first);
+  await hostFrameAtLeast(host, 24);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), { ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 32 });
+  const beforeLoading = live.lastTick;
+  await hostFrameAtLeast(host, beforeLoading + 5);
+  assert.ok(live.lastTick > beforeLoading, 'Guest native loading must leave the host running');
+  const beforeReady = live.lastTick;
+  const syncMessages = [];
+  let barrierStarted = false;
+  const observeSync = data => {
+    const message = JSON.parse(data.toString());
+    if (message.type === 'join_sync') {
+      syncMessages.push(message);
+      if (message.state === 'paused') barrierStarted = true;
+    }
+  };
+  guest.ws.on('message', observeSync);
+  t.after(() => guest.ws.off('message', observeSync));
+  const replayStartedAt = performance.now();
+  guest.send({ type: 'ready' });
+  // Start slower than the Fast host for longer than the old three-second
+  // forced pause, then catch up faster. No historical step is skipped.
+  const replayDone = (async () => {
+    let ticks = 0;
+    for (;;) {
+      const message = await guest.next(['frame', 'caught_up']);
+      if (message.type === 'caught_up') return { message, ticks };
+      assert.equal(message.tick, ++ticks);
+      assert.deepEqual(message, live.records.get(message.tick));
+      assert.equal(message.join, undefined);
+      const stillDistant = performance.now() - replayStartedAt < 3200;
+      if (stillDistant) assert.equal(barrierStarted, false, 'Distant replay must never freeze the host');
+      await new Promise(resolve => setTimeout(resolve, stillDistant || barrierStarted ? 35 : 5));
+      guest.send({ type: 'ack', tick: message.tick, digest: `native-${message.tick}` });
+    }
+  })();
+  replayDone.catch(() => {}); // A prior assertion failure must not leave an unhandled test task.
+  const [hostPause, guestPause] = await Promise.all([
+    syncState(host, 'paused', 7000), syncState(guest, 'paused', 7000),
+  ]);
+  assert.deepEqual(hostPause, guestPause);
+  assert.ok(performance.now() - replayStartedAt >= 3200);
+  assert.ok(hostPause.tick >= beforeReady + 100, 'The host must keep advancing throughout distant replay');
+  assert.ok(hostPause.tick - hostPause.verified <= 8, 'Only a near-target guest may pause live play');
+  assert.ok(hostPause.timeoutMs > 0 && hostPause.timeoutMs <= 1500);
+  const target = hostPause.tick;
+  host.send({ type: 'input', seq: 0, mask: 16 });
+  host.send({ type: 'input', seq: 1, mask: 0 });
+  host.send({ type: 'input', seq: 2, mask: 64 });
+  host.send({ type: 'input', seq: 3, mask: 0 });
+  host.send({ type: 'input', seq: 4, mask: 8 });
+  await new Promise(resolve => setTimeout(resolve, 100));
+  assert.equal(live.lastTick, target, 'The host target must not advance during synchronization');
+  const replay = await replayDone;
+  assert.equal(replay.ticks, target);
+  assert.equal(replay.message.tick, target);
+  assert.deepEqual(await syncState(host, 'resumed'), { type: 'join_sync', state: 'resumed', tick: target, joined: true });
+  assert.ok(syncMessages.some(message => message.state === 'progress' && message.verified === target));
+  assert.ok(syncMessages.every(message => message.tick === target && message.verified <= target));
+  const hostJoin = await hostFrameAtLeast(host, target + 1);
+  const guestJoin = await guest.next('frame');
+  assert.deepEqual(hostJoin, guestJoin);
+  assert.deepEqual(hostJoin, { type: 'frame', tick: target + 1, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.equal([...live.records.values()].filter(frame => frame.join).length, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+  assert.equal(fixtureValue.service.catchupStats().failed, 0);
+  assert.ok(fixtureValue.service.catchupStats().maximumBarrierMs < 1500);
+});
+
+test('a slower guest expires despite continuous ACKs without pausing the host and a later guest can join', async (t) => {
+  const fixtureValue = await fixture32(t, { maxCatchupMs: 900, ackTimeoutMs: 500 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const live = acknowledgeSoloHost(t, host, first);
+  await hostFrameAtLeast(host, 30);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 1 });
+  await guest.next('joined');
+  await guest.next('prepare');
+  const pending = [], replayed = [];
+  let timer, stopped = false, replayAcks = 0;
+  const pump = () => {
+    if (stopped || timer || !pending.length) return;
+    timer = setTimeout(() => {
+      timer = undefined;
+      if (stopped) return;
+      const frame = pending.shift();
+      replayed.push(frame);
+      guest.send({ type: 'ack', tick: frame.tick, digest: `native-${frame.tick}` });
+      replayAcks++;
+      pump();
+    }, 50);
+  };
+  const observe = data => {
+    const message = JSON.parse(data.toString());
+    if (message.type === 'frame') { pending.push(message); pump(); }
+    if (message.type === 'paused') { stopped = true; clearTimeout(timer); }
+  };
+  guest.ws.on('message', observe);
+  t.after(() => { stopped = true; clearTimeout(timer); guest.ws.off('message', observe); });
+  const beforeReady = live.lastTick;
+  guest.send({ type: 'ready' });
+  const rejected = await guest.next('paused');
+  assert.equal(rejected.reason, 'catchup_deadline', 'Progress must not renew the absolute replay budget');
+  assert.ok(replayAcks >= 3, 'The guest must still be making regular verified progress');
+  for (const frame of replayed) assert.deepEqual(frame, live.records.get(frame.tick));
+  assert.ok(rejected.tick > 0 && rejected.tick < live.lastTick);
+  assert.ok(live.lastTick >= beforeReady + 20, 'Slow replay must not hold the live host');
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+  await host.absent('join_sync');
+  const resumed = await hostFrameAtLeast(host, live.lastTick + 2);
+  assert.equal(resumed.p2, 0);
+  assert.equal(resumed.join, undefined);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  await guest.close();
+
+  const replacement = await connect(t, fixtureValue);
+  replacement.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await replacement.next('joined');
+  assert.deepEqual(await replacement.next('prepare'), { ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 32 }, 'Failed joining must not reset seed/settings/history');
+  replacement.send({ type: 'ready' });
+  let caught;
+  for (;;) {
+    const message = await replacement.next(['frame', 'caught_up']);
+    if (message.type === 'caught_up') { caught = message; break; }
+    assert.deepEqual(message, live.records.get(message.tick));
+    replacement.send({ type: 'ack', tick: message.tick, digest: `native-${message.tick}` });
+  }
+  const joined = await replacement.next('frame');
+  assert.deepEqual(joined, await hostFrameAtLeast(host, caught.tick + 1));
+  assert.deepEqual(joined.join, { slot: 2, character: 2 });
+  const counters = fixtureValue.service.catchupStats();
+  assert.equal(counters.started, 2);
+  assert.equal(counters.failed, 1);
+  assert.equal(counters.completed, 1);
+});
+
+test('a host terminal ACK already in flight retires a paused joining attempt without promotion', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready' });
+  const hostPause = await syncState(host, 'paused');
+  assert.equal(hostPause.tick, first.tick);
+  assert.deepEqual(await syncState(guest, 'paused'), hostPause);
+  host.send({ type: 'ack', tick: first.tick, digest: 'native-1', complete: 'player dead' });
+  assert.deepEqual(await host.next('completed'), { type: 'completed', tick: first.tick, complete: 'player dead' });
+  assert.equal((await guest.next('paused')).reason, 'room_completed');
+  await guest.absent('caught_up');
+  await host.absent('join_sync');
+  assert.equal(fixtureValue.service.stats().rooms, 0);
+  assert.equal(fixtureValue.service.catchupStats().completed, 0);
+});
+
+test('drop-in host starts alone, advances on its native ACKs and remains listed', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const fourth = await advanceSolo(host, first, 3);
+  assert.equal(fourth.tick, 4);
+  const watcher = await connect(t, fixtureValue);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  const listed = await watcher.next('rooms');
+  assert.equal(listed.rooms.length, 1);
+  assert.equal(listed.rooms[0].room, invite.room);
+  assert.equal(JSON.stringify(listed).includes(invite.token), false);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+});
+
+test('configured replay window stays at sixty-four independently of the two-frame live window', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  let held = await advanceSolo(host, first, 64, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), { ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 32 });
+  guest.send({ type: 'ready' });
+
+  // Historical delivery can fill sixty-four slots without any replay ACK, even
+  // though the live host has only two pending-frame slots.
+  for (let tick = 1; tick <= 64; tick += 1) {
+    assert.deepEqual(await guest.next('frame'), records.get(tick));
+  }
+  await guest.absent('frame');
+  held = await advanceSolo(host, held, 3, records);
+  assert.equal(held.tick, 68, 'a full replay window must not stall live play');
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+  await guest.absent('frame');
+
+  // Only a verified replay ACK releases one historical delivery slot.
+  guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+  assert.deepEqual(await guest.next('frame'), records.get(65));
+  await guest.absent('frame');
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1);
+});
+
+test('server-issued verified replay ACKs can exceed the control message budget without losing history checks', async (t) => {
+  const messagesPerSecond = 60, messageBurst = 16;
+  const fixtureValue = await fixture32(t, { messagesPerSecond, messageBurst });
+  const { host, invite, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const live = acknowledgeSoloHost(t, host, first);
+  await hostFrameAtLeast(host, 48);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 1 });
+  await guest.next('joined');
+  await guest.next('prepare');
+  const startedAt = performance.now();
+  guest.send({ type: 'ready' });
+  let ticks = 0, caught;
+  for (;;) {
+    const message = await guest.next(['frame', 'caught_up', 'error']);
+    assert.notEqual(message.type, 'error', 'Valid issued replay ACKs must not exhaust the control budget');
+    if (message.type === 'caught_up') { caught = message; break; }
+    assert.equal(message.tick, ++ticks);
+    assert.deepEqual(message, live.records.get(message.tick));
+    guest.send({ type: 'ack', tick: message.tick, digest: `native-${message.tick}` });
+  }
+  const elapsedSeconds = (performance.now() - startedAt) / 1000;
+  assert.ok(ticks > messageBurst + messagesPerSecond * elapsedSeconds,
+    'This run must actually exceed the former per-message token allowance');
+  assert.equal(caught.tick, ticks);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, ticks);
+  const joined = await guest.next('frame');
+  assert.deepEqual(joined, await hostFrameAtLeast(host, ticks + 1));
+  assert.deepEqual(joined.join, { slot: 2, character: 1 });
+});
+
+test('replay credit cannot exempt duplicate, unsent, extra-field or malformed messages from the limiter', async (t) => {
+  const cases = [
+    ['duplicate', { type: 'ack', tick: 1, digest: 'native-1' }],
+    ['unsent', { type: 'ack', tick: 2, digest: 'native-2' }],
+    ['extra field', { type: 'ack', tick: 2, digest: 'native-2', extra: true }],
+    ['malformed JSON', '{'],
+  ];
+  for (const [name, message] of cases) {
+    await t.test(name, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { messagesPerSecond: 1, messageBurst: 4 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue);
+      host.send({ type: 'ack', tick: first.tick, digest: 'native-1' });
+      const held = await host.next('frame');
+      assert.equal(held.tick, 2);
+      const guest = await connect(subtest, fixtureValue);
+      // Two harmless directory requests plus join and ready consume all four
+      // control tokens. The host deliberately has not verified tick two.
+      guest.send({ type: 'list', swfHash: SWF_HASH });
+      guest.send({ type: 'list', swfHash: SWF_HASH });
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+      await guest.next('joined');
+      await guest.next('prepare');
+      guest.send({ type: 'ready' });
+      const frame = await guest.next('frame');
+      assert.equal(frame.tick, 1);
+      guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+      await guest.absent('frame', 20);
+      assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1,
+        'A valid issued ACK must succeed even with no control tokens left');
+      if (typeof message === 'string') guest.ws.send(message);
+      else guest.send(message);
+      assert.equal((await guest.next('error')).code, 'rate_limited');
+      assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1,
+        'Invalid messages must not release or reuse historical frame credit');
+      assert.equal((await syncState(host, 'resumed')).joined, false);
+      assert.equal(fixtureValue.service.stats().rooms, 1);
+    });
+  }
+});
+
+test('late guest replays every verified tick then both VMs receive one character-bound join event', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  let held = await advanceSolo(host, first, 6, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  assert.equal((await guest.next('joined')).slot, 2);
+  const replayPrepare = await guest.next('prepare');
+  assert.deepEqual(replayPrepare, { ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 32 });
+  assert.deepEqual(replayPrepare.characters, [0, 3], 'historical character config is immutable');
+  held = await advanceSolo(host, held, 3, records);
+  assert.equal(held.tick, 10, 'guest loading must not stop the host');
+  await guest.absent('frame', 40);
+
+  const driveHost = async () => {
+    let frame = held;
+    while (!frame.join) {
+      records.set(frame.tick, frame);
+      host.send({ type: 'ack', tick: frame.tick, digest: `native-${frame.tick}` });
+      frame = await host.next('frame');
+    }
+    return frame;
+  };
+  const joinedHostFrame = driveHost();
+  guest.send({ type: 'ready' });
+  let replayTicks = 0;
+  let caughtUp;
+  while (!caughtUp) {
+    const message = await guest.next(['frame', 'caught_up']);
+    if (message.type === 'caught_up') {
+      caughtUp = message;
+      break;
+    }
+    assert.equal(message.tick, replayTicks + 1);
+    assert.deepEqual(message, records.get(message.tick));
+    assert.equal(message.join, undefined);
+    guest.send({ type: 'ack', tick: message.tick, digest: `native-${message.tick}` });
+    replayTicks += 1;
+  }
+  assert.equal(caughtUp.tick, replayTicks);
+  assert.ok(replayTicks >= 10);
+  const hostJoin = await joinedHostFrame;
+  const guestJoin = await guest.next('frame');
+  assert.deepEqual(hostJoin, guestJoin);
+  assert.equal(hostJoin.tick, replayTicks + 1);
+  assert.deepEqual(hostJoin.join, { slot: 2, character: 2 });
+  host.send({ type: 'ack', tick: hostJoin.tick, digest: `native-${hostJoin.tick}` });
+  await host.absent('frame');
+  guest.send({ type: 'ack', tick: guestJoin.tick, digest: `native-${guestJoin.tick}` });
+  const nextHost = await host.next('frame');
+  assert.deepEqual(await guest.next('frame'), nextHost);
+  assert.equal(nextHost.join, undefined, 'membership transition occurs once');
+  assert.equal(nextHost.tick, hostJoin.tick + 1);
+  const counters = fixtureValue.service.catchupStats();
+  assert.equal(counters.started, 1);
+  assert.equal(counters.completed, 1);
+  assert.equal(counters.failed, 0);
+  assert.equal(counters.verifiedReplayFrames, replayTicks);
+  assert.equal(counters.barriers, 1);
+  assert.ok(counters.maximumBarrierMs >= 0 && counters.maximumBarrierMs < 5000);
+});
+
+test('wrong replay digest rejects only the catching guest and frees the slot for another guest', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const held = await advanceSolo(host, first, 5);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join', room: invite.room, token: invite.token, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready' });
+  const replay = await guest.next('frame');
+  assert.equal(replay.tick, 1);
+  guest.send({ type: 'ack', tick: 1, digest: 'wrong-native-state' });
+  assert.equal((await guest.next('error')).code, 'invalid_replay_ack');
+  assert.equal((await guest.next('paused')).reason, 'replay_digest_mismatch');
+  assert.equal(await guest.closed, 1008);
+  assert.equal((await advanceSolo(host, held, 1)).tick, 7);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  const nextGuest = await connect(t, fixtureValue);
+  nextGuest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 1 });
+  assert.equal((await nextGuest.next('joined')).slot, 2);
+  assert.equal((await nextGuest.next('prepare')).replay, true);
+  assert.equal(fixtureValue.service.catchupStats().failed, 1);
+});
+
+test('catching guest cannot submit input or claim an unsent replay tick', async (t) => {
+  for (const message of [
+    { type: 'input', seq: 0, mask: 8 },
+    { type: 'ack', tick: 3, digest: 'native-3' },
+  ]) {
+    await t.test(message.type, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1, maxReplayInFlightFrames: 1 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue);
+      const held = await advanceSolo(host, first, 4);
+      const guest = await connect(subtest, fixtureValue);
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+      await guest.next('joined');
+      await guest.next('prepare');
+      guest.send({ type: 'ready' });
+      assert.equal((await guest.next('frame')).tick, 1);
+      guest.send(message);
+      assert.equal((await guest.next('error')).code,
+        message.type === 'input' ? 'invalid_input' : 'invalid_replay_ack');
+      assert.equal(await guest.closed, 1008);
+      assert.equal((await advanceSolo(host, held, 1)).tick, 6);
+      assert.equal(fixtureValue.service.stats().rooms, 1);
+    });
+  }
+});
+
+test('a guest disconnecting while loading leaves the live host and history intact', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const held = await advanceSolo(host, first, 2);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  await guest.close();
+  assert.equal((await advanceSolo(host, held, 1)).tick, 4);
+  const watcher = await connect(t, fixtureValue);
+  watcher.send({ type: 'list', swfHash: SWF_HASH });
+  assert.equal((await watcher.next('rooms')).rooms[0].room, invite.room);
+  assert.equal(fixtureValue.service.catchupStats().failed, 1);
+});
+
+test('stalled final replay handoff is bounded and automatically resumes solo play', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxReplayInFlightFrames: 1, ackTimeoutMs: 350 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const held = await advanceSolo(host, first, 2);
+  let lastHostTick = held.tick;
+  const autoAck = (data) => {
+    const message = JSON.parse(data.toString());
+    if (message.type === 'frame') {
+      lastHostTick = message.tick;
+      host.send({ type: 'ack', tick: message.tick, digest: `native-${message.tick}` });
+    }
+  };
+  host.ws.on('message', autoAck);
+  t.after(() => host.ws.off('message', autoAck));
+  host.send({ type: 'ack', tick: held.tick, digest: `native-${held.tick}` });
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready' });
+  // Consume until the guest is one frame behind the current host. The server
+  // then freezes only the final handoff; deliberately withhold the final ACK.
+  for (;;) {
+    const replay = await guest.next('frame');
+    if (fixtureValue.service.catchupStats().barriers > 0) break;
+    guest.send({ type: 'ack', tick: replay.tick, digest: `native-${replay.tick}` });
+  }
+  const hostAtBarrier = lastHostTick;
+  const paused = await guest.next('paused');
+  assert.ok(['catchup_timeout', 'catchup_barrier_timeout'].includes(paused.reason));
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  assert.equal(fixtureValue.service.catchupStats().failed, 1);
+  let newer;
+  do { newer = await host.next('frame'); } while (newer.tick <= hostAtBarrier);
+  assert.ok(newer.tick > hostAtBarrier);
+  assert.ok(fixtureValue.service.catchupStats().maximumBarrierMs < 1000);
+});
+
+test('continuous verified ACKs cannot extend the short final barrier deadline', async (t) => {
+  const fixtureValue = await fixture32(t, {
+    maxCatchupBarrierMs: 200, maxCatchupMs: 3000, ackTimeoutMs: 1000,
+  });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const held = await advanceSolo(host, first, 3);
+  const live = acknowledgeSoloHost(t, host, held);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  const pending = [];
+  let timer, stopped = false, replayAcks = 0;
+  const pump = () => {
+    if (stopped || timer || !pending.length) return;
+    timer = setTimeout(() => {
+      timer = undefined;
+      if (stopped) return;
+      const frame = pending.shift();
+      guest.send({ type: 'ack', tick: frame.tick, digest: `native-${frame.tick}` });
+      replayAcks++;
+      pump();
+    }, 80);
+  };
+  const observe = data => {
+    const message = JSON.parse(data.toString());
+    if (message.type === 'frame') { pending.push(message); pump(); }
+    if (message.type === 'paused') { stopped = true; clearTimeout(timer); }
+  };
+  guest.ws.on('message', observe);
+  t.after(() => { stopped = true; clearTimeout(timer); guest.ws.off('message', observe); });
+  guest.send({ type: 'ready' });
+  const paused = await syncState(host, 'paused');
+  assert.ok(paused.tick - paused.verified <= 8);
+  assert.ok(paused.timeoutMs > 0 && paused.timeoutMs <= 200);
+  const rejected = await guest.next('paused');
+  assert.equal(rejected.reason, 'catchup_barrier_timeout');
+  assert.ok(replayAcks >= 1 && rejected.tick >= 1,
+    'The independent barrier limit must expire despite regular valid progress');
+  assert.ok(rejected.tick < paused.tick);
+  assert.deepEqual(await syncState(host, 'resumed'), {
+    type: 'join_sync', state: 'resumed', tick: paused.tick, joined: false,
+  });
+  const resumed = await hostFrameAtLeast(host, paused.tick + 2);
+  assert.equal(resumed.p2, 0);
+  assert.equal(resumed.join, undefined);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 0);
+  assert.equal(fixtureValue.service.catchupStats().failed, 1);
+  assert.ok(fixtureValue.service.catchupStats().maximumBarrierMs < 800);
+  assert.ok(live.lastTick > paused.tick);
+});
+
+test('bounded replay history closes late entry without ending or resetting the running host', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxHistoryFrames: 3 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const held = await advanceSolo(host, first, 4);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'list', swfHash: SWF_HASH });
+  assert.deepEqual((await guest.next('rooms')).rooms, []);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  assert.equal((await guest.next('join_failed')).code, 'unavailable');
+  assert.equal((await advanceSolo(host, held, 1)).tick, 6);
+  assert.equal(fixtureValue.service.stats().rooms, 1);
+  assert.equal(fixtureValue.service.catchupStats().historyCapped, 1);
+});
+
+
+
+test('every numeric weapon tap reaches both slots with a release and no stuck input', async (t) => {
+  for (let index = 0; index < 10; index++) {
+    await t.test('digit ' + (index + 1) % 10, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1 });
+      const players = await pair(subtest, fixtureValue);
+      await beginNeutral(players);
+      const bit = 1 << (index + 7);
+      for (const peer of [players.host, players.guest]) {
+        peer.send({ type: 'input', seq: 0, mask: bit });
+        peer.send({ type: 'input', seq: 1, mask: 0 });
+      }
+      const pressed = await acknowledgeAndNext(players, 1);
+      assert.deepEqual([pressed.p1, pressed.p2], [bit, bit]);
+      const released = await acknowledgeAndNext(players, 2);
+      assert.deepEqual([released.p1, released.p2], [0, 0]);
+      const idle = await acknowledgeAndNext(players, 3);
+      assert.deepEqual([idle.p1, idle.p2], [0, 0]);
+    });
+  }
+});
+
+test('focus hard-clear cancels pending numeric selection on both slots', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const players = await pair(t, fixtureValue);
+  await beginNeutral(players);
+  for (const peer of [players.host, players.guest]) {
+    peer.send({ type: 'input', seq: 0, mask: 65536 });
+    peer.send({ type: 'input', seq: 1, mask: 0 });
+    peer.send({ type: 'input', seq: 2, mask: 0, clear: true });
+  }
+  for (let tick = 1; tick <= 3; tick++) {
+    const frame = await acknowledgeAndNext(players, tick);
+    assert.deepEqual([frame.p1, frame.p2], [0, 0]);
+  }
+});
+
+function assertReplayBatch(message, first, length, records) {
+  assert.equal(message.type, 'replay_frames');
+  assert.deepEqual(Object.keys(message).sort(), ['frames', 'type']);
+  assert.equal(message.frames.length, length);
+  for (let index = 0; index < length; index++) {
+    const frame = message.frames[index];
+    assert.equal(frame.tick, first + index);
+    assert.equal(frame.p2, 0);
+    assert.equal(frame.join, undefined);
+    assert.deepEqual(frame, records.get(frame.tick));
+  }
+}
+
+test('configured window64 issues two batches32 and refills far history only after thirty-two verified ACKs', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  assert.equal(prepared.replayBatchMax, undefined);
+  assert.equal(prepared.replayBatchExtendedMax, undefined);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 96, records);
+  assert.equal(held.tick, 97);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), {
+    ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 32,
+  });
+  guest.send({ type: 'ready', replayBatch: 32 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 32, records);
+  assertReplayBatch(await guest.next('replay_frames'), 33, 32, records);
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  for (let tick = 1; tick <= 31; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  guest.send({ type: 'ack', tick: 32, digest: 'native-32' });
+  assertReplayBatch(await guest.next('replay_frames'), 65, 32, records);
+  // The second original group is still outstanding: the whole window stays64.
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  for (let tick = 33; tick <= 88; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0, 'Gap nine must keep the host live');
+  guest.send({ type: 'ack', tick: 89, digest: 'native-89' });
+  const paused = await syncState(host, 'paused');
+  assert.equal(paused.tick, 97); assert.equal(paused.verified, 89);
+  assert.equal(paused.tick - paused.verified, 8);
+  assert.deepEqual(await syncState(guest, 'paused'), paused);
+  await guest.absent(['frame', 'replay_frames'], 25);
+  host.send({ type: 'ack', tick: 97, digest: 'native-97' });
+  assertReplayBatch(await guest.next('replay_frames'), 97, 1, records);
+  for (let tick = 90; tick <= 97; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: 97 });
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await host.next('frame');
+  assert.deepEqual(spawn, { type: 'frame', tick: 98, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 97);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('every moving verified tail9..31 drains in groups8 and never needs a full group32 to reach the final barrier', async (t) => {
+  for (let available = 9; available <= 31; available++) {
+    await t.test('verified tail ' + available, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+      const records = new Map();
+      const held = await advanceSolo(host, first, available, records);
+      const target = available + 1;
+      assert.equal(held.tick, target);
+      const guest = await connect(subtest, fixtureValue);
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+      await guest.next('joined');
+      const offer = await guest.next('prepare');
+      assert.equal(offer.replayBatchMax, 8); assert.equal(offer.replayBatchExtendedMax, 32);
+      guest.send({ type: 'ready', replayBatch: 32 });
+      const sent = Math.floor(available / 8) * 8;
+      for (let firstTick = 1; firstTick <= sent; firstTick += 8)
+        assertReplayBatch(await guest.next('replay_frames'), firstTick, 8, records);
+      await guest.absent(['frame', 'replay_frames', 'join_sync'], 15);
+      const barrierAck = target - 8;
+      for (let tick = 1; tick < barrierAck; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+      await guest.absent('join_sync', 15);
+      guest.send({ type: 'ack', tick: barrierAck, digest: 'native-' + barrierAck });
+      const paused = await syncState(host, 'paused');
+      assert.equal(paused.tick, target); assert.equal(paused.verified, barrierAck);
+      assert.deepEqual(await syncState(guest, 'paused'), paused);
+      // An unverified issued host tick may not be replaced by a short packet.
+      await guest.absent(['frame', 'replay_frames'], 15);
+      host.send({ type: 'ack', tick: target, digest: 'native-' + target });
+      assertReplayBatch(await guest.next('replay_frames'), sent + 1, target - sent, records);
+      for (let tick = barrierAck + 1; tick <= target; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+      assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: target });
+      assert.equal((await syncState(host, 'resumed')).joined, true);
+      const spawn = await host.next('frame');
+      assert.equal(spawn.tick, target + 1); assert.deepEqual(spawn.join, { slot: 2, character: 2 });
+      assert.deepEqual(await guest.next('frame'), spawn);
+      assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, target);
+      assert.equal(fixtureValue.service.catchupStats().completed, 1);
+    });
+  }
+});
+
+test('batch32 converges on a persistently moving host with slower host and faster guest ACK pacing', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxCatchupMs: 8000, ackTimeoutMs: 2000 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const records = new Map();
+  const held = await advanceSolo(host, first, 64, records);
+  const timers = new Set();
+  let lastHostTick = held.tick;
+  // Artificial socket pacing (~22 host / ~45 guest ACKs/s), not native FPS
+  // evidence. The moving target must continue throughout the replay chase.
+  const acknowledgeLater = (frame) => {
+    if (frame.join) return;
+    const timer = setTimeout(() => {
+      timers.delete(timer);
+      if (host.ws.readyState === WebSocket.OPEN)
+        host.send({ type: 'ack', tick: frame.tick, digest: 'native-' + frame.tick });
+    }, 45);
+    timers.add(timer);
+  };
+  const onHostFrame = data => {
+    const frame = JSON.parse(data.toString());
+    if (frame.type !== 'frame') return;
+    records.set(frame.tick, frame); lastHostTick = frame.tick;
+    acknowledgeLater(frame);
+  };
+  host.ws.on('message', onHostFrame);
+  t.after(() => { host.ws.off('message', onHostFrame); for (const timer of timers) clearTimeout(timer); });
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined'); await guest.next('prepare');
+  const beforeReady = lastHostTick;
+  guest.send({ type: 'ready', replayBatch: 32 });
+  acknowledgeLater(held);
+  let verified = 0, caught;
+  const sizes = [];
+  for (;;) {
+    const message = await guest.next(['replay_frames', 'caught_up', 'error', 'paused'], 8500);
+    assert.notEqual(message.type, 'error'); assert.notEqual(message.type, 'paused');
+    if (message.type === 'caught_up') { caught = message; break; }
+    sizes.push(message.frames.length);
+    assertReplayBatch(message, verified + 1, message.frames.length, records);
+    assert.ok(message.frames.length <= 32);
+    for (const frame of message.frames) {
+      await new Promise(resolve => setTimeout(resolve, 22));
+      guest.send({ type: 'ack', tick: frame.tick, digest: 'native-' + frame.tick });
+      verified++;
+    }
+  }
+  assert.deepEqual(sizes.slice(0, 2), [32, 32]);
+  assert.ok(sizes.includes(8), 'The moving verified tip must use adaptive full groups8');
+  const paused = await syncState(host, 'paused');
+  assert.ok(paused.tick - paused.verified <= 8);
+  assert.ok(paused.tick >= beforeReady + 20, 'Replay must not stop the moving host early');
+  assert.equal(caught.tick, verified); assert.equal(caught.tick, paused.tick);
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await hostFrameAtLeast(host, caught.tick + 1);
+  assert.equal(spawn.tick, caught.tick + 1); assert.equal(spawn.join.slot, 2);
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().failed, 0);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('legacy selections4/8 ignore the extended offer and retain their selected packet size in window64', async (t) => {
+  for (const selected of [4, 8]) await t.test('selection ' + selected, async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1 });
+    const { host, invite, first } = await beginSolo(subtest, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+    const records = new Map();
+    await advanceSolo(host, first, 72, records);
+    const guest = await connect(subtest, fixtureValue);
+    guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+    await guest.next('joined');
+    const offer = await guest.next('prepare');
+    assert.equal(offer.replayBatchMax, 8); assert.equal(offer.replayBatchExtendedMax, 32);
+    guest.send({ type: 'ready', replayBatch: selected });
+    for (let firstTick = 1; firstTick <= 64; firstTick += selected)
+      assertReplayBatch(await guest.next('replay_frames'), firstTick, selected, records);
+    await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  });
+});
+
+test('a sixty-four-frame replay window still rejects invalid issued/history ACKs without losing the host', async (t) => {
+  const cases = [
+    ['duplicate', { type: 'ack', tick: 1, digest: 'native-1' }, 'invalid_replay_ack'],
+    ['reordered issued frame', { type: 'ack', tick: 64, digest: 'native-64' }, 'invalid_replay_ack'],
+    ['verified but unissued frame', { type: 'ack', tick: 65, digest: 'native-65' }, 'invalid_replay_ack'],
+    ['wrong digest', { type: 'ack', tick: 2, digest: 'wrong-native-2' }, 'invalid_replay_ack'],
+    ['extra field', { type: 'ack', tick: 2, digest: 'native-2', extra: true }, 'invalid_message'],
+  ];
+  for (const [label, invalid, code] of cases) await t.test(label, async (subtest) => {
+    const fixtureValue = await fixture32(subtest, { maxInFlightFrames: 1 });
+    const { host, invite, first } = await beginSolo(subtest, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+    const records = new Map();
+    const held = await advanceSolo(host, first, 66, records);
+    const guest = await connect(subtest, fixtureValue);
+    guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+    await guest.next('joined'); await guest.next('prepare');
+    guest.send({ type: 'ready', replayBatch: 32 });
+    assertReplayBatch(await guest.next('replay_frames'), 1, 32, records);
+    assertReplayBatch(await guest.next('replay_frames'), 33, 32, records);
+    guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+    guest.send(invalid);
+    assert.equal((await guest.next('error')).code, code);
+    assert.equal((await guest.next('paused')).reason,
+      code === 'invalid_message' ? 'protocol_error' : 'replay_digest_mismatch');
+    assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1);
+    assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+    assert.equal(fixtureValue.service.catchupStats().completed, 0);
+    assert.equal(fixtureValue.service.stats().rooms, 1);
+    const next = await advanceSolo(host, held, 1, records);
+    assert.equal(next.tick, 68); assert.equal(next.join, undefined);
+  });
+});
+
+test('historical batch configuration has a separate hard64-frame cap and128-frame window', () => {
+  for (const value of [0, -1, 65, 128, NaN, Infinity, 1.5, '4']) {
+    assert.throws(() => createOriginalServer({ maxReplayBatchFrames: value }), /Invalid maxReplayBatchFrames/);
+  }
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayBatchFrames: 32 }));
+  // A smaller replay window caps the offer at runtime; old custom-window
+  // configurations remain valid even when the default batch size is64.
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayInFlightFrames: 1 }));
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayInFlightFrames: 64 }));
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayBatchFrames: 33 }));
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayBatchFrames: 64 }));
+  assert.doesNotThrow(() => createOriginalServer({ maxReplayInFlightFrames: 128 }));
+  assert.throws(() => createOriginalServer({ maxReplayInFlightFrames: 129 }), /Invalid maxReplayInFlightFrames/);
+  assert.throws(() => createOriginalServer({ maxInFlightFrames: 33 }), /Invalid maxInFlightFrames/);
+});
+
+test('configured window16 pipelines two batches8 and keeps the final barrier gap at eight', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxReplayInFlightFrames: 16, maxReplayBatchFrames: 8 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 24, records);
+  assert.equal(held.tick, 25);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).replayBatchMax, 8);
+  guest.send({ type: 'ready', replayBatch: 8 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 8, records);
+  assertReplayBatch(await guest.next('replay_frames'), 9, 8, records);
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  for (let tick = 1; tick <= 7; tick++) {
+    guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+    await guest.absent(['frame', 'replay_frames', 'join_sync'], 25);
+  }
+  // Ticks9..16 remain in flight: ACK8 releases one whole eight-frame group,
+  // preserving two-packet overlap without allowing more than sixteen credits.
+  guest.send({ type: 'ack', tick: 8, digest: 'native-8' });
+  assertReplayBatch(await guest.next('replay_frames'), 17, 8, records);
+  await guest.absent(['frame', 'replay_frames', 'join_sync'], 25);
+  for (let tick = 9; tick <= 16; tick++) {
+    guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+    await guest.absent(['frame', 'replay_frames', 'join_sync'], 25);
+    assert.equal(fixtureValue.service.catchupStats().barriers, 0,
+      'A transport window of sixteen must not pause the host at gap ' + (25 - tick));
+  }
+  guest.send({ type: 'ack', tick: 17, digest: 'native-17' });
+  const paused = await syncState(host, 'paused');
+  assert.equal(paused.tick, 25);
+  assert.equal(paused.verified, 17);
+  assert.equal(paused.tick - paused.verified, 8);
+  assert.deepEqual(await syncState(guest, 'paused'), paused);
+  await guest.absent(['frame', 'replay_frames'], 25);
+  // The short final tail cannot bypass the host's real native verification.
+  host.send({ type: 'ack', tick: 25, digest: 'native-25' });
+  assertReplayBatch(await guest.next('replay_frames'), 25, 1, records);
+  for (let tick = 18; tick <= 25; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: 25 });
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await host.next('frame');
+  assert.deepEqual(spawn, { type: 'frame', tick: 26, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 25);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('a sixteen-frame replay window still rejects invalid ACKs and preserves the live host', async (t) => {
+  const cases = [
+    ['duplicate', { type: 'ack', tick: 1, digest: 'native-1' }, 'invalid_replay_ack'],
+    ['reordered issued frame', { type: 'ack', tick: 16, digest: 'native-16' }, 'invalid_replay_ack'],
+    ['unsent frame', { type: 'ack', tick: 17, digest: 'native-17' }, 'invalid_replay_ack'],
+    ['wrong digest', { type: 'ack', tick: 2, digest: 'wrong-native-2' }, 'invalid_replay_ack'],
+    ['extra field', { type: 'ack', tick: 2, digest: 'native-2', extra: true }, 'invalid_message'],
+  ];
+  for (const [label, invalid, code] of cases) {
+    await t.test(label, async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxReplayInFlightFrames: 16, maxReplayBatchFrames: 8 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue);
+      const records = new Map();
+      const held = await advanceSolo(host, first, 24, records);
+      const guest = await connect(subtest, fixtureValue);
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+      await guest.next('joined');
+      await guest.next('prepare');
+      guest.send({ type: 'ready', replayBatch: 8 });
+      assertReplayBatch(await guest.next('replay_frames'), 1, 8, records);
+      assertReplayBatch(await guest.next('replay_frames'), 9, 8, records);
+      guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+      guest.send(invalid);
+      assert.equal((await guest.next('error')).code, code);
+      assert.equal((await guest.next('paused')).reason,
+        code === 'invalid_message' ? 'protocol_error' : 'replay_digest_mismatch');
+      assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1);
+      assert.equal(fixtureValue.service.catchupStats().completed, 0);
+      assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+      assert.equal(fixtureValue.service.stats().rooms, 1);
+      const next = await advanceSolo(host, held, 1, records);
+      assert.equal(next.tick, 26);
+      assert.equal(next.join, undefined);
+    });
+  }
+});
+
+test('configured batch8 window8 refills only after eight individually verified ACKs', async (t) => {
+  const fixtureValue = await fixture32(t, { maxReplayInFlightFrames: 8 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue);
+  assert.equal(prepared.replayBatchMax, undefined);
+  const records = new Map();
+  let held = await advanceSolo(host, first, 24, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), { ...prepared, replay: true, replayBatchMax: 8 });
+  guest.send({ type: 'ready', replayBatch: 8 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 8, records);
+  await guest.absent(['frame', 'replay_frames']);
+  for (let tick = 1; tick <= 7; tick++) {
+    guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+    await guest.absent(['frame', 'replay_frames'], 25);
+  }
+  guest.send({ type: 'ack', tick: 8, digest: 'native-8' });
+  assertReplayBatch(await guest.next('replay_frames'), 9, 8, records);
+  await guest.absent(['frame', 'replay_frames']);
+  held = await advanceSolo(host, held, 2, records);
+  assert.equal(held.tick, 27, 'A full replay window must leave the live host independent');
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 8);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+});
+
+test('batch8 window8 flushes a seven-frame final tail only after all credits and the host target are verified', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxReplayInFlightFrames: 8 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 14, records);
+  assert.equal(held.tick, 15);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).replayBatchMax, 8);
+  guest.send({ type: 'ready', replayBatch: 8 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 8, records);
+  for (let tick = 1; tick <= 7; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  const paused = await syncState(host, 'paused');
+  assert.equal(paused.tick, 15);
+  assert.equal(paused.verified, 7);
+  await guest.absent(['frame', 'replay_frames'], 25);
+  guest.send({ type: 'ack', tick: 8, digest: 'native-8' });
+  await guest.absent(['frame', 'replay_frames'], 25);
+  host.send({ type: 'ack', tick: 15, digest: 'native-15' });
+  assertReplayBatch(await guest.next('replay_frames'), 9, 7, records);
+  for (let tick = 9; tick <= 15; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: 15 });
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await host.next('frame');
+  assert.deepEqual(spawn, { type: 'frame', tick: 16, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 15);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('negotiated replay fills configured window8 with two packets4 and refills only after four exact ACK credits', async (t) => {
+  const fixtureValue = await fixture32(t, { maxReplayInFlightFrames: 8 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue);
+  assert.equal(prepared.replayBatchMax, undefined, 'The host never receives a historical batch offer');
+  const records = new Map();
+  let held = await advanceSolo(host, first, 16, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), { ...prepared, replay: true, replayBatchMax: 8 });
+  guest.send({ type: 'ready', replayBatch: 4 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 4, records);
+  assertReplayBatch(await guest.next('replay_frames'), 5, 4, records);
+  await guest.absent(['frame', 'replay_frames']);
+  for (let tick = 1; tick <= 3; tick++) {
+    guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+    await guest.absent(['frame', 'replay_frames'], 25);
+  }
+  guest.send({ type: 'ack', tick: 4, digest: 'native-4' });
+  assertReplayBatch(await guest.next('replay_frames'), 9, 4, records);
+  for (let tick = 5; tick <= 7; tick++) {
+    guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+    await guest.absent(['frame', 'replay_frames'], 25);
+  }
+  guest.send({ type: 'ack', tick: 8, digest: 'native-8' });
+  assertReplayBatch(await guest.next('replay_frames'), 13, 4, records);
+  await guest.absent(['frame', 'replay_frames']);
+  held = await advanceSolo(host, held, 2, records);
+  assert.equal(held.tick, 19, 'The full replay window must leave the live host independent');
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 8);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+});
+
+test('the guest may negotiate a smaller group without increasing a configured eight-frame window', async (t) => {
+  const fixtureValue = await fixture32(t, { maxReplayInFlightFrames: 8 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  await advanceSolo(host, first, 12, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).replayBatchMax, 8);
+  guest.send({ type: 'ready', replayBatch: 2 });
+  for (let first = 1; first <= 7; first += 2) assertReplayBatch(await guest.next('replay_frames'), first, 2, records);
+  await guest.absent(['frame', 'replay_frames']);
+  guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+  await guest.absent(['frame', 'replay_frames'], 25);
+  guest.send({ type: 'ack', tick: 2, digest: 'native-2' });
+  assertReplayBatch(await guest.next('replay_frames'), 9, 2, records);
+});
+
+test('a configured small replay window caps the offered and accepted group', async (t) => {
+  const fixtureValue = await fixture32(t, { maxReplayInFlightFrames: 2 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  await advanceSolo(host, first, 6, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).replayBatchMax, 2);
+  guest.send({ type: 'ready', replayBatch: 2 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 2, records);
+  await guest.absent(['frame', 'replay_frames']);
+});
+
+test('invalid or unoffered replay negotiation never enables batching', async (t) => {
+  for (const replayBatch of [0, -1, 5, 9, 1.5, '4', null]) {
+    await t.test('late ready bound ' + String(replayBatch), async (subtest) => {
+      const fixtureValue = await fixture32(subtest, { maxReplayBatchFrames: 4 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue);
+      const guest = await connect(subtest, fixtureValue);
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+      await guest.next('joined');
+      assert.equal((await guest.next('prepare')).replayBatchMax, 4);
+      guest.send({ type: 'ready', replayBatch });
+      assert.equal((await guest.next('error')).code, 'invalid_ready');
+      assert.equal((await guest.next('paused')).reason, 'protocol_error');
+      assert.equal(fixtureValue.service.stats().rooms, 1);
+      const next = await advanceSolo(host, first, 1);
+      assert.equal(next.tick, 2);
+      assert.equal(fixtureValue.service.catchupStats().completed, 0);
+      await host.absent('join_sync', 20);
+    });
+  }
+  await t.test('ordinary paired ready cannot opt in', async (subtest) => {
+    const fixtureValue = await fixture32(subtest);
+    const players = await pair(subtest, fixtureValue);
+    const message = await prepare(players);
+    assert.equal(message.replayBatchMax, undefined);
+    players.guest.send({ type: 'ready', replayBatch: 4 });
+    assert.equal((await players.guest.next('error')).code, 'invalid_ready');
+  });
+});
+
+test('only a fully verified fixed barrier flushes its short final batch and promotes one real join', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 10, records);
+  assert.equal(held.tick, 11);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready', replayBatch: 4 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 4, records);
+  assertReplayBatch(await guest.next('replay_frames'), 5, 4, records);
+  for (let tick = 1; tick <= 3; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  const paused = await syncState(host, 'paused');
+  assert.equal(paused.tick, 11);
+  guest.send({ type: 'ack', tick: 4, digest: 'native-4' });
+  await guest.absent(['frame', 'replay_frames'], 30);
+  // Ticks9/10 are known, but the issued final tip11 is not host-verified yet.
+  // Do not emit a two-frame partial tail and another one-frame refill.
+  host.send({ type: 'ack', tick: 11, digest: 'native-11' });
+  assertReplayBatch(await guest.next('replay_frames'), 9, 3, records);
+  for (let tick = 5; tick <= 11; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: 11 });
+  const resumed = await syncState(host, 'resumed');
+  assert.equal(resumed.joined, true);
+  const hostJoin = await host.next('frame');
+  assert.deepEqual(hostJoin, { type: 'frame', tick: 12, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.deepEqual(await guest.next('frame'), hostJoin);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 11);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('a wrong per-frame digest inside a negotiated batch cancels only that guest', async (t) => {
+  const fixtureValue = await fixture32(t);
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 12, records);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready', replayBatch: 4 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 4, records);
+  assertReplayBatch(await guest.next('replay_frames'), 5, 4, records);
+  guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+  guest.send({ type: 'ack', tick: 2, digest: 'wrong-native-2' });
+  assert.equal((await guest.next('error')).code, 'invalid_replay_ack');
+  assert.equal((await guest.next('paused')).reason, 'replay_digest_mismatch');
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 0);
+  assert.equal((await advanceSolo(host, held, 2, records)).tick, 15);
+  await host.absent('join_sync', 20);
+});
+
+test('batched server-issued ACK credits exceed control rate without bypassing native-history comparison', async (t) => {
+  const fixtureValue = await fixture32(t, { messagesPerSecond: 60, messageBurst: 16 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const live = acknowledgeSoloHost(t, host, first);
+  await hostFrameAtLeast(host, 48);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready', replayBatch: 4 });
+  let verified = 0, packets = 0;
+  for (;;) {
+    const message = await guest.next(['replay_frames', 'caught_up', 'paused', 'error']);
+    assert.notEqual(message.type, 'error');
+    assert.notEqual(message.type, 'paused');
+    if (message.type === 'caught_up') {
+      assert.equal(message.tick, verified);
+      break;
+    }
+    assert.ok(message.frames.length >= 1 && message.frames.length <= 4);
+    assertReplayBatch(message, verified + 1, message.frames.length, live.records);
+    packets++;
+    for (const frame of message.frames) {
+      guest.send({ type: 'ack', tick: frame.tick, digest: 'native-' + frame.tick });
+      verified++;
+    }
+  }
+  assert.ok(verified >= 48);
+  assert.ok(packets <= Math.ceil(verified / 4));
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, verified);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('per-frame ACK progress in a batch cannot extend the separate final-barrier budget', async (t) => {
+  const fixtureValue = await fixture32(t, { maxInFlightFrames: 1, maxCatchupBarrierMs: 200, ackTimeoutMs: 1000 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue);
+  const records = new Map();
+  const held = await advanceSolo(host, first, 3, records);
+  assert.equal(held.tick, 4);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  await guest.next('prepare');
+  guest.send({ type: 'ready', replayBatch: 4 });
+  assert.equal((await syncState(host, 'paused')).tick, 4);
+  host.send({ type: 'ack', tick: 4, digest: 'native-4' });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 4, records);
+  guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  guest.send({ type: 'ack', tick: 2, digest: 'native-2' });
+  assert.equal((await guest.next('paused')).reason, 'catchup_barrier_timeout');
+  assert.equal((await syncState(host, 'resumed')).joined, false);
+  const next = await host.next('frame');
+  assert.equal(next.tick, 5);
+  assert.equal(next.join, undefined);
+  assert.equal(fixtureValue.service.catchupStats().completed, 0);
+  assert.equal(fixtureValue.service.catchupStats().failed, 1);
+});
+
+
+// Actual bounded64 defaults. Existing regression fixtures above explicitly
+// retain32/64, so their previous scenarios and legacy negotiations survive.
+test('default window128 issues two packets64 and refills far history only after64 verified ACK credits', async (t) => {
+  const fixtureValue = await fixture(t, { maxInFlightFrames: 1 });
+  const { host, invite, prepared, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const records = new Map();
+  const held = await advanceSolo(host, first, 192, records);
+  assert.equal(held.tick, 193);
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+  await guest.next('joined');
+  assert.deepEqual(await guest.next('prepare'), {
+    ...prepared, replay: true, replayBatchMax: 8, replayBatchExtendedMax: 64,
+  });
+  guest.send({ type: 'ready', replayBatch: 64 });
+  assertReplayBatch(await guest.next('replay_frames'), 1, 64, records);
+  assertReplayBatch(await guest.next('replay_frames'), 65, 64, records);
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  for (let tick = 1; tick <= 63; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  guest.send({ type: 'ack', tick: 64, digest: 'native-64' });
+  assertReplayBatch(await guest.next('replay_frames'), 129, 64, records);
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  for (let tick = 65; tick <= 184; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  await guest.absent(['frame', 'replay_frames', 'join_sync']);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 0, 'A nine-frame gap must keep the host live');
+  guest.send({ type: 'ack', tick: 185, digest: 'native-185' });
+  const paused = await syncState(host, 'paused');
+  assert.equal(paused.tick, 193); assert.equal(paused.verified, 185);
+  assert.equal(paused.tick - paused.verified, 8);
+  assert.deepEqual(await syncState(guest, 'paused'), paused);
+  await guest.absent(['frame', 'replay_frames'], 25);
+  host.send({ type: 'ack', tick: 193, digest: 'native-193' });
+  assertReplayBatch(await guest.next('replay_frames'), 193, 1, records);
+  for (let tick = 186; tick <= 193; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+  assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: 193 });
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await host.next('frame');
+  assert.deepEqual(spawn, { type: 'frame', tick: 194, p1: 0, p2: 0, join: { slot: 2, character: 2 } });
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, 193);
+  assert.equal(fixtureValue.service.catchupStats().barriers, 1);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('available boundary9/31/32/33/63/64/65 keeps full64 and adaptive8 groups and flushes only the verified fixed tail', async (t) => {
+  const scenarios = [
+    [9, [8]],
+    [31, [8, 8, 8]],
+    [32, [8, 8, 8, 8]],
+    [33, [8, 8, 8, 8]],
+    [63, [8, 8, 8, 8, 8, 8, 8]],
+    [64, [64]],
+    [65, [64]],
+  ];
+  for (const [available, sizes] of scenarios) {
+    await t.test('verified tail ' + available, async (subtest) => {
+      const fixtureValue = await fixture(subtest, { maxInFlightFrames: 1 });
+      const { host, invite, first } = await beginSolo(subtest, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+      const records = new Map();
+      const held = await advanceSolo(host, first, available, records);
+      const target = available + 1;
+      assert.equal(held.tick, target);
+      const guest = await connect(subtest, fixtureValue);
+      guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH, character: 2 });
+      await guest.next('joined');
+      const offer = await guest.next('prepare');
+      assert.equal(offer.replayBatchMax, 8); assert.equal(offer.replayBatchExtendedMax, 64);
+      guest.send({ type: 'ready', replayBatch: 64 });
+      let sent = 0;
+      for (const size of sizes) {
+        assertReplayBatch(await guest.next('replay_frames'), sent + 1, size, records);
+        sent += size;
+      }
+      await guest.absent(['frame', 'replay_frames', 'join_sync'], 15);
+      const barrierAck = target - 8;
+      for (let tick = 1; tick < barrierAck; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+      await guest.absent('join_sync', 15);
+      guest.send({ type: 'ack', tick: barrierAck, digest: 'native-' + barrierAck });
+      const paused = await syncState(host, 'paused');
+      assert.equal(paused.tick, target); assert.equal(paused.verified, barrierAck);
+      assert.deepEqual(await syncState(guest, 'paused'), paused);
+      await guest.absent(['frame', 'replay_frames'], 15);
+      host.send({ type: 'ack', tick: target, digest: 'native-' + target });
+      assertReplayBatch(await guest.next('replay_frames'), sent + 1, target - sent, records);
+      for (let tick = barrierAck + 1; tick <= target; tick++) guest.send({ type: 'ack', tick, digest: 'native-' + tick });
+      assert.deepEqual(await guest.next('caught_up'), { type: 'caught_up', tick: target });
+      assert.equal((await syncState(host, 'resumed')).joined, true);
+      const spawn = await host.next('frame');
+      assert.equal(spawn.tick, target + 1); assert.deepEqual(spawn.join, { slot: 2, character: 2 });
+      assert.deepEqual(await guest.next('frame'), spawn);
+      assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, target);
+      assert.equal(fixtureValue.service.catchupStats().completed, 1);
+    });
+  }
+});
+
+test('batch64 converges on a persistently moving host through adaptive groups8', async (t) => {
+  const fixtureValue = await fixture(t, { maxInFlightFrames: 1, maxCatchupMs: 20000, ackTimeoutMs: 3000 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const records = new Map();
+  const held = await advanceSolo(host, first, 128, records);
+  const timers = new Set();
+  let lastHostTick = held.tick;
+  // Artificial socket ACK pacing verifies convergence, not native FPS or
+  // the duration of one real64-frame browser task.
+  const acknowledgeLater = frame => {
+    if (frame.join) return;
+    const timer = setTimeout(() => {
+      timers.delete(timer);
+      if (host.ws.readyState === WebSocket.OPEN)
+        host.send({ type: 'ack', tick: frame.tick, digest: 'native-' + frame.tick });
+    }, 45);
+    timers.add(timer);
+  };
+  const onHostFrame = data => {
+    const frame = JSON.parse(data.toString());
+    if (frame.type !== 'frame') return;
+    records.set(frame.tick, frame); lastHostTick = frame.tick;
+    acknowledgeLater(frame);
+  };
+  host.ws.on('message', onHostFrame);
+  t.after(() => { host.ws.off('message', onHostFrame); for (const timer of timers) clearTimeout(timer); });
+  const guest = await connect(t, fixtureValue);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined'); await guest.next('prepare');
+  const beforeReady = lastHostTick;
+  guest.send({ type: 'ready', replayBatch: 64 });
+  acknowledgeLater(held);
+  let verified = 0, caught;
+  const sizes = [];
+  for (;;) {
+    const message = await guest.next(['replay_frames', 'caught_up', 'error', 'paused'], 21000);
+    assert.notEqual(message.type, 'error'); assert.notEqual(message.type, 'paused');
+    if (message.type === 'caught_up') { caught = message; break; }
+    sizes.push(message.frames.length);
+    assertReplayBatch(message, verified + 1, message.frames.length, records);
+    assert.ok(message.frames.length <= 64);
+    for (const frame of message.frames) {
+      await new Promise(resolve => setTimeout(resolve, 22));
+      guest.send({ type: 'ack', tick: frame.tick, digest: 'native-' + frame.tick });
+      verified++;
+    }
+  }
+  assert.deepEqual(sizes.slice(0, 2), [64, 64]);
+  assert.ok(sizes.includes(8), 'The moving verified tip must use adaptive groups8');
+  const paused = await syncState(host, 'paused');
+  assert.ok(paused.tick - paused.verified <= 8);
+  assert.ok(paused.tick >= beforeReady + 20, 'Replay must not stop the moving host early');
+  assert.equal(caught.tick, verified); assert.equal(caught.tick, paused.tick);
+  assert.equal((await syncState(host, 'resumed')).joined, true);
+  const spawn = await hostFrameAtLeast(host, caught.tick + 1);
+  assert.equal(spawn.tick, caught.tick + 1); assert.equal(spawn.join.slot, 2);
+  assert.deepEqual(await guest.next('frame'), spawn);
+  assert.equal(fixtureValue.service.catchupStats().failed, 0);
+  assert.equal(fixtureValue.service.catchupStats().completed, 1);
+});
+
+test('window128 retains exact issued ACK entitlement and isolates repeated invalid guests from the host', async (t) => {
+  const fixtureValue = await fixture(t, { maxInFlightFrames: 1 });
+  const { host, invite, first } = await beginSolo(t, fixtureValue, { settings: { ...SETTINGS, speed: 2 } });
+  const records = new Map();
+  const held = await advanceSolo(host, first, 130, records);
+  const cases = [
+    ['duplicate', { type: 'ack', tick: 1, digest: 'native-1' }, 'invalid_replay_ack'],
+    ['reordered issued frame', { type: 'ack', tick: 128, digest: 'native-128' }, 'invalid_replay_ack'],
+    ['verified but unissued frame', { type: 'ack', tick: 129, digest: 'native-129' }, 'invalid_replay_ack'],
+    ['wrong digest', { type: 'ack', tick: 2, digest: 'wrong-native-2' }, 'invalid_replay_ack'],
+    ['extra field', { type: 'ack', tick: 2, digest: 'native-2', extra: true }, 'invalid_message'],
+  ];
+  for (const [index, [label, invalid, code]] of cases.entries()) {
+    const guest = await connect(t, fixtureValue);
+    guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+    await guest.next('joined'); await guest.next('prepare');
+    guest.send({ type: 'ready', replayBatch: 64 });
+    assertReplayBatch(await guest.next('replay_frames'), 1, 64, records);
+    assertReplayBatch(await guest.next('replay_frames'), 65, 64, records);
+    guest.send({ type: 'ack', tick: 1, digest: 'native-1' });
+    guest.send(invalid);
+    assert.equal((await guest.next('error')).code, code, label);
+    assert.equal((await guest.next('paused')).reason,
+      code === 'invalid_message' ? 'protocol_error' : 'replay_digest_mismatch', label);
+    assert.equal(fixtureValue.service.catchupStats().verifiedReplayFrames, index + 1, label);
+    assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+    assert.equal(fixtureValue.service.catchupStats().completed, 0);
+    assert.equal(fixtureValue.service.stats().rooms, 1);
+  }
+  const next = await advanceSolo(host, held, 1, records);
+  assert.equal(next.tick, 132); assert.equal(next.join, undefined);
+});
+
+test('default64 rejects ready selections above64 without pausing or resetting the solo host', async (t) => {
+  for (const replayBatch of [65, 128]) await t.test('selection ' + replayBatch, async (subtest) => {
+    const fixtureValue = await fixture(subtest, { maxInFlightFrames: 1 });
+    const { host, invite, first } = await beginSolo(subtest, fixtureValue);
+    const guest = await connect(subtest, fixtureValue);
+    guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+    await guest.next('joined');
+    const offer = await guest.next('prepare');
+    assert.equal(offer.replayBatchMax, 8); assert.equal(offer.replayBatchExtendedMax, 64);
+    guest.send({ type: 'ready', replayBatch });
+    assert.equal((await guest.next('error')).code, 'invalid_ready');
+    assert.equal((await guest.next('paused')).reason, 'protocol_error');
+    assert.equal(fixtureValue.service.stats().rooms, 1);
+    assert.equal(fixtureValue.service.catchupStats().barriers, 0);
+    const next = await advanceSolo(host, first, 1);
+    assert.equal(next.tick, 2); assert.equal(next.join, undefined);
+    await host.absent('join_sync', 20);
+  });
+});
+
+// Transport contracts use deliberate synthetic digests. Native restore and
+// exact original-world equivalence are qualified by the separate browser run.
+async function checkpointCapableSolo(t, options = {}) {
+  const fx = await fixture(t, { maxInFlightFrames: 1, ...options });
+  const host = await connect(t, fx);
+  host.send({ ...CREATE, listed: true, dropIn: true, settings: { ...SETTINGS, speed: 2 } });
+  const invite = await host.next('joined');
+  host.send({ type: 'start' }); await host.next('prepare');
+  host.send({ type: 'ready', checkpointVersion: 1 });
+  const first = await host.next('frame');
+  return { ...fx, host, invite, first };
+}
+
+test('checkpoint history threshold must be a bounded positive integer', () => {
+  for (const value of [0, -1, NaN, Infinity, 1.5, '250', 2147483648]) {
+    assert.throws(() => createOriginalServer({ minCheckpointHistoryTicks: value }), /Invalid minCheckpointHistoryTicks/);
+  }
+  assert.doesNotThrow(() => createOriginalServer({ minCheckpointHistoryTicks: 1 }));
+  assert.doesNotThrow(() => createOriginalServer({ minCheckpointHistoryTicks: 250 }));
+});
+
+test('default short history replays from tick one even when both peers support checkpoint and keeps the host live', async t => {
+  const f = await checkpointCapableSolo(t);
+  const records = new Map();
+  let held = await advanceSolo(f.host, f.first, 25, records);
+  assert.equal(held.tick, 26, 'Exactly twenty-five ticks have host ACKs; tick26 remains issued only');
+  const guest = await connect(t, f);
+  guest.send({ type: 'join_open', room: f.invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).checkpointVersion, 1);
+  guest.send({ type: 'ready', checkpointVersion: 1 });
+  assert.deepEqual(await guest.next(['frame', 'checkpoint_wait']), records.get(1));
+  for (let tick = 2; tick <= 25; tick++) assert.deepEqual(await guest.next('frame'), records.get(tick));
+  await guest.absent('checkpoint_wait', 20);
+  await f.host.absent('checkpoint_request', 20);
+  assert.equal(f.service.catchupStats().checkpointRequests, 0);
+  assert.equal(f.service.catchupStats().verifiedReplayFrames, 0, 'Issued replay is not a synthetic guest ACK');
+  assert.equal(f.service.catchupStats().barriers, 0);
+  held = await advanceSolo(f.host, held, 2, records);
+  assert.equal(held.tick, 28, 'The sole host continues while the guest has not ACKed history');
+  for (let tick = 26; tick <= 27; tick++) assert.deepEqual(await guest.next('frame'), records.get(tick));
+  assert.equal(f.service.stats().rooms, 1);
+  assert.equal(f.service.catchupStats().completed, 0);
+  assert.equal(f.service.catchupStats().failed, 0);
+});
+
+test('checkpoint selection uses verified history at the configured boundary, not the last issued tick', async t => {
+  for (const verifiedTicks of [49, 50]) await t.test('verified ' + verifiedTicks, async subtest => {
+    const f = await checkpointCapableSolo(subtest, { minCheckpointHistoryTicks: 50 });
+    const records = new Map();
+    const held = await advanceSolo(f.host, f.first, verifiedTicks, records);
+    assert.equal(held.tick, verifiedTicks + 1, 'The next issued frame deliberately remains unacknowledged');
+    const guest = await connect(subtest, f);
+    guest.send({ type: 'join_open', room: f.invite.room, swfHash: SWF_HASH });
+    await guest.next('joined');
+    assert.equal((await guest.next('prepare')).checkpointVersion, 1);
+    guest.send({ type: 'ready', checkpointVersion: 1 });
+    const selected = await guest.next(['frame', 'checkpoint_wait']);
+    if (verifiedTicks === 49) {
+      assert.deepEqual(selected, records.get(1), 'Issued tick50 alone must not select checkpoint');
+      await f.host.absent('checkpoint_request', 20);
+      await guest.absent('checkpoint_wait', 20);
+      assert.equal(f.service.catchupStats().checkpointRequests, 0);
+    } else {
+      assert.equal(selected.type, 'checkpoint_wait', 'Verified tick50 must select checkpoint');
+      const request = await f.host.next('checkpoint_request');
+      assert.equal(request.id, selected.id);
+      assert.equal(request.minimumTick, 51);
+      assert.equal(f.service.catchupStats().checkpointRequests, 1);
+      await guest.absent('frame', 20);
+    }
+    const next = await advanceSolo(f.host, held, 1, records);
+    assert.equal(next.tick, verifiedTicks + 2, 'Both selected paths preserve ongoing solo host steps');
+    assert.equal(f.service.catchupStats().barriers, 0);
+    assert.equal(f.service.catchupStats().verifiedReplayFrames, 0);
+    if (verifiedTicks === 49) {
+      await f.host.absent('checkpoint_request', 20);
+      assert.equal(f.service.catchupStats().checkpointRequests, 0, 'A selected short replay does not switch after crossing the threshold');
+    }
+  });
+});
+
+async function checkpointFixture(t, options = {}) {
+  const fx = await checkpointCapableSolo(t, { minCheckpointHistoryTicks: 1, ...options });
+  const { host, invite } = fx;
+  let held = await advanceSolo(host, fx.first, 25);
+  const guest = await connect(t, fx);
+  guest.send({ type: 'join_open', room: invite.room, swfHash: SWF_HASH });
+  await guest.next('joined');
+  assert.equal((await guest.next('prepare')).checkpointVersion, 1);
+  guest.send({ type: 'ready', checkpointVersion: 1 });
+  const waiting = await guest.next('checkpoint_wait');
+  const request = await host.next('checkpoint_request');
+  assert.equal(waiting.id, request.id);
+  held = await advanceSolo(host, held, 25);
+  assert.equal(held.tick, 51);
+  const bytes = Buffer.alloc(40000, 37);
+  const header = { type: 'checkpoint_begin', id: request.id, version: 1, tick: 50,
+    digest: 'native-50', encoding: 'plain', bytes: bytes.length, uncompressedBytes: bytes.length,
+    sha256: createHash('sha256').update(bytes).digest('hex'), chunks: 2 };
+  return { ...fx, host, guest, held, bytes, header };
+}
+
+async function sendCheckpoint(f, bytes = f.bytes) {
+  f.host.send(f.header);
+  for (let offset = 0, index = 0; offset < bytes.length; offset += 32768, index++) {
+    assert.equal((await f.host.next('checkpoint_credit')).index, index);
+    f.host.send({ type: 'checkpoint_chunk', id: f.header.id, index, data: bytes.subarray(offset, offset + 32768).toString('base64') });
+  }
+  assert.equal((await f.host.next('checkpoint_credit')).index, f.header.chunks);
+  f.host.send({ type: 'checkpoint_end', id: f.header.id });
+}
+
+test('checkpoint attestation skips no synthetic ACKs and verifies the real ordered tail before spawn', async t => {
+  const f = await checkpointFixture(t);
+  assert.equal(f.service.catchupStats().barriers, 0, 'Capturing/uploading must leave the solo host live');
+  await sendCheckpoint(f);
+  assert.deepEqual(await f.guest.next('checkpoint_begin'), f.header);
+  assert.equal((await f.guest.next('checkpoint_chunk')).index, 0);
+  assert.equal((await f.guest.next('checkpoint_chunk')).index, 1);
+  await f.guest.next('checkpoint_end');
+  assert.equal(f.service.catchupStats().verifiedReplayFrames, 0);
+  f.guest.send({ type: 'checkpoint_applied', id: f.header.id, tick: 50, digest: 'native-50', sha256: f.header.sha256 });
+  await f.host.next('checkpoint_cancel');
+  assert.equal((await syncState(f.host, 'paused')).tick, 51);
+  f.host.send({ type: 'ack', tick: 51, digest: 'native-51' });
+  assert.deepEqual(await f.guest.next('frame'), f.held);
+  f.guest.send({ type: 'ack', tick: 51, digest: 'native-51' });
+  assert.equal((await f.guest.next('caught_up')).tick, 51);
+  const join = await f.guest.next('frame');
+  assert.equal(join.tick, 52); assert.equal(join.join.slot, 2);
+  assert.deepEqual(await f.host.next('frame'), join);
+  assert.equal(f.service.catchupStats().restoredCheckpoints, 1);
+  assert.equal(f.service.catchupStats().verifiedReplayFrames, 1);
+});
+
+test('corrupt checkpoint payload cancels only the guest and never freezes the solo host', async t => {
+  const f = await checkpointFixture(t);
+  const bad = Buffer.from(f.bytes); bad[0] ^= 1;
+  await sendCheckpoint(f, bad);
+  assert.equal((await f.guest.next('paused')).reason, 'invalid_checkpoint_end');
+  assert.equal((await f.host.next('checkpoint_cancel')).id, f.header.id);
+  assert.equal(f.service.catchupStats().restoredCheckpoints, 0);
+  assert.equal(f.service.catchupStats().barriers, 0);
+  assert.equal(f.service.stats().rooms, 1);
+  assert.equal((await advanceSolo(f.host, f.held, 1)).tick, 52);
+  await f.guest.absent('checkpoint_begin', 20);
+});
+
+test('unavailable optional checkpoint explicitly falls back to verified history from tick one', async t => {
+  const f = await checkpointFixture(t);
+  f.host.send({ type: 'checkpoint_unavailable', id: f.header.id });
+  assert.equal((await f.guest.next('checkpoint_fallback')).id, f.header.id);
+  await f.host.next('checkpoint_cancel');
+  assert.equal((await f.guest.next('frame')).tick, 1);
+  assert.equal(f.service.catchupStats().restoredCheckpoints, 0);
+  assert.equal(f.service.catchupStats().checkpointFallbacks, 1);
+  assert.equal(f.service.catchupStats().barriers, 0);
+  assert.equal((await advanceSolo(f.host, f.held, 1)).tick, 52);
+});
+
+test('maximum checkpoint transfer keeps the host live while a real guest socket is paused', async t => {
+  const f = await checkpointFixture(t, { ackTimeoutMs: 5000 });
+  f.bytes = Buffer.alloc(4 * 1024 * 1024);
+  for (let i = 0; i < f.bytes.length; i++) f.bytes[i] = i % 251;
+  f.header = { ...f.header, bytes: f.bytes.length, uncompressedBytes: f.bytes.length,
+    chunks: f.bytes.length / 32768, sha256: createHash('sha256').update(f.bytes).digest('hex') };
+  f.guest.ws.pause();
+  const resume = setTimeout(() => f.guest.ws.resume(), 300);
+  t.after(() => { clearTimeout(resume); f.guest.ws.resume(); });
+  const upload = sendCheckpoint(f);
+  const live = await advanceSolo(f.host, f.held, 5);
+  assert.equal(live.tick, 56);
+  assert.equal(live.join, undefined);
+  assert.equal(f.service.catchupStats().barriers, 0);
+  await upload;
+  assert.deepEqual(await f.guest.next('checkpoint_begin'), f.header);
+  const parts = [];
+  for (let index = 0; index < f.header.chunks; index++) {
+    const part = await f.guest.next('checkpoint_chunk');
+    assert.equal(part.index, index); assert.equal(part.id, f.header.id);
+    parts.push(Buffer.from(part.data, 'base64'));
+  }
+  await f.guest.next('checkpoint_end');
+  assert.deepEqual(Buffer.concat(parts), f.bytes);
+  assert.equal(f.service.catchupStats().verifiedReplayFrames, 0);
+  assert.equal(f.service.catchupStats().restoredCheckpoints, 0);
+  assert.equal(f.service.catchupStats().failed, 0);
+  assert.equal((await advanceSolo(f.host, live, 1)).tick, 57);
+  await f.host.absent('join_sync', 20);
+});

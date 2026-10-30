@@ -1,0 +1,1351 @@
+import http from 'node:http';
+import path from 'node:path';
+import { createReadStream } from 'node:fs';
+import { realpath, stat } from 'node:fs/promises';
+import { pipeline } from 'node:stream/promises';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
+import { WebSocket, WebSocketServer } from 'ws';
+import { createTelemetry, readPlayerIdentity } from './telemetry.mjs';
+import { advanceOriginalFrameDeadline } from './frame-pacer.mjs';
+
+const FRAME_MS_BY_SPEED = [80, 40, 20];
+const DEFAULT_SETTINGS = Object.freeze({ difficulty: 0, speed: 1, devils: 1, collisions: 1, damage: 1, gameAmount: 1 });
+const SETTING_MAXIMUM = { difficulty: 3, speed: 2, devils: 1, collisions: 1, damage: 1, gameAmount: 3 };
+const COMPLETIONS = new Set(['player dead', 'player1 wins', 'player2 wins', 'quit']);
+const ACTION_BITS = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
+const ACTION_MASK = ACTION_BITS.reduce((mask, bit) => mask | bit, 0);
+const MAX_SEQUENCE = 2147483647;
+const HASH = /^[a-fA-F0-9]{64}$/;
+const ROOM_ID = /^[A-Za-z0-9_-]{12}$/;
+const TOKEN = /^[A-Za-z0-9_-]{43}$/;
+const MAP = /^[A-Za-z0-9][A-Za-z0-9_ -]{0,63}$/;
+const DIRECTORY_LIMIT = 128;
+const CHECKPOINT_CHUNK_BYTES = 32768;
+const MAX_CHECKPOINT_BYTES = 4 * 1024 * 1024;
+const MAX_CHECKPOINT_RAW_BYTES = 16 * 1024 * 1024;
+const CHECKPOINT_WIRE_BYTES = 65536;
+const MIME = new Map([
+  ['.html', 'text/html; charset=utf-8'],
+  ['.js', 'text/javascript; charset=utf-8'],
+  ['.mjs', 'text/javascript; charset=utf-8'],
+  ['.css', 'text/css; charset=utf-8'],
+  ['.json', 'application/json; charset=utf-8'],
+  ['.map', 'application/json; charset=utf-8'],
+  ['.wasm', 'application/wasm'],
+  ['.swf', 'application/x-shockwave-flash'],
+  ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
+  ['.jpeg', 'image/jpeg'],
+  ['.gif', 'image/gif'],
+  ['.webp', 'image/webp'],
+  ['.svg', 'image/svg+xml'],
+  ['.ico', 'image/x-icon'],
+  ['.mp3', 'audio/mpeg'],
+  ['.ogg', 'audio/ogg'],
+  ['.wav', 'audio/wav'],
+  ['.woff2', 'font/woff2'],
+  ['.txt', 'text/plain; charset=utf-8'],
+]);
+
+function exactKeys(value, keys) {
+  return Object.keys(value).length === keys.length
+    && keys.every((key) => Object.hasOwn(value, key));
+}
+
+function readSettings(value) {
+  if (value === undefined) return { ...DEFAULT_SETTINGS };
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || !exactKeys(value, Object.keys(DEFAULT_SETTINGS))
+    || !Object.entries(SETTING_MAXIMUM).every(([key, maximum]) =>
+      Number.isInteger(value[key]) && value[key] >= 0 && value[key] <= maximum)) return null;
+  return { ...value };
+}
+
+function validRoomName(value) {
+  return typeof value === 'string' && value.length >= 1 && value.length <= 48
+    && value.trim() === value && !/[\u0000-\u001f\u007f]/u.test(value);
+}
+
+function within(root, target) {
+  const relative = path.relative(root, target);
+  return relative === '' || (
+    relative !== '..'
+    && !relative.startsWith(`..${path.sep}`)
+    && !path.isAbsolute(relative)
+  );
+}
+
+function sameToken(expected, supplied) {
+  return typeof supplied === 'string'
+    && TOKEN.test(supplied)
+    && timingSafeEqual(Buffer.from(expected, 'ascii'), Buffer.from(supplied, 'ascii'));
+}
+
+function reply(response, status, body, head = false, type = 'text/plain; charset=utf-8') {
+  response.writeHead(status, {
+    'Content-Type': type,
+    'Content-Length': Buffer.byteLength(body),
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
+  });
+  response.end(head ? undefined : body);
+}
+
+/**
+ * Coordinates client-executed original-SWF lockstep. This service does not
+ * execute a world simulation or establish that a client digest is truthful.
+ */
+export function createOriginalServer(options = {}) {
+  const config = {
+    host: '0.0.0.0',
+    port: 7777,
+    webRoot: 'dist/original-web',
+    maxRooms: 32,
+    maxConnections: 128,
+    maxPayloadBytes: 1024,
+    messagesPerSecond: 140,
+    messageBurst: 200,
+    authenticationTimeoutMs: 10000,
+    lobbyTtlMs: 300000,
+    roomTtlMs: 14400000,
+    readyTimeoutMs: 195000,
+    ackTimeoutMs: 5000,
+    maxInFlightFrames: 2,
+    maxReplayInFlightFrames: 128,
+    maxReplayBatchFrames: 64,
+    maxHistoryFrames: 120000,
+    maxCatchupBarrierMs: 1500,
+    maxCatchupMs: 180000,
+    maxCheckpointMs: 30000,
+    minCheckpointHistoryTicks: 250,
+    inputTimeoutMs: 600,
+    heartbeatMs: 15000,
+    housekeepingMs: 1000,
+    shutdownGraceMs: 1000,
+    metricsIntervalMs: 30000,
+    ...options,
+  };
+  if (typeof config.host !== 'string' || !config.host || config.host.includes('\u0000')) {
+    throw new TypeError('Invalid host');
+  }
+  if (!Number.isInteger(config.port) || config.port < 0 || config.port > 65535) {
+    throw new TypeError('Invalid port');
+  }
+  if (typeof config.webRoot !== 'string' || !config.webRoot) {
+    throw new TypeError('Invalid web root');
+  }
+  for (const key of [
+    'maxRooms', 'maxConnections', 'maxPayloadBytes', 'messagesPerSecond',
+    'messageBurst', 'authenticationTimeoutMs', 'lobbyTtlMs', 'roomTtlMs',
+    'readyTimeoutMs', 'ackTimeoutMs', 'heartbeatMs', 'housekeepingMs',
+    'shutdownGraceMs', 'maxInFlightFrames', 'maxReplayInFlightFrames', 'maxReplayBatchFrames', 'maxHistoryFrames', 'inputTimeoutMs',
+    'maxCatchupBarrierMs', 'maxCatchupMs', 'maxCheckpointMs', 'minCheckpointHistoryTicks',
+  ]) {
+    if (!Number.isSafeInteger(config[key]) || config[key] < 1 || config[key] > 2147483647) {
+      throw new TypeError(`Invalid ${key}`);
+    }
+  }
+  if (config.maxInFlightFrames > 32) throw new TypeError('Invalid maxInFlightFrames');
+  if (config.maxReplayInFlightFrames > 128) throw new TypeError('Invalid maxReplayInFlightFrames');
+  if (config.maxReplayBatchFrames > 64) throw new TypeError('Invalid maxReplayBatchFrames');
+  if (config.maxCatchupMs > 180000) throw new TypeError('Invalid maxCatchupMs');
+  if (config.maxCatchupBarrierMs > 5000) throw new TypeError('Invalid maxCatchupBarrierMs');
+  if (config.maxCheckpointMs > 30000) throw new TypeError('Invalid maxCheckpointMs');
+
+  const rooms = new Map();
+  const peers = new Set();
+  const telemetry = createTelemetry({ rooms, peers, intervalMs: config.metricsIntervalMs, write: config.logger });
+  const catchupCounters = {
+    started: 0, completed: 0, failed: 0, verifiedReplayFrames: 0,
+    historyCapped: 0, barriers: 0, maximumBarrierMs: 0,
+    checkpointRequests: 0, restoredCheckpoints: 0, checkpointBytes: 0, checkpointFallbacks: 0,
+  };
+  let canonicalRoot;
+  let ready = false;
+  let started = false;
+  let stopping = false;
+  let closePromise;
+  let directoryQueued = false;
+
+  function send(peer, message) {
+    if (!peer || peer.ws.readyState !== WebSocket.OPEN) return;
+    if (peer.ws.bufferedAmount > 65536) {
+      failPeer(peer, 'backpressure');
+      peer.ws.terminate();
+      return;
+    }
+    try {
+      peer.ws.send(JSON.stringify(message), (error) => {
+        if (error) {
+          failPeer(peer, 'send_failed');
+          peer.ws.terminate();
+        }
+      });
+    } catch {
+      failPeer(peer, 'send_failed');
+      peer.ws.terminate();
+    }
+  }
+
+  function expirationReason(room, now) {
+    if (now - room.createdAt >= config.roomTtlMs) return 'room_expired';
+    if (room.phase === 'lobby' && now - room.lastActivity >= config.lobbyTtlMs) return 'lobby_timeout';
+    return null;
+  }
+
+  function canJoinRoom(room, now) {
+    const joinablePhase = room.phase === 'lobby'
+      || (room.phase === 'playing' && room.dropIn && room.activePlayers === 1
+        && room.historyAvailable && room.terminalTick === null);
+    return joinablePhase && !room.players[1]
+      && room.players[0]?.ws.readyState === WebSocket.OPEN && !room.players[0].rejected
+      && !expirationReason(room, now);
+  }
+
+  function openRoom(room, now) {
+    return room.listed && canJoinRoom(room, now);
+  }
+
+  function sendRooms(peer, now = performance.now()) {
+    if (!peer.browseHash || peer.room || peer.rejected || stopping) return;
+    const listed = [];
+    for (const room of rooms.values()) {
+      if (room.swfHash !== peer.browseHash || !openRoom(room, now)) continue;
+      // Copy only public display fields. Invitation secrets never enter a list.
+      listed.push({ room: room.id, name: room.name, mode: room.mode, map: room.map, players: 1, capacity: 2 });
+      if (listed.length === DIRECTORY_LIMIT) break;
+    }
+    send(peer, { type: 'rooms', rooms: listed });
+  }
+
+  function refreshDirectory() {
+    if (directoryQueued || stopping) return;
+    directoryQueued = true;
+    // Coalesce synchronous membership changes; a send failure can retire a room
+    // without recursively broadcasting or sending a list after a successful join.
+    queueMicrotask(() => {
+      directoryQueued = false;
+      const now = performance.now();
+      for (const peer of peers) sendRooms(peer, now);
+    });
+  }
+
+  function browse(peer, swfHash, now) {
+    peer.browseHash = swfHash.toLowerCase();
+    peer.browseUntil = now + config.lobbyTtlMs;
+    peer.completed = false;
+  }
+
+  function prepareMessage(room, replay = false) {
+    const replayBatchMax = Math.min(config.maxReplayBatchFrames, config.maxReplayInFlightFrames);
+    return {
+      type: 'prepare', seed: room.seed, mode: room.mode, map: room.map,
+      characters: [...room.characters], swfHash: room.swfHash,
+      settings: { ...room.settings }, frameMs: room.frameMs,
+      initialPlayers: room.initialPlayers, replay, personalProgression: room.dropIn,
+      // Existing clients validate this known field against their eight-frame cap.
+      // They ignore the optional extension and can still select their old size.
+      ...(replay ? { replayBatchMax: Math.min(8, replayBatchMax),
+        ...(replayBatchMax > 8 ? { replayBatchExtendedMax: replayBatchMax } : {}) } : {}),
+      ...(replay && room.players[0]?.checkpointVersion === 1 ? { checkpointVersion: 1 } : {}),
+    };
+  }
+
+  function finishJoinBarrier(room) {
+    const previous = { tick: room.joinBarrierTick, announced: room.joinSyncAnnounced };
+    if (room.joinBarrierAt !== null) {
+      catchupCounters.maximumBarrierMs = Math.max(
+        catchupCounters.maximumBarrierMs, performance.now() - room.joinBarrierAt,
+      );
+      room.joinBarrierAt = null;
+    }
+    room.joinBarrierTick = null;
+    room.joinBarrierDeadline = null;
+    room.joinSyncAnnounced = false;
+    return previous;
+  }
+
+  function clearCatchupTimers(peer) {
+    for (const key of ['catchupTimer', 'catchupBarrierTimer', 'catchupAbsoluteTimer']) {
+      clearTimeout(peer[key]);
+      peer[key] = undefined;
+    }
+  }
+
+  function clearCheckpoint(peer) {
+    const transfer = peer.checkpoint;
+    if (!transfer) return;
+    clearTimeout(transfer.timer);
+    peer.checkpoint = null;
+    const host = peer.room?.players[0];
+    if (host) {
+      host.retiredCheckpoints.push(transfer.id);
+      if (host.retiredCheckpoints.length > 4) host.retiredCheckpoints.shift();
+      send(host, { type: 'checkpoint_cancel', id: transfer.id });
+    }
+  }
+
+  function startCheckpoint(room, peer) {
+    const id = randomBytes(12).toString('base64url');
+    peer.checkpoint = { id, minimumTick: room.tick, header: null, parts: [], received: 0, relaying: false, forwarded: false,
+      timer: setTimeout(() => {
+        if (peer.room === room && peer.catchingUp && peer.checkpoint?.id === id) cancelCatchup(room, 'checkpoint_timeout');
+      }, config.maxCheckpointMs) };
+    armCatchupTimeout(peer, config.maxCheckpointMs);
+    catchupCounters.checkpointRequests++;
+    send(peer, { type: 'checkpoint_wait', id, timeoutMs: config.maxCheckpointMs });
+    if (peer.catchingUp && peer.room === room) {
+      send(room.players[0], { type: 'checkpoint_request', id, minimumTick: peer.checkpoint.minimumTick });
+    }
+  }
+
+  function checkpointFallback(room, peer) {
+    const id = peer.checkpoint?.id;
+    if (!id) return;
+    clearCheckpoint(peer);
+    catchupCounters.checkpointFallbacks++;
+    send(peer, { type: 'checkpoint_fallback', id });
+    armCatchupTimeout(peer, config.ackTimeoutMs);
+    pumpCatchup(room);
+  }
+
+  function currentHostTransfer(peer, message) {
+    const room = peer.room;
+    const guest = room?.players[1];
+    if (peer.slot !== 1 || room?.phase !== 'playing' || room.activePlayers !== 1
+      || !guest?.catchingUp || !guest.checkpoint || guest.checkpoint.id !== message.id) return null;
+    return { room, guest, transfer: guest.checkpoint };
+  }
+
+  function validCheckpointHeader(value, transfer, room) {
+    const entry = room.history[value.tick - 1];
+    return exactKeys(value, ['type', 'id', 'version', 'tick', 'digest', 'encoding', 'bytes', 'uncompressedBytes', 'sha256', 'chunks'])
+      && value.version === 1 && Number.isSafeInteger(value.tick) && value.tick >= Math.max(25, transfer.minimumTick)
+      && value.tick % 25 === 0 && value.tick <= room.verifiedTick && entry?.ack.complete === null
+      && value.digest === entry?.ack.digest && (value.encoding === 'deflate' || value.encoding === 'plain')
+      && Number.isSafeInteger(value.bytes) && value.bytes > 0 && value.bytes <= MAX_CHECKPOINT_BYTES
+      && Number.isSafeInteger(value.uncompressedBytes) && value.uncompressedBytes > 0
+      && value.uncompressedBytes <= MAX_CHECKPOINT_RAW_BYTES
+      && (value.encoding !== 'plain' || value.bytes === value.uncompressedBytes)
+      && typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256)
+      && value.chunks === Math.ceil(value.bytes / CHECKPOINT_CHUNK_BYTES);
+  }
+
+  function validCheckpointChunk(peer, message) {
+    if (!message || message.type !== 'checkpoint_chunk') return false;
+    const active = currentHostTransfer(peer, message);
+    const transfer = active?.transfer;
+    return !!transfer?.header && !transfer.relaying && !transfer.forwarded && exactKeys(message, ['type', 'id', 'index', 'data'])
+      && message.index === transfer.parts.length && message.index < transfer.header.chunks
+      && typeof message.data === 'string' && message.data.length > 0 && message.data.length <= 43692
+      && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(message.data);
+  }
+
+  function clearLiveInput(room) {
+    room.masks.fill(0);
+    room.pressed.fill(0);
+    room.released.fill(0);
+    room.applied.fill(0);
+    room.neutral.fill(false);
+  }
+
+  function beginJoinBarrier(room, peer, now) {
+    if (room.joinBarrierAt !== null) return true;
+    const remaining = Math.min(config.maxCatchupBarrierMs, Math.ceil(peer.catchupDeadline - now));
+    if (remaining <= 0) {
+      cancelCatchup(room, 'catchup_deadline');
+      return false;
+    }
+    room.joinBarrierAt = now;
+    room.joinBarrierTick = room.tick;
+    room.joinBarrierDeadline = now + remaining;
+    clearTimeout(room.frameTimer);
+    room.frameTimer = undefined;
+    peer.catchupBarrierTimer = setTimeout(() => {
+      if (peer.catchingUp && peer.room === room) cancelCatchup(room, 'catchup_barrier_timeout');
+    }, remaining);
+    clearLiveInput(room);
+    catchupCounters.barriers += 1;
+    peer.lastSyncProgressAt = now;
+    const message = { type: 'join_sync', state: 'paused', tick: room.joinBarrierTick,
+      verified: peer.lastAckTick, timeoutMs: remaining };
+    // Notify the host first, so every subsequent guest-cancellation path can
+    // explicitly release the host's bounded synchronization state.
+    room.joinSyncAnnounced = true;
+    send(room.players[0], message);
+    if (room.phase !== 'playing' || !peer.catchingUp) return false;
+    send(peer, message);
+    return room.phase === 'playing' && peer.catchingUp;
+  }
+
+  function reportJoinProgress(room, peer, final = false) {
+    if (room.joinBarrierAt === null || !room.joinSyncAnnounced) return;
+    const now = performance.now();
+    if (!final && now - peer.lastSyncProgressAt < 500) return;
+    peer.lastSyncProgressAt = now;
+    const message = { type: 'join_sync', state: 'progress', tick: room.joinBarrierTick,
+      verified: peer.lastAckTick };
+    send(room.players[0], message);
+    if (room.phase === 'playing' && peer.catchingUp) send(peer, message);
+  }
+
+  function cancelCatchup(room, reason) {
+    const peer = room?.players[1];
+    if (!peer?.catchingUp || room.activePlayers !== 1) return;
+    telemetry.roomEvent('catchup_failed', room, reason);
+    telemetry.left(peer, reason);
+    clearCatchupTimers(peer);
+    clearCheckpoint(peer);
+    peer.catchingUp = false;
+    peer.catchupReady = false;
+    peer.replayBatch = peer.replayBatchMax = 0;
+    room.players[1] = null;
+    room.ready[1] = false;
+    room.masks[1] = room.pressed[1] = room.released[1] = room.applied[1] = 0;
+    room.neutral[1] = false;
+    peer.room = null;
+    peer.slot = 0;
+    peer.lastSequence = -1;
+    peer.completed = false;
+    peer.unboundSince = performance.now();
+    const barrier = finishJoinBarrier(room);
+    if (barrier.announced) clearLiveInput(room);
+    catchupCounters.failed += 1;
+    send(peer, { type: 'paused', reason, tick: peer.lastAckTick, p1: 0, p2: 0 });
+    if (barrier.announced) send(room.players[0], { type: 'join_sync', state: 'resumed', tick: barrier.tick, joined: false });
+    if (room.listed) refreshDirectory();
+    scheduleFrame(room);
+  }
+
+  function failPeer(peer, reason) {
+    if (!peer?.room) return;
+    if (peer.catchingUp && peer.room.activePlayers === 1) cancelCatchup(peer.room, reason);
+    else endRoom(peer.room, reason);
+  }
+
+  function armCatchupTimeout(peer, milliseconds) {
+    clearTimeout(peer.catchupTimer);
+    peer.catchupTimer = setTimeout(() => {
+      if (peer.catchingUp) cancelCatchup(peer.room, 'catchup_timeout');
+    }, milliseconds);
+  }
+
+  function pumpCatchup(room) {
+    const peer = room.players[1];
+    if (room.phase !== 'playing' || !peer?.catchingUp || !peer.catchupReady) return;
+    if (peer.checkpoint) return;
+    if (!room.historyAvailable) return cancelCatchup(room, 'history_limit');
+    const now = performance.now();
+    if (now >= peer.catchupDeadline) return cancelCatchup(room, 'catchup_deadline');
+    if (room.joinBarrierDeadline !== null && now >= room.joinBarrierDeadline) {
+      return cancelCatchup(room, 'catchup_barrier_timeout');
+    }
+    // A distant replay never freezes live play. Only the final bounded gap is
+    // drained at a fixed issued tick; a guest that cannot catch the moving
+    // host expires independently without delaying or resetting the solo world.
+    // A wider transport window must never widen the final eight-frame gap.
+    if (room.terminalTick === null && room.joinBarrierAt === null
+      && room.tick - peer.lastAckTick <= Math.min(config.maxReplayInFlightFrames, 8)) {
+      if (!beginJoinBarrier(room, peer, now)) return;
+    }
+    while (peer.catchupSentTick < room.verifiedTick) {
+      const credits = config.maxReplayInFlightFrames - (peer.catchupSentTick - peer.lastAckTick);
+      const available = room.verifiedTick - peer.catchupSentTick;
+      const selected = peer.replayBatch || 1;
+      // A distant backlog refills a whole negotiated group. Near the moving
+      // verified tip, groups of at most eight prevent an intermediate gap from
+      // waiting forever for a full negotiated packet. Neither path emits one
+      // refill per ACK; all issued history remains bounded by the same window.
+      const group = available >= selected ? selected : Math.min(selected, 8);
+      if (credits < group) break;
+      if (available < group && (room.joinBarrierTick === null || room.verifiedTick !== room.joinBarrierTick)) break;
+      // A smaller-than-group tail still requires the fully host-verified fixed
+      // final target and a full group's credits. The final gap remains <= 8.
+      const length = Math.min(group, available);
+      const frames = [];
+      for (let index = 0; index < length; index += 1) {
+        const entry = room.history[peer.catchupSentTick + index];
+        if (!entry || entry.frame.tick !== peer.catchupSentTick + index + 1
+          || entry.frame.p2 !== 0 || entry.frame.join !== undefined) return endRoom(room, 'history_corrupt');
+        frames.push(entry.frame);
+      }
+      peer.catchupSentTick += length;
+      send(peer, peer.replayBatch ? { type: 'replay_frames', frames } : frames[0]);
+      if (!peer.catchingUp || room.phase !== 'playing') return;
+    }
+    if (room.terminalTick !== null) return;
+    reportJoinProgress(room, peer, room.joinBarrierAt !== null && peer.lastAckTick === room.joinBarrierTick);
+    if (room.phase !== 'playing' || !peer.catchingUp) return;
+    if (room.joinBarrierAt !== null && room.pending.size === 0
+      && peer.lastAckTick === room.joinBarrierTick && peer.catchupSentTick === room.joinBarrierTick) {
+      const barrier = finishJoinBarrier(room);
+      clearCatchupTimers(peer);
+      clearLiveInput(room);
+      peer.catchingUp = false;
+      peer.catchupReady = false;
+      peer.replayBatch = peer.replayBatchMax = 0;
+      room.activePlayers = 2;
+      room.nextJoin = { slot: 2, character: peer.character };
+      room.history = [];
+      room.historyAvailable = false;
+      room.inputAt[1] = performance.now();
+      catchupCounters.completed += 1;
+      send(peer, { type: 'caught_up', tick: room.tick });
+      if (room.phase !== 'playing') return;
+      if (barrier.announced) send(room.players[0], { type: 'join_sync', state: 'resumed', tick: barrier.tick, joined: true });
+      if (room.phase !== 'playing') return;
+      send(room.players[0], { type: 'peer', slot: 2, connected: true });
+      scheduleFrame(room);
+    }
+  }
+
+  function joinRoom(peer, room, now, character = room.characters[1]) {
+    // No await or callback boundary between checking and assigning the free slot.
+    // The first processed join claims it before another socket can enter here.
+    room.players[1] = peer;
+    room.lastActivity = now;
+    peer.room = room;
+    peer.slot = 2;
+    peer.lastSequence = -1;
+    peer.lastAckTick = 0;
+    peer.completed = false;
+    peer.browseHash = null;
+    peer.character = character;
+    peer.catchingUp = room.phase === 'playing';
+    peer.catchupReady = false;
+    peer.catchupSentTick = 0;
+    peer.replayBatchMax = peer.catchingUp ? Math.min(config.maxReplayBatchFrames, config.maxReplayInFlightFrames) : 0;
+    peer.replayBatch = 0;
+    peer.catchupDeadline = null;
+    peer.lastSyncProgressAt = -Infinity;
+    if (!peer.catchingUp) room.characters[1] = character;
+    telemetry.joined(peer, room);
+    send(peer, { type: 'joined', room: room.id, slot: 2, token: room.token });
+    if (peer.catchingUp && peer.room === room) {
+      catchupCounters.started += 1;
+      armCatchupTimeout(peer, config.readyTimeoutMs);
+      send(peer, prepareMessage(room, true));
+    } else if (room.phase === 'lobby') send(room.players[0], { type: 'peer', slot: 2, connected: true });
+    if (room.listed) refreshDirectory();
+  }
+
+  function retireRoom(room, phase, reason) {
+    if (!room || !rooms.has(room.id)) return [];
+    telemetry.roomEvent(phase === 'completed' ? 'room_completed' : 'room_ended', room, reason);
+    room.phase = phase;
+    clearTimeout(room.frameTimer);
+    clearTimeout(room.phaseTimer);
+    clearTimeout(room.ackTimer);
+    finishJoinBarrier(room);
+    room.frameTimer = room.phaseTimer = room.ackTimer = undefined;
+    room.masks.fill(0);
+    room.pressed.fill(0);
+    room.released.fill(0);
+    room.applied.fill(0);
+    room.neutral.fill(false);
+    room.pending.clear();
+    room.history = [];
+    rooms.delete(room.id);
+    if (room.listed) refreshDirectory();
+    const members = room.players.filter(Boolean);
+    for (const peer of members) {
+      telemetry.left(peer, reason);
+      clearCatchupTimers(peer);
+      clearCheckpoint(peer);
+      peer.catchingUp = peer.catchupReady = false;
+      peer.replayBatch = peer.replayBatchMax = 0;
+      peer.room = null;
+      peer.slot = 0;
+      peer.lastSequence = -1;
+      peer.lastAckTick = 0;
+      peer.completed = phase === 'completed';
+      peer.unboundSince = performance.now();
+    }
+    return members;
+  }
+
+  function endRoom(room, reason, tick = room?.tick) {
+    const members = retireRoom(room, 'paused', reason);
+    for (const peer of members) {
+      send(peer, { type: 'paused', reason, tick, p1: 0, p2: 0 });
+      if (reason === 'peer_disconnected' && !peer.rejected && peer.ws.readyState === WebSocket.OPEN) {
+        // The room has been irreversibly retired. Another browser can still
+        // have a native ACK or key-release input in flight while receiving
+        // paused. Close this session normally and discard only its remaining
+        // transport data; no late message is accepted as verified gameplay.
+        peer.retiredClosing = true;
+        peer.ws.close(1000, 'peer_disconnected');
+        peer.closeTimer = setTimeout(() => peer.ws.terminate(), config.shutdownGraceMs);
+        peer.closeTimer.unref();
+      }
+    }
+  }
+
+  function completeRoom(room, tick, complete) {
+    const catching = new Set(room.players.filter((peer) => peer?.catchingUp));
+    const members = retireRoom(room, 'completed', complete);
+    for (const peer of members) {
+      if (catching.has(peer)) {
+        catchupCounters.failed += 1;
+        send(peer, { type: 'paused', reason: 'room_completed', tick, p1: 0, p2: 0 });
+      } else send(peer, { type: 'completed', tick, complete });
+    }
+  }
+
+  function reject(peer, code, closeCode = 1008, reason = 'protocol_error') {
+    if (peer.rejected) return;
+    peer.rejected = true;
+    telemetry.rejected(peer, code);
+    send(peer, { type: 'error', code });
+    failPeer(peer, reason);
+    if (peer.ws.readyState === WebSocket.OPEN) peer.ws.close(closeCode, code);
+    peer.closeTimer = setTimeout(() => peer.ws.terminate(), config.shutdownGraceMs);
+    peer.closeTimer.unref();
+  }
+
+  function armAckTimeout(room) {
+    clearTimeout(room.ackTimer);
+    room.ackTimer = undefined;
+    const oldest = room.pending.values().next().value;
+    if (!oldest || room.phase !== 'playing') return;
+    const remaining = oldest.sentAt + config.ackTimeoutMs - performance.now();
+    room.ackTimer = setTimeout(() => endRoom(room, 'ack_timeout'), Math.max(1, Math.ceil(remaining)));
+  }
+
+  function sampleInput(room, slot, now) {
+    if (now - room.inputAt[slot] > config.inputTimeoutMs) {
+      room.masks[slot] = room.pressed[slot] = room.released[slot] = 0;
+      room.neutral[slot] = true;
+    }
+    if (room.neutral[slot]) {
+      room.neutral[slot] = false;
+      room.applied[slot] = 0;
+      return 0;
+    }
+    let sampled = room.masks[slot] & ~ACTION_MASK;
+    for (const bit of ACTION_BITS) {
+      if ((room.applied[slot] & bit) && (room.released[slot] & bit)) {
+        // A release is observable before a repeated press, including when both
+        // arrived between network frames. At most one pending edge per action
+        // is retained: rapid repeated taps coalesce instead of building a queue.
+        room.released[slot] &= ~bit;
+      } else if (!(room.applied[slot] & bit) && (room.pressed[slot] & bit)) {
+        sampled |= bit;
+        room.pressed[slot] &= ~bit;
+      } else {
+        sampled |= room.masks[slot] & bit;
+        if (!(sampled & bit)) room.released[slot] &= ~bit;
+      }
+    }
+    room.applied[slot] = sampled & ACTION_MASK;
+    return sampled;
+  }
+
+  function scheduleFrame(room) {
+    if (room.phase !== 'playing' || room.terminalTick !== null || room.frameTimer
+      || room.joinBarrierAt !== null
+      || room.pending.size >= config.maxInFlightFrames) return;
+    const emit = () => {
+      room.frameTimer = undefined;
+      if (room.phase !== 'playing' || room.terminalTick !== null
+        || room.joinBarrierAt !== null
+        || room.pending.size >= config.maxInFlightFrames) return;
+      const remaining = room.nextFrameDue === null ? 0 : room.nextFrameDue - performance.now();
+      if (remaining > 0) {
+        room.frameTimer = setTimeout(emit, Math.ceil(remaining));
+        return;
+      }
+      if (room.tick === MAX_SEQUENCE) {
+        endRoom(room, 'tick_limit');
+        return;
+      }
+      room.tick += 1;
+      room.lastFrameAt = performance.now();
+      room.nextFrameDue = advanceOriginalFrameDeadline(room.nextFrameDue, room.lastFrameAt, room.frameMs);
+      const sampled = [sampleInput(room, 0, room.lastFrameAt),
+        room.activePlayers === 2 ? sampleInput(room, 1, room.lastFrameAt) : 0];
+      const frame = { type: 'frame', tick: room.tick, p1: sampled[0], p2: sampled[1] };
+      if (room.nextJoin) {
+        frame.join = room.nextJoin;
+        room.nextJoin = null;
+      }
+      room.pending.set(room.tick, {
+        acks: Array(room.activePlayers).fill(null), sentAt: room.lastFrameAt, frame,
+      });
+      if (room.pending.size === 1) armAckTimeout(room);
+      for (const peer of room.players.slice(0, room.activePlayers)) {
+        if (room.phase !== 'playing') break;
+        send(peer, frame);
+      }
+      scheduleFrame(room);
+    };
+    room.frameTimer = setTimeout(emit, room.nextFrameDue === null
+      ? 0 : Math.max(0, Math.ceil(room.nextFrameDue - performance.now())));
+  }
+
+  function matchesReplayAck(peer, message) {
+    const room = peer.room;
+    if (!peer.catchingUp || !peer.catchupReady || room?.phase !== 'playing'
+      || !message || typeof message !== 'object' || Array.isArray(message)
+      || message.type !== 'ack'
+      || !exactKeys(message, ['type', 'tick', 'digest',
+        ...(Object.hasOwn(message, 'complete') ? ['complete'] : [])])
+      || !Number.isInteger(message.tick) || message.tick !== peer.lastAckTick + 1
+      || message.tick > peer.catchupSentTick
+      || typeof message.digest !== 'string' || message.digest.length < 1
+      || message.digest.length > 256 || !/^[!-~]+$/.test(message.digest)
+      || (Object.hasOwn(message, 'complete') && !COMPLETIONS.has(message.complete))) return false;
+    const entry = room.history[message.tick - 1];
+    return !!entry && message.digest === entry.ack.digest
+      && (message.complete ?? null) === entry.ack.complete;
+  }
+
+  function handleMessage(peer, data, binary) {
+    if (peer.rejected || peer.retiredClosing || stopping) return;
+    const now = performance.now();
+    peer.rateTokens = Math.min(
+      config.messageBurst,
+      peer.rateTokens + (now - peer.rateAt) * config.messagesPerSecond / 1000,
+    );
+    peer.rateAt = now;
+    let message, invalidJson = false;
+    if (!binary && data.length <= Math.max(config.maxPayloadBytes, CHECKPOINT_WIRE_BYTES)) {
+      try { message = JSON.parse(data.toString('utf8')); }
+      catch { invalidJson = true; }
+    }
+    // A valid replay ACK consumes one server-issued, strictly ordered credit.
+    // It cannot exceed the bounded replay window or be reused, and should not
+    // be throttled by the live/control message budget during fast native replay.
+    // Everything else, including malformed or forged ACKs, still spends a token.
+    const replayAck = matchesReplayAck(peer, message);
+    const checkpointChunk = validCheckpointChunk(peer, message);
+    if (!replayAck && !checkpointChunk) {
+      if (peer.rateTokens < 1) return reject(peer, 'rate_limited');
+      peer.rateTokens -= 1;
+    }
+    if (binary) return reject(peer, 'binary_not_allowed', 1003);
+    if (data.length > config.maxPayloadBytes && !checkpointChunk
+      && !(peer.slot === 1 && peer.retiredCheckpoints.includes(message?.id) && message?.type === 'checkpoint_chunk')) {
+      return reject(peer, 'message_too_large', 1009);
+    }
+    if (invalidJson) return reject(peer, 'invalid_json');
+    if (!message || typeof message !== 'object' || Array.isArray(message) || typeof message.type !== 'string') {
+      return reject(peer, 'invalid_message');
+    }
+    peer.lastActivity = now;
+
+    switch (message.type) {
+      case 'identify': {
+        const identity = readPlayerIdentity(message);
+        if (!identity) return reject(peer, 'invalid_identity');
+        if (peer.room || !telemetry.identify(peer, identity)) return reject(peer, 'identity_locked');
+        return;
+      }
+      case 'checkpoint_begin':
+      case 'checkpoint_chunk':
+      case 'checkpoint_end':
+      case 'checkpoint_unavailable': {
+        if (peer.slot === 1 && peer.retiredCheckpoints.includes(message.id)) return;
+        const active = currentHostTransfer(peer, message);
+        if (!active) return reject(peer, 'unexpected_checkpoint');
+        const { room, guest, transfer } = active;
+        if (message.type === 'checkpoint_unavailable') {
+          if (!exactKeys(message, ['type', 'id']) || transfer.relaying || transfer.forwarded) return cancelCatchup(room, 'invalid_checkpoint');
+          return checkpointFallback(room, guest);
+        }
+        if (message.type === 'checkpoint_begin') {
+          if (transfer.header || !validCheckpointHeader(message, transfer, room)) return cancelCatchup(room, 'invalid_checkpoint_header');
+          transfer.header = message;
+          send(peer, { type: 'checkpoint_credit', id: transfer.id, index: 0 });
+          return;
+        }
+        if (message.type === 'checkpoint_chunk') {
+          if (!checkpointChunk) return cancelCatchup(room, 'invalid_checkpoint_chunk');
+          const bytes = Buffer.from(message.data, 'base64');
+          const expected = Math.min(CHECKPOINT_CHUNK_BYTES, transfer.header.bytes - transfer.received);
+          if (bytes.length !== expected || bytes.toString('base64') !== message.data) return cancelCatchup(room, 'invalid_checkpoint_chunk');
+          transfer.parts.push(bytes);
+          transfer.received += bytes.length;
+          send(peer, { type: 'checkpoint_credit', id: transfer.id, index: transfer.parts.length });
+          return;
+        }
+        if (!exactKeys(message, ['type', 'id']) || !transfer.header || transfer.relaying || transfer.forwarded
+          || transfer.received !== transfer.header.bytes || transfer.parts.length !== transfer.header.chunks
+          || createHash('sha256').update(Buffer.concat(transfer.parts)).digest('hex') !== transfer.header.sha256) {
+          return cancelCatchup(room, 'invalid_checkpoint_end');
+        }
+        transfer.relaying = true;
+        send(guest, transfer.header);
+        // One chunk at a time keeps the original 64-KiB live send guard intact
+        // even when a receiving browser or LAN socket drains slowly.
+        const relay = index => {
+          if (guest.room !== room || !guest.catchingUp || guest.checkpoint !== transfer) return;
+          if (index === transfer.parts.length) {
+            transfer.forwarded = true;
+            transfer.parts = [];
+            send(guest, { type: 'checkpoint_end', id: transfer.id });
+            return;
+          }
+          if (guest.ws.readyState !== WebSocket.OPEN || guest.ws.bufferedAmount > 65536) {
+            cancelCatchup(room, 'checkpoint_send_failed'); return;
+          }
+          const chunk = JSON.stringify({ type: 'checkpoint_chunk', id: transfer.id, index,
+            data: transfer.parts[index].toString('base64') });
+          try {
+            guest.ws.send(chunk, error => {
+              if (guest.checkpoint !== transfer) return;
+              if (error) cancelCatchup(room, 'checkpoint_send_failed');
+              else relay(index + 1);
+            });
+          } catch { cancelCatchup(room, 'checkpoint_send_failed'); }
+        };
+        relay(0);
+        return;
+      }
+      case 'checkpoint_applied': {
+        const room = peer.room;
+        const transfer = peer.checkpoint;
+        const header = transfer?.header;
+        if (!room || peer.slot !== 2 || !peer.catchingUp || !peer.catchupReady || !transfer?.forwarded || !header
+          || !exactKeys(message, ['type', 'id', 'tick', 'digest', 'sha256']) || message.id !== transfer.id
+          || message.tick !== header.tick || message.digest !== header.digest || message.sha256 !== header.sha256
+          || room.history[message.tick - 1]?.ack.digest !== message.digest || peer.lastAckTick !== 0 || peer.catchupSentTick !== 0) {
+          return reject(peer, 'invalid_checkpoint_attestation', 1008, 'checkpoint_state_mismatch');
+        }
+        peer.lastAckTick = header.tick;
+        peer.catchupSentTick = header.tick;
+        catchupCounters.restoredCheckpoints++;
+        catchupCounters.checkpointBytes += header.bytes;
+        clearCheckpoint(peer);
+        armCatchupTimeout(peer, config.ackTimeoutMs);
+        pumpCatchup(room);
+        return;
+      }
+      case 'list': {
+        if (!exactKeys(message, ['type', 'swfHash'])) return reject(peer, 'invalid_message');
+        if (peer.room) return reject(peer, 'already_joined');
+        if (typeof message.swfHash !== 'string' || !HASH.test(message.swfHash)) return reject(peer, 'invalid_list');
+        browse(peer, message.swfHash, now);
+        sendRooms(peer, now);
+        return;
+      }
+      case 'create': {
+        if (!exactKeys(message, ['type', 'swfHash', 'mode', 'map', 'characters',
+          ...['settings', 'name', 'listed', 'dropIn'].filter((key) => Object.hasOwn(message, key))])) {
+          return reject(peer, 'invalid_message');
+        }
+        if (peer.room) return reject(peer, 'already_joined');
+        const settings = readSettings(message.settings);
+        if (!settings || typeof message.swfHash !== 'string' || !HASH.test(message.swfHash)
+          || !['Coop', 'DeathMatch'].includes(message.mode)
+          || typeof message.map !== 'string' || !MAP.test(message.map)
+          || !Array.isArray(message.characters) || message.characters.length !== 2
+          || !message.characters.every((value) => Number.isInteger(value) && value >= 0 && value <= 3)
+          || (Object.hasOwn(message, 'name') && !validRoomName(message.name))
+          || (Object.hasOwn(message, 'listed') && typeof message.listed !== 'boolean')
+          || (Object.hasOwn(message, 'dropIn') && typeof message.dropIn !== 'boolean')) {
+          return reject(peer, 'invalid_create');
+        }
+        if (rooms.size >= config.maxRooms) return reject(peer, 'room_capacity');
+        let id;
+        do { id = randomBytes(9).toString('base64url'); } while (rooms.has(id));
+        const room = {
+          id,
+          token: randomBytes(32).toString('base64url'),
+          name: message.name ?? `Boxhead ${message.mode}`,
+          listed: message.listed === true,
+          dropIn: message.dropIn === true,
+          swfHash: message.swfHash.toLowerCase(),
+          mode: message.mode,
+          map: message.map,
+          characters: [...message.characters],
+          settings,
+          frameMs: FRAME_MS_BY_SPEED[settings.speed],
+          seed: null,
+          phase: 'lobby',
+          players: [peer, null],
+          initialPlayers: 2,
+          activePlayers: 1,
+          history: [],
+          historyAvailable: message.dropIn === true,
+          nextJoin: null,
+          joinBarrierAt: null,
+          joinBarrierTick: null,
+          joinBarrierDeadline: null,
+          joinSyncAnnounced: false,
+          ready: [false, false],
+          masks: [0, 0],
+          pressed: [0, 0],
+          released: [0, 0],
+          applied: [0, 0],
+          neutral: [false, false],
+          inputAt: [now, now],
+          pending: new Map(),
+          terminalTick: null,
+          verifiedTick: 0,
+          tick: 0,
+          lastFrameAt: -Infinity,
+          nextFrameDue: null,
+          createdAt: now,
+          lastActivity: now,
+          frameTimer: undefined,
+          phaseTimer: undefined,
+          ackTimer: undefined,
+        };
+        rooms.set(id, room);
+        peer.room = room;
+        peer.slot = 1;
+        peer.lastSequence = -1;
+        peer.lastAckTick = 0;
+        peer.completed = false;
+        peer.browseHash = null;
+        telemetry.roomEvent('room_created', room);
+        telemetry.joined(peer, room);
+        send(peer, { type: 'joined', room: id, slot: 1, token: room.token });
+        if (room.listed) refreshDirectory();
+        return;
+      }
+      case 'join': {
+        if (!exactKeys(message, ['type', 'room', 'token', 'swfHash',
+          ...(Object.hasOwn(message, 'character') ? ['character'] : [])])) return reject(peer, 'invalid_message');
+        if (peer.room) return reject(peer, 'already_joined');
+        if (Object.hasOwn(message, 'character')
+          && (!Number.isInteger(message.character) || message.character < 0 || message.character > 3)) {
+          return reject(peer, 'invalid_join');
+        }
+        const room = typeof message.room === 'string' && ROOM_ID.test(message.room) ? rooms.get(message.room) : null;
+        if (!room || !sameToken(room.token, message.token)) return reject(peer, 'join_denied');
+        const expired = expirationReason(room, now);
+        if (expired) {
+          endRoom(room, expired);
+          return reject(peer, 'join_denied');
+        }
+        if (typeof message.swfHash !== 'string' || !HASH.test(message.swfHash)
+          || message.swfHash.toLowerCase() !== room.swfHash) return reject(peer, 'swf_mismatch');
+        if (!canJoinRoom(room, now)) return reject(peer, 'room_full');
+        joinRoom(peer, room, now, message.character);
+        return;
+      }
+      case 'join_open': {
+        if (!exactKeys(message, ['type', 'room', 'swfHash',
+          ...(Object.hasOwn(message, 'character') ? ['character'] : [])])) return reject(peer, 'invalid_message');
+        if (peer.room) return reject(peer, 'already_joined');
+        if (typeof message.room !== 'string' || !ROOM_ID.test(message.room)
+          || typeof message.swfHash !== 'string' || !HASH.test(message.swfHash)
+          || (Object.hasOwn(message, 'character')
+            && (!Number.isInteger(message.character) || message.character < 0 || message.character > 3))) {
+          return reject(peer, 'invalid_join');
+        }
+        const room = rooms.get(message.room);
+        const expired = room && expirationReason(room, now);
+        if (expired) endRoom(room, expired);
+        const available = room && !expired && openRoom(room, now);
+        const compatible = available && room.swfHash === message.swfHash.toLowerCase();
+        if (!compatible) {
+          // A room can fill or disappear between display and click. Keep this
+          // connection browsing so the user can choose another current room.
+          browse(peer, message.swfHash, now);
+          send(peer, { type: 'join_failed', room: message.room, code: available ? 'swf_mismatch' : 'unavailable' });
+          sendRooms(peer, now);
+          return;
+        }
+        joinRoom(peer, room, now, message.character);
+        return;
+      }
+      case 'start': {
+        if (!exactKeys(message, ['type'])) return reject(peer, 'invalid_message');
+        const room = peer.room;
+        if (!room || peer.slot !== 1 || room.phase !== 'lobby') return reject(peer, 'invalid_start');
+        if (!room.players[1] && !room.dropIn) {
+          send(peer, { type: 'error', code: 'not_paired' });
+          return;
+        }
+        room.phase = 'preparing';
+        room.initialPlayers = room.players[1] ? 2 : 1;
+        room.activePlayers = room.initialPlayers;
+        room.historyAvailable = room.dropIn && room.initialPlayers === 1;
+        if (room.listed) refreshDirectory();
+        room.seed = randomInt(1, 2147483647);
+        room.masks.fill(0);
+        room.pressed.fill(0);
+        room.released.fill(0);
+        room.applied.fill(0);
+        room.neutral.fill(false);
+        room.lastActivity = now;
+        room.phaseTimer = setTimeout(() => endRoom(room, 'ready_timeout'), config.readyTimeoutMs);
+        const prepare = prepareMessage(room);
+        for (const member of room.players.slice(0, room.activePlayers)) {
+          if (room.phase !== 'preparing') break;
+          send(member, prepare);
+        }
+        return;
+      }
+      case 'ready': {
+        const batching = Object.hasOwn(message, 'replayBatch');
+        const checkpoint = Object.hasOwn(message, 'checkpointVersion');
+        if (!exactKeys(message, ['type', ...(batching ? ['replayBatch'] : []), ...(checkpoint ? ['checkpointVersion'] : [])])
+          || (checkpoint && message.checkpointVersion !== 1)) return reject(peer, 'invalid_message');
+        const room = peer.room;
+        if (room?.phase === 'playing' && peer.catchingUp) {
+          if (peer.catchupReady) return reject(peer, 'invalid_ready');
+          if (batching && (!Number.isInteger(message.replayBatch) || message.replayBatch < 1
+            || message.replayBatch > peer.replayBatchMax || message.replayBatch > 64)) return reject(peer, 'invalid_ready');
+          peer.replayBatch = batching ? message.replayBatch : 0;
+          peer.catchupReady = true;
+          peer.checkpointVersion = checkpoint ? 1 : 0;
+          peer.catchupDeadline = now + config.maxCatchupMs;
+          // This deadline is never renewed by ACKs or progress notifications.
+          peer.catchupAbsoluteTimer = setTimeout(() => {
+            if (peer.catchingUp) cancelCatchup(peer.room, 'catchup_deadline');
+          }, config.maxCatchupMs);
+          // Replaying a short verified prefix avoids the synchronous capture
+          // and fresh-world restore cost when a match has only just started.
+          if (checkpoint && room.players[0]?.checkpointVersion === 1
+            && room.verifiedTick >= config.minCheckpointHistoryTicks) startCheckpoint(room, peer);
+          else { armCatchupTimeout(peer, config.ackTimeoutMs); pumpCatchup(room); }
+          return;
+        }
+        if (batching || !room || room.phase !== 'preparing' || room.ready[peer.slot - 1]) return reject(peer, 'invalid_ready');
+        room.ready[peer.slot - 1] = true;
+        peer.checkpointVersion = checkpoint ? 1 : 0;
+        room.lastActivity = now;
+        if (room.ready.slice(0, room.activePlayers).every(Boolean)) {
+          clearTimeout(room.phaseTimer);
+          room.phaseTimer = undefined;
+          room.phase = 'playing';
+          telemetry.roomEvent('room_started', room);
+          if (room.listed) refreshDirectory();
+          scheduleFrame(room);
+        }
+        return;
+      }
+      case 'input': {
+        if (!exactKeys(message, ['type', 'seq', 'mask',
+          ...(Object.hasOwn(message, 'clear') ? ['clear'] : [])])) return reject(peer, 'invalid_message');
+        const room = peer.room;
+        if (!room || peer.catchingUp || !Number.isInteger(message.seq) || message.seq < 0 || message.seq > MAX_SEQUENCE
+          || message.seq <= peer.lastSequence || !Number.isInteger(message.mask) || message.mask < 0 || message.mask > 131071
+          || (Object.hasOwn(message, 'clear') && (message.clear !== true || message.mask !== 0))) {
+          return reject(peer, 'invalid_input');
+        }
+        peer.lastSequence = message.seq;
+        const slot = peer.slot - 1;
+        if (room.joinBarrierAt !== null) {
+          // Keep sequence validation, but taps/held masks received while the
+          // host is frozen must not become stale actions after resumption.
+          room.inputAt[slot] = now;
+          room.lastActivity = now;
+          return;
+        }
+        if (message.clear) {
+          room.pressed[slot] = room.released[slot] = 0;
+          room.neutral[slot] = true;
+        } else {
+          room.pressed[slot] |= message.mask & ~room.masks[slot] & ACTION_MASK;
+          room.released[slot] |= room.masks[slot] & ~message.mask & ACTION_MASK;
+        }
+        room.masks[slot] = message.mask;
+        room.inputAt[slot] = now;
+        room.lastActivity = now;
+        return;
+      }
+      case 'ack': {
+        if (!exactKeys(message, ['type', 'tick', 'digest',
+          ...(Object.hasOwn(message, 'complete') ? ['complete'] : [])])) return reject(peer, 'invalid_message');
+        const room = peer.room;
+        if (peer.catchingUp && room?.phase === 'playing') {
+          if (!replayAck) {
+            return reject(peer, 'invalid_replay_ack', 1008, 'replay_digest_mismatch');
+          }
+          peer.lastAckTick = message.tick;
+          catchupCounters.verifiedReplayFrames += 1;
+          armCatchupTimeout(peer, config.ackTimeoutMs);
+          pumpCatchup(room);
+          return;
+        }
+        const frame = room?.pending.get(message.tick);
+        if (!room || room.phase !== 'playing' || !frame
+          || !Number.isInteger(message.tick) || message.tick !== peer.lastAckTick + 1
+          || frame.acks[peer.slot - 1] !== null
+          || typeof message.digest !== 'string' || message.digest.length < 1 || message.digest.length > 256
+          || !/^[!-~]+$/.test(message.digest)
+          || (Object.hasOwn(message, 'complete') && !COMPLETIONS.has(message.complete))) return reject(peer, 'invalid_ack');
+        peer.lastAckTick = message.tick;
+        frame.acks[peer.slot - 1] = { digest: message.digest, complete: message.complete ?? null };
+        telemetry.acknowledge(peer, frame.sentAt, now);
+        room.lastActivity = now;
+        if (message.complete !== undefined) {
+          room.terminalTick = room.terminalTick === null ? message.tick : Math.min(room.terminalTick, message.tick);
+          clearTimeout(room.frameTimer);
+          room.frameTimer = undefined;
+        }
+        // Every active player acknowledges in order. A replaying spectator is
+        // checked separately against history and never delays the live host.
+        for (const [tick, pending] of room.pending) {
+          if (pending.acks.some((ack) => ack === null)) break;
+          const [first, second] = pending.acks;
+          if (second && first.digest !== second.digest) return endRoom(room, 'digest_mismatch', tick);
+          if (second && first.complete !== second.complete) return endRoom(room, 'completion_mismatch', tick);
+          room.verifiedTick = tick;
+          // Only mutually verified live frames establish a played session.
+          // Historical replay/catch-up and failed loading never count as play.
+          for (const member of room.players.slice(0, pending.acks.length)) {
+            if (member) telemetry.played(member, room, tick);
+          }
+          if (room.historyAvailable && pending.acks.length === 1) {
+            if (room.history.length >= config.maxHistoryFrames) {
+              room.historyAvailable = false;
+              room.history = [];
+              catchupCounters.historyCapped += 1;
+              cancelCatchup(room, 'history_limit');
+              if (room.listed) refreshDirectory();
+            } else {
+              room.history.push({ frame: pending.frame, ack: first });
+            }
+          }
+          room.pending.delete(tick);
+          if (first.complete !== null) return completeRoom(room, tick, first.complete);
+        }
+        armAckTimeout(room);
+        pumpCatchup(room);
+        scheduleFrame(room);
+        return;
+      }
+      default:
+        return reject(peer, 'unknown_message');
+    }
+  }
+
+  async function handleHttp(request, response) {
+    const head = request.method === 'HEAD';
+    if (request.method !== 'GET' && !head) {
+      request.resume();
+      response.setHeader('Allow', 'GET, HEAD');
+      return reply(response, 405, 'method_not_allowed', head);
+    }
+    const target = request.url ?? '';
+    if (!target.startsWith('/') || target.startsWith('//') || target.includes('#')) {
+      return reply(response, 400, 'bad_request', head);
+    }
+    let pathname;
+    try {
+      pathname = decodeURIComponent(target.split('?')[0]);
+    } catch {
+      return reply(response, 400, 'bad_request', head);
+    }
+    const segments = pathname.split('/');
+    if (pathname.includes('\u0000') || pathname.includes('\\')
+      || segments.some((part) => part === '..' || part === '.')) {
+      return reply(response, 400, 'bad_request', head);
+    }
+    if (pathname === '/healthz' || pathname === '/readyz') {
+      const healthy = pathname === '/healthz' || (ready && !stopping);
+      return reply(response, healthy ? 200 : 503, JSON.stringify({
+        ok: healthy, service: 'original-lockstep',
+      }), head, 'application/json; charset=utf-8');
+    }
+    if (stopping) return reply(response, 503, 'shutting_down', head);
+    if (segments.some((part) => part.startsWith('.'))) return reply(response, 403, 'forbidden', head);
+    const candidate = path.resolve(canonicalRoot, `.${pathname === '/' ? '/index.html' : pathname}`);
+    if (!within(canonicalRoot, candidate)) return reply(response, 403, 'forbidden', head);
+    try {
+      const file = await realpath(candidate);
+      if (!within(canonicalRoot, file)) return reply(response, 403, 'forbidden', head);
+      const info = await stat(file);
+      if (!info.isFile()) return reply(response, 404, 'not_found', head);
+      response.writeHead(200, {
+        'Content-Type': MIME.get(path.extname(file).toLowerCase()) ?? 'application/octet-stream',
+        'Content-Length': info.size,
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'no-referrer',
+      });
+      if (head) return response.end();
+      await pipeline(createReadStream(file), response);
+    } catch (error) {
+      if (response.headersSent || response.destroyed) {
+        response.destroy();
+        return;
+      }
+      const status = ['ENOENT', 'ENOTDIR'].includes(error.code) ? 404 : error.code === 'EACCES' ? 403 : 500;
+      reply(response, status, status === 404 ? 'not_found' : status === 403 ? 'forbidden' : 'internal_error', head);
+    }
+  }
+
+  const httpServer = http.createServer({ maxHeaderSize: 8192 }, (request, response) => {
+    handleHttp(request, response).catch(() => {
+      if (response.headersSent || response.destroyed) response.destroy();
+      else reply(response, 500, 'internal_error', request.method === 'HEAD');
+    });
+  });
+  httpServer.headersTimeout = 10000;
+  httpServer.requestTimeout = 15000;
+  httpServer.keepAliveTimeout = 5000;
+  httpServer.maxRequestsPerSocket = 1000;
+  const wss = new WebSocketServer({ noServer: true, maxPayload: Math.max(config.maxPayloadBytes, CHECKPOINT_WIRE_BYTES), perMessageDeflate: false });
+
+  function rejectUpgrade(socket, status, label) {
+    socket.end(`HTTP/1.1 ${status} ${label}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
+  }
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    socket.on('error', () => {});
+    if (stopping || !ready) return rejectUpgrade(socket, 503, 'Unavailable');
+    if (request.url !== '/original-ws') return rejectUpgrade(socket, 404, 'Not Found');
+    if (request.headers.origin !== undefined) {
+      try {
+        const origin = new URL(request.headers.origin);
+        if (!['http:', 'https:'].includes(origin.protocol)
+          || origin.username || origin.password || origin.pathname !== '/'
+          || origin.search || origin.hash
+          || origin.host.toLowerCase() !== String(request.headers.host ?? '').toLowerCase()) {
+          return rejectUpgrade(socket, 403, 'Forbidden');
+        }
+      } catch {
+        return rejectUpgrade(socket, 403, 'Forbidden');
+      }
+    }
+    if (peers.size >= config.maxConnections) return rejectUpgrade(socket, 429, 'Too Many Requests');
+    wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws));
+  });
+
+  wss.on('connection', (ws) => {
+    const now = performance.now();
+    const peer = {
+      ws, room: null, slot: 0, lastSequence: -1, lastAckTick: 0, completed: false, rejected: false, retiredClosing: false,
+      catchingUp: false, catchupReady: false, catchupSentTick: 0, catchupTimer: undefined,
+      replayBatchMax: 0, replayBatch: 0,
+      catchupBarrierTimer: undefined, catchupAbsoluteTimer: undefined,
+      catchupDeadline: null, lastSyncProgressAt: -Infinity,
+      checkpointVersion: 0, checkpoint: null, retiredCheckpoints: [],
+      browseHash: null, browseUntil: 0,
+      lastActivity: now, unboundSince: now, rateAt: now,
+      rateTokens: config.messageBurst, alive: true, closeTimer: undefined,
+    };
+    peers.add(peer);
+    telemetry.connected(peer);
+    ws.on('message', (data, binary) => handleMessage(peer, data, binary));
+    ws.on('pong', (data) => {
+      peer.alive = true;
+      peer.lastActivity = performance.now();
+      telemetry.pong(peer, data);
+    });
+    ws.on('error', () => failPeer(peer, 'protocol_error'));
+    ws.on('close', (code) => {
+      clearTimeout(peer.closeTimer);
+      clearCatchupTimers(peer);
+      peers.delete(peer);
+      failPeer(peer, 'peer_disconnected');
+      telemetry.closed(peer, code);
+    });
+    pingPeer(peer);
+  });
+
+  function pingPeer(peer) {
+    const failed = () => { failPeer(peer, 'ping_failed'); peer.ws.terminate(); };
+    try { peer.ws.ping(telemetry.ping(peer), (error) => { if (error) failed(); }); }
+    catch { failed(); }
+  }
+
+  const housekeeping = setInterval(() => {
+    const now = performance.now();
+    for (const room of rooms.values()) {
+      const expired = expirationReason(room, now);
+      if (expired) endRoom(room, expired);
+    }
+    for (const peer of peers) {
+      if (peer.retiredClosing) continue;
+      if (!peer.room && peer.browseHash) {
+        if (now >= peer.browseUntil && peer.ws.readyState === WebSocket.OPEN) {
+          peer.rejected = true;
+          peer.ws.close(1000, 'list_timeout');
+          peer.closeTimer = setTimeout(() => peer.ws.terminate(), config.shutdownGraceMs);
+          peer.closeTimer.unref();
+        }
+        continue;
+      }
+      if (!peer.room && peer.completed) {
+        if (now - peer.unboundSince >= config.lobbyTtlMs && peer.ws.readyState === WebSocket.OPEN) {
+          peer.ws.close(1000, 'completed');
+          peer.closeTimer = setTimeout(() => peer.ws.terminate(), config.shutdownGraceMs);
+          peer.closeTimer.unref();
+        }
+        continue;
+      }
+      if (!peer.room && !peer.rejected && now - peer.unboundSince >= config.authenticationTimeoutMs) {
+        reject(peer, 'authentication_timeout');
+      }
+    }
+  }, config.housekeepingMs);
+  housekeeping.unref();
+
+  const heartbeat = setInterval(() => {
+    for (const peer of peers) {
+      if (peer.rejected || peer.ws.readyState !== WebSocket.OPEN) continue;
+      if (!peer.alive) {
+        reject(peer, 'heartbeat_timeout', 1008, 'heartbeat_timeout');
+        continue;
+      }
+      peer.alive = false;
+      pingPeer(peer);
+    }
+  }, config.heartbeatMs);
+  heartbeat.unref();
+
+  async function listen() {
+    if (started || stopping) throw new Error('Server already started or closed');
+    started = true;
+    canonicalRoot = await realpath(path.resolve(config.webRoot));
+    if (!(await stat(canonicalRoot)).isDirectory()) throw new Error('Web root is not a directory');
+    const index = await realpath(path.join(canonicalRoot, 'index.html'));
+    if (!within(canonicalRoot, index) || !(await stat(index)).isFile()) throw new Error('Web root needs a local index.html');
+    await new Promise((resolve, rejectListen) => {
+      const onError = (error) => { httpServer.off('listening', onListening); rejectListen(error); };
+      const onListening = () => { httpServer.off('error', onError); ready = true; resolve(); };
+      httpServer.once('error', onError);
+      httpServer.once('listening', onListening);
+      httpServer.listen({ host: config.host, port: config.port });
+    });
+    telemetry.start(httpServer.address());
+    return httpServer.address();
+  }
+
+  function close() {
+    if (closePromise) return closePromise;
+    stopping = true;
+    ready = false;
+    clearInterval(housekeeping);
+    clearInterval(heartbeat);
+    for (const room of rooms.values()) endRoom(room, 'server_shutdown');
+    closePromise = (async () => {
+      const wsClosed = new Promise((resolve) => wss.close(() => resolve()));
+      for (const peer of peers) {
+        if (peer.ws.readyState === WebSocket.OPEN) peer.ws.close(1001, 'server_shutdown');
+      }
+      const httpClosed = new Promise((resolve) => {
+        httpServer.close(() => resolve());
+        httpServer.closeIdleConnections();
+      });
+      const force = setTimeout(() => {
+        for (const peer of peers) peer.ws.terminate();
+        httpServer.closeAllConnections();
+      }, config.shutdownGraceMs);
+      await Promise.all([wsClosed, httpClosed]);
+      clearTimeout(force);
+      telemetry.stop();
+    })();
+    return closePromise;
+  }
+
+  return {
+    listen,
+    close,
+    address: () => httpServer.address(),
+    stats: () => ({ rooms: rooms.size, connections: peers.size, closing: stopping }),
+    catchupStats: () => ({ ...catchupCounters }),
+    consoleCommand: (command) => telemetry.report(command),
+  };
+}
+

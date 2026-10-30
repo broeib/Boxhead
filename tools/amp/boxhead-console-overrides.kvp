@@ -1,0 +1,10 @@
+App.HasReadableConsole=True
+App.HasWriteableConsole=True
+App.AdminMethod=STDIO
+App.ApplicationReadyMode=RegexMatch
+App.MaxUsers=64
+Console.AppReadyRegex=^BOXHEAD READY port=\d+ mode=original-lockstep$
+Console.UserJoinRegex=^BOXHEAD PLAYER_JOIN userid=(?<userid>(?:bh|guest)_[a-f0-9]{32})(?: endpoint=(?<endpoint>[0-9A-Fa-f:.]+))? username=(?<username>[^\r\n]+)$
+Console.UserLeaveRegex=^BOXHEAD PLAYER_LEAVE userid=(?<userid>(?:bh|guest)_[a-f0-9]{32}) username=(?<username>[^\r\n]+)$
+Console.MetricsRegex=^BOXHEAD METRICS rooms=(?<Rooms>\d+) players=(?<Playing_Users>\d+) connections=(?<Connections>\d+) cpu_pct=(?<Process_CPU_Percent>\d+(?:\.\d+)?) rss_mib=(?<RSS_MiB>\d+(?:\.\d+)?) event_loop_p95_ms=(?<Event_Loop_P95_ms>\d+(?:\.\d+)?) event_loop_samples=(?<Event_Loop_Samples>\d+) pending_frames=(?<Pending_Frames>\d+)$
+Console.ConnectIPRegex=
