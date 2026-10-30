@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Boxhead 2Play Online</title>
+  </head>
+  <body>
+    <main>
+      <div id="game-display">
+      <div id="stage-shell">
+        <div id="stage" tabindex="0" aria-label="Boxhead 2Play game screen"></div>
+        <section id="join-sync" role="region" aria-labelledby="join-sync-title" aria-describedby="join-sync-message join-sync-detail" hidden>
+          <div class="join-sync-content">
+            <h2 id="join-sync-title">Joining the game</h2>
+            <p id="join-sync-message"></p>
+            <progress id="join-sync-progress" aria-label="Catching up with the game"></progress>
+            <p id="join-sync-detail"></p>
+            <p id="join-sync-hint"></p>
+          </div>
+        </section>
+      </div>
+        <div id="display-controls">
+          <button id="fullscreen" type="button" aria-controls="game-display" aria-pressed="false"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6"/></svg><span data-fullscreen-label>Fullscreen</span></button>
+          <span id="fullscreen-message" role="status"></span>
+        </div>
+      </div>
+      <section class="game-info" aria-label="Game information">
+      <p id="status" role="status" aria-live="polite" data-state="loading">Loading Boxhead 2Play…</p>
+      <div id="controls" aria-label="Controls">Select ONLINE to play with a friend.</div>
+      <p class="notice">Original game by Sean Cooper.</p>
+      </section>
+      <noscript>JavaScript is required to play.</noscript>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

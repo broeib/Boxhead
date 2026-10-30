@@ -1,22 +1,40 @@
 {
-  "name": "boxhead-2play",
+  "name": "boxhead-2play-online",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
+    "dev": "node --watch apps/original-server/index.mjs --web-root dist/original-web",
+    "dev:web": "vite --config apps/original-web/vite.config.ts",
+    "build": "npm run test:fidelity && npm run build:web",
+    "build:web": "tsc && vite build --config apps/original-web/vite.config.ts && node scripts/build-original-server.mjs",
+    "build:swf": "node scripts/build-original-swf.mjs --source public/Boxhead_2Play.swf",
+    "start": "node dist/original-server/index.mjs",
+    "preview": "npm start",
+    "test": "node --test tests/fidelity/*.test.mjs tests/original-bridge/*.test.mjs tests/original-network/*.test.mjs && vitest run --config tests/original-web/vitest.config.ts",
+    "test:fidelity": "node --test tests/fidelity/*.test.mjs",
+    "test:web": "vitest run --config tests/original-web/vitest.config.ts",
+    "test:network": "node --test tests/original-network/*.test.mjs",
+    "test:e2e": "node tests/original-network/guest-rejoin-browser.e2e.mjs",
+    "test:ui": "node tests/original-web/public-ui.e2e.mjs"
   },
   "dependencies": {
     "@ruffle-rs/ruffle": "^0.6.0",
-    "peerjs": "^1.5.5"
+    "peerjs": "^1.5.5",
+    "ws": "8.22.0"
   },
   "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/ws": "8.18.2",
+    "esbuild": "0.28.2",
     "happy-dom": "^20.14.5",
+    "playwright": "1.64.1",
+    "tsx": "4.23.15",
     "typescript": "^5.8.0",
     "vite": "^6.2.0",
     "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22 <23"
   }
 }

@@ -1,90 +1,59 @@
-# Boxhead 2Play — Online Remote Multiplayer
+# Boxhead 2Play Online
 
-Play the authentic classic Flash game **Boxhead 2Play** remotely with a friend over the internet, right in the browser!
+A browser multiplayer adaptation of **Boxhead 2Play**, the original game by Sean Cooper.
 
-Powered by **Ruffle (WebAssembly Flash Player)** for 100% byte-for-byte authentic gameplay, and **WebRTC Peer-to-Peer** streaming for zero-lag remote co-op and deathmatch.
+## Play
 
-![Boxhead 2Play](https://img.shields.io/badge/Flash%20AVM1-Authentic%20SWF-red?logo=adobe-flash)
-![Ruffle](https://img.shields.io/badge/Ruffle-WASM%200.6-orange)
-![WebRTC](https://img.shields.io/badge/WebRTC-P2P%20Netplay-green?logo=webrtc)
-![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)
+Choose **ONLINE** in the original game menu. Pick your nickname, character and
+controls, then start co-op or Deathmatch. A friend can join a running match from
+**ROOM LIST**. Each player uses their own browser and controls. The host can keep
+playing when a guest leaves, and another guest can take the open slot.
 
----
+If a frame acknowledgement is delayed for five seconds, the match pauses and
+allows up to thirty more seconds for the connection to recover. Both players
+continue the same match after all pending frames are verified. If only the guest
+times out, the host can continue and another guest can join. Conflicting game
+states still stop the match rather than continuing out of sync.
 
-## 🌟 Features
+**Fullscreen** fills your display, including widescreen monitors. Controls below
+the game show your actual key bindings. Defaults are WASD to move, Space to fire,
+Q/E to change weapons, and 1–0 to select a weapon.
 
-- **100% Authentic Gameplay**: Runs the original `Boxhead_2Play.swf`. Exactly the classic title screen, character selector (Jon, Bon, etc.), 18 rooms, original audio, combo decay, and genuine discrete grid pathfinding for devils and zombies.
-- **Remote Multiplayer (Co-Op & Deathmatch)**:
-  - Play remotely with your friend on separate computers.
-  - **Zero Desync**: Host-authoritative WebRTC 60 FPS video & audio streaming with sub-15ms input data channel.
-  - **Zero Server Costs**: Connects peer-to-peer using free public WebRTC signaling (PeerJS) and Google STUN.
-  - **1-Click Shareable Invite Links**: Send a direct link (`?room=BH-XXXX`) or a 5-character code to your friend.
-- **Independent Custom Keybindings**:
-  - Both players can use their preferred layout (e.g., both can use **WASD + Space** without conflicting).
-  - The web wrapper transparently translates inputs into Flash's internal Player 1 and Player 2 scan codes.
-- **Real-Time Latency Monitor**: Built-in ping badge showing network latency in milliseconds.
-- **Fullscreen & Audio Controls**: Integrated arcade cabinet shell.
+## Run locally or self-host
 
----
+Use Node.js 22 (see `.nvmrc`).
 
-## 🎮 How to Play
+```sh
+npm ci
+npm run build
+npm start -- --host 0.0.0.0 --port 7777
+```
 
-### 1. Solo Play
-1. Open the game.
-2. Click **Solo Play**.
-3. Enjoy the authentic single-player campaign offline.
+Open `http://localhost:7777`. The server serves HTTP and WebSocket from one port.
+For public hosting, configure your own HTTPS/WSS endpoint. No deployment-specific
+addresses, credentials, infrastructure configuration or private history are
+included here.
 
-### 2. Online Multiplayer with a Friend
-1. **Host**:
-   - Click **Host Online Game**.
-   - Click **Copy Invite Link** (or share the 5-character room code) with your friend.
-2. **Guest**:
-   - Open the invite link (auto-connects!), or click **Join Friend's Game** and paste the code.
-3. Once connected, select **Cooperative** or **Deathmatch** in Boxhead 2Play's menu and start playing!
+The checked-in online SWF and optimized Ruffle runtime are ready to build the
+web app. To regenerate the SWF from its source patches, install Java 17+ and run
+`npm run build:swf`. Runtime source patches and rebuild notes are in
+[the runtime guide](docs/RUNTIME_BUILD.md).
 
----
+## Develop and test
 
-## ⌨️ Controls & Key Mapping
-
-Click the **🎮 Controls** button in the top bar anytime to customize keys:
-
-| Player | Default Preset 1 (WASD) | Default Preset 2 (Classic) |
-|---|---|---|
-| **Player 1 (Host)** | `W`, `A`, `S`, `D` / `Space` | `↑`, `←`, `↓`, `→` / `/` |
-| **Player 2 (Guest)** | `W`, `A`, `S`, `D` / `Space` | `W`, `A`, `S`, `D` / `Space` |
-
-- **Prev / Next Weapon**: `Q` / `E` (or `,` / `.`)
-- **Fullscreen**: Click **⛶ Fullscreen** or press `F11`.
-
----
-
-## 🚀 Development & Deployment
-
-### Local Development
-```bash
-# Install dependencies
-npm install
-
-# Start local dev server
-npm run dev
-
-# Run unit tests
+```sh
 npm test
-
-# Build production bundle
 npm run build
 ```
 
-### 1-Click Static Web Deployment
-The game builds into static assets in `dist/` and can be deployed for free on **Vercel**, **GitHub Pages**, or **Cloudflare Pages**:
+For browser checks, install Playwright Chromium (`npx playwright install chromium`)
+or set `CHROME_BIN` to an installed browser. Run `npm run test:ui` for the public
+interface or `npm run test:e2e` for guest replacement. See
+[test scope](docs/TEST_SCOPE.md) for what is included.
 
-```bash
-npm run build
-```
-Upload the `dist/` directory or push to GitHub with GitHub Pages / Vercel integration enabled.
+## Credits and provenance
 
----
-
-## 📜 License
-MIT
+Original game by **Sean Cooper**. This is an independent project; it does not
+imply endorsement by the original author or upstream maintainers. Original game
+assets are not automatically covered by the upstream README's MIT statement.
+See [provenance and third-party notices](docs/PROVENANCE.md).
