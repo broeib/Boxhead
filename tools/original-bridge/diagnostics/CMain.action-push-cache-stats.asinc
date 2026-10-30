@@ -1,0 +1,19 @@
+   // Diagnostic-only: two harness calls, outside every measured native Step.
+   // No world, bridge, preparation, scalar-policy or cache writes occur here.
+   function BH_ActionPushCacheStats()
+   {
+      if(arguments.length !== 0)
+         throw new Error("ActionPush stats takes no arguments");
+      var b = this.mBH;
+      if(b === undefined || b === null || b.active !== true
+         || (b.state !== "ready" && b.state !== "playing")
+         || b.error !== "" || b.stepping !== false
+         || b.snapshotReceiptBusy !== false || b.snapshotReceiptPoisoned === true
+         || b.snapshotReceiptRequest !== undefined || b.snapshotReceiptProof !== undefined
+         || b.snapshotReceiptPending !== undefined)
+         throw new Error("ActionPush stats requires an idle prepared bridge with no pending receipt");
+      var kernel = _global.boxheadActionPushCacheV1;
+      if(typeof kernel !== "function")
+         throw new Error("ActionPush native cache stats are unavailable");
+      return kernel("stats");
+   }

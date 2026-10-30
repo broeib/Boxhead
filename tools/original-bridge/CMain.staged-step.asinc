@@ -1,0 +1,473 @@
+   // A full tick may yield only at these explicit boundaries. The native
+   // fence freezes autonomous AVM1 work until the real receipt has returned.
+   // The original BH_Step/BH_State remain the synchronous/replay fallback.
+   var mBHStagedStep;
+
+   function BH_StagedInstall()
+   {
+      var b = this.mBH;
+      var kernel = _global.boxheadNativeStepFenceV1;
+      if(kernel === undefined) return;
+      try
+      {
+         if(typeof kernel != "function") throw new Error("native staged fence is not callable");
+         var cap = kernel("capability");
+         // The native envelope has no prototype. Borrow the original own-slot
+         // predicate instead of asking that envelope for an inherited method.
+         if(typeof cap != "object" || cap === null || cap instanceof Array
+            || !Object.prototype.hasOwnProperty.call(cap,"version") || !Object.prototype.hasOwnProperty.call(cap,"contract")
+            || cap.version !== 1 || cap.contract !== "bh-step-fence-v1")
+            throw new Error("native staged fence capability is invalid");
+         for(var key in cap)
+            if(key != "version" && key != "contract") throw new Error("unknown native staged fence capability field");
+         // Native authentication reads these own stored function identities;
+         // it never invokes a prototype getter while entering or poisoning.
+         this.BH_StagedStepBegin = this.BH_StagedStepBegin;
+         this.BH_StagedStepPrepare = this.BH_StagedStepPrepare;
+         this.BH_StagedStepProject = this.BH_StagedStepProject;
+         this.BH_StagedStepCommit = this.BH_StagedStepCommit;
+         this.BH_StagedStepAbort = this.BH_StagedStepAbort;
+         this.BH_StagedStateReceipt = this.BH_StagedStateReceipt;
+         this.BH_StagedFencePoison = this.BH_StagedFencePoison;
+         ASSetPropFlags(this,"BH_StagedStepBegin,BH_StagedStepPrepare,BH_StagedStepProject,BH_StagedStepCommit,BH_StagedStepAbort,BH_StagedStateReceipt,BH_StagedFencePoison",7);
+         if(kernel("install",this) !== true) throw new Error("native staged fence installation failed");
+         b.stagedFenceKernel = kernel;
+         b.stagedStepVersion = 1;
+      }
+      catch(e)
+      {
+         this.BH_StagedFencePoison("native staged fence installation: " + String(e));
+      }
+   }
+
+   function BH_StagedFencePoison(message)
+   {
+      var tx = this.mBHStagedStep;
+      var b = tx === undefined ? this.mBH : tx.bridge;
+      if(tx !== undefined)
+      {
+         // Set before entering the original ordered delete loop. A throwing
+         // cleanup is never retried, and cannot publish an ACK or resume play.
+         if(tx.cleanupAttempted !== true)
+         {
+            tx.cleanupAttempted = true;
+            try
+            {
+               var context = tx.context;
+               if(context !== undefined)
+                  for(var cleanup = 0; cleanup < context.objects.length; cleanup++)
+                     delete context.objects[cleanup].__bhSnapshotRef;
+            }
+            catch(cleanupError)
+            {
+               tx.cleanupError = String(cleanupError);
+            }
+         }
+         if(tx.failure !== undefined) message = tx.failure;
+         if(tx.cleanupError !== undefined) message += "; cleanup: " + tx.cleanupError;
+         delete tx.context;
+         delete tx.root;
+         delete tx.nativeState;
+         delete tx.snapshot;
+         delete tx.rng;
+         tx.phase = "poisoned";
+         tx.busy = false;
+      }
+      b.stepping = false;
+      b.state = "error";
+      b.snapshotReceiptPoisoned = true;
+      if(b.error == "") b.error = String(message);
+      delete b.snapshotReceiptRequest;
+      delete b.snapshotReceiptProof;
+      delete b.snapshotReceiptPending;
+      delete b.stagedStepVersion;
+      if(this.mBH !== b)
+      {
+         this.mBH.stepping = false;
+         this.mBH.state = "error";
+         this.mBH.snapshotReceiptPoisoned = true;
+         this.mBH.error = b.error;
+         delete this.mBH.snapshotReceiptRequest;
+         delete this.mBH.snapshotReceiptProof;
+         delete this.mBH.snapshotReceiptPending;
+         delete this.mBH.stagedStepVersion;
+      }
+      delete this.mBHStagedStep;
+      return true;
+   }
+
+   function BH_StagedError(message)
+   {
+      var b = this.mBH;
+      if(b.state != "error") this.BH_StagedFencePoison(message);
+      return {version:1,engine:"original-swf",state:"error",tick:b.tick,error:b.error,snapshotReceiptVersion:1};
+   }
+
+   function BH_StagedCheck(tx)
+   {
+      var b = tx.bridge;
+      if(this.mBHStagedStep !== tx || this.mBH !== b || this.mcWorld !== tx.world
+         || b.stagedFenceKernel !== tx.kernel || _global.boxheadNativeStepFenceV1 !== tx.kernel
+         || b.stagedStepVersion !== 1 || !b.active || b.state != "playing" || b.replay === true
+         || b.stepping || b.snapshotReceiptBusy === true || b.snapshotReceiptPoisoned === true
+         || b.tick !== tx.tick || b.snapshotReceiptEpoch !== tx.epoch
+         || tx.world.mTick !== tx.worldTick || b.logicCalls !== 1 || b.drawCalls !== 1
+         || b.complete !== tx.complete || this.fState !== tx.worldState)
+         throw new Error("staged frame identity or completed world step changed");
+   }
+
+   function BH_StagedRequire(token, epoch, tick, phase, callbackName)
+   {
+      var tx = this.mBHStagedStep;
+      if(tx === undefined || tx.phase !== phase || tx.busy !== true || tx.callbackName !== callbackName
+         || token !== tx.token || epoch !== tx.epoch || tick !== tx.tick
+         || !CMain.BH_ValidLink(token) || !CMain.BH_Integer(epoch,1,2147483647)
+         || !CMain.BH_Integer(tick,1,2147483647) || tick % 25 != 0)
+         throw new Error("staged frame phase or identity mismatch");
+      this.BH_StagedCheck(tx);
+      var b = tx.bridge;
+      if(b.snapshotReceiptRequest !== undefined || b.snapshotReceiptProof !== undefined
+         || (phase != "committed" && b.snapshotReceiptPending !== undefined)
+         || (phase == "committed" && (b.snapshotReceiptPending === undefined || b.snapshot !== tx.snapshot)))
+         throw new Error("staged frame receipt lifecycle changed");
+      return tx;
+   }
+
+   function BH_StagedDispatch(name, callback, args)
+   {
+      var tx = this.mBHStagedStep;
+      if(tx === undefined || tx.busy === true) throw new Error("reentrant staged frame callback: " + name);
+      var phase = tx.phase;
+      var allowed = (name == "bhStepPrepare" && phase == "begun")
+         || (name == "bhStepProject" && phase == "prepared")
+         || (name == "bhStepCommit" && phase == "projected")
+         || (name == "bhInfo" && phase == "committed" && tx.infoRead !== true)
+         || (name == "bhStateReceipt" && phase == "committed" && tx.infoRead === true)
+         || (name == "bhPresent" && (phase == "begun" || phase == "prepared" || phase == "projected"))
+         || name == "bhStepAbort";
+      if(!allowed) throw new Error("callback outside staged frame phase: " + name);
+      if(name == "bhInfo")
+      {
+         if(args.length != 0) throw new Error("staged Info arguments changed");
+      }
+      else if(name == "bhPresent")
+      {
+         if(args.length != 1) throw new Error("staged Present arguments changed");
+      }
+      else if(args.length != 3 || args[0] !== tx.token || args[1] !== tx.epoch || args[2] !== tx.tick)
+         throw new Error("staged callback identity arguments changed");
+      tx.busy = true;
+      tx.callbackName = name;
+      try
+      {
+         var result = callback.apply(this,args);
+         if(name == "bhInfo")
+         {
+            this.BH_StagedCheck(tx);
+            if(result.version !== 1 || result.engine !== "original-swf" || result.state !== "playing"
+               || result.tick !== tx.tick || result.snapshotReceiptVersion !== 1
+               || result.stagedStepVersion !== 1 || result.error !== undefined)
+               throw new Error("staged Info readback failed");
+            tx.infoRead = true;
+         }
+         return result;
+      }
+      finally
+      {
+         tx.busy = false;
+         delete tx.callbackName;
+      }
+   }
+
+   function BH_StagedStepBegin(tick, p1Mask, p2Mask, join, receiptToken, leave)
+   {
+      var b = this.mBH;
+      var kernel = b.stagedFenceKernel;
+      var tx;
+      try
+      {
+         if((arguments.length != 5 && arguments.length != 6) || b.stagedStepVersion !== 1 || typeof kernel != "function"
+            || _global.boxheadNativeStepFenceV1 !== kernel || b.replay === true
+            || this.mBHStagedStep !== undefined || tick % 25 != 0)
+            throw new Error("staged full frame is unavailable");
+         if(!b.active || (b.state != "ready" && b.state != "playing"))
+            throw new Error("world is not ready for a frame");
+         if(b.stepping || b.complete != undefined || !CMain.BH_Integer(tick,1,2147483647) || tick != b.tick + 1 || !CMain.BH_Integer(p1Mask,0,131071) || !CMain.BH_Integer(p2Mask,0,131071))
+            throw new Error("invalid, duplicate, reentrant, or post-completion frame");
+         if(b.snapshotReceiptBusy === true || b.snapshotReceiptRequest !== undefined
+            || b.snapshotReceiptProof !== undefined || b.snapshotReceiptPending !== undefined
+            || !CMain.BH_ValidLink(receiptToken) || !CMain.BH_Integer(b.snapshotReceiptEpoch,0,2147483646))
+            throw new Error("invalid native snapshot receipt request or unconsumed readback");
+         if(this.fState != this.State_RunWorld || !this.mcWorld.mLoaded || this.mcWorld.mPaused)
+            throw new Error("original world cannot accept a frame");
+         if(leave !== undefined && !this.BH_ValidLeave(leave,join,p2Mask)) throw new Error("invalid player leave");
+         if(join != undefined)
+         {
+            if(typeof join != "object" || join == null || join instanceof Array || join.slot != 2 || !CMain.BH_Integer(join.character,0,3) || b.playerCount != 1)
+               throw new Error("invalid or duplicate player join");
+            for(var joinKey in join) if(joinKey != "slot" && joinKey != "character") throw new Error("unknown player join property");
+         }
+         else if(b.playerCount == 1 && p2Mask != 0) throw new Error("second player input before spawn");
+         b.snapshotReceiptEpoch++;
+         tx = {token:receiptToken,epoch:b.snapshotReceiptEpoch,tick:tick,phase:"begin",bridge:b,
+            world:this.mcWorld,kernel:kernel,busy:true,callbackName:"bhStepBegin",cleanupAttempted:false};
+         this.mBHStagedStep = tx;
+         if(kernel("begin",this,receiptToken,tx.epoch,tick) !== true) throw new Error("native staged begin failed");
+         var before = this.mcWorld.mTick;
+         b.clock = tick * b.frameMs;
+         b.logicCalls = 0;
+         b.drawCalls = 0;
+         b.stepping = true;
+         try
+         {
+            if(leave !== undefined) this.BH_LeavePlayer();
+            if(join != undefined) this.BH_JoinPlayer(join.character);
+            this.BH_PresentationBegin();
+            CMain.mInput.BH_ApplyMasks(p1Mask,p2Mask);
+            this.State_RunWorld(true);
+            // Preserve original first-frame order: initialize players, draw, apply difficulty.
+            if(before == 0) this.mcWorld.BH_InitializeRules();
+            CSound.ProcessAll();
+            CMain.ProcessBGTasks();
+            this.BH_PresentationEnd(tick);
+         }
+         finally
+         {
+            b.stepping = false;
+         }
+         if(b.state == "error") throw new Error(b.error);
+         if(b.logicCalls != 1 || b.drawCalls != 1 || this.mcWorld.mTick != before + 1)
+            throw new Error("frame did not execute exactly one original logic and draw tick");
+         b.tick = tick;
+         b.state = "playing";
+         if(this.mcWorld.mCompleteState)
+         {
+            b.complete = this.mcWorld.mCompleteState;
+         }
+         tx.worldTick = this.mcWorld.mTick;
+         tx.complete = b.complete;
+         tx.worldState = this.fState;
+         this.BH_StagedCheck(tx);
+         if(kernel("leave",this,receiptToken,tx.epoch,tick,"begin") !== true) throw new Error("native staged begin completion failed");
+         tx.phase = "begun";
+         return {version:1,phase:"begun",token:receiptToken,epoch:tx.epoch,tick:tick};
+      }
+      catch(e)
+      {
+         var message = "staged frame begin: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHStagedStep !== undefined || b.state != "error") this.BH_StagedFencePoison(message);
+         return this.BH_StagedError(message);
+      }
+      finally
+      {
+         if(tx !== undefined) { tx.busy = false; delete tx.callbackName; }
+      }
+   }
+
+   function BH_StagedStepPrepare(token, epoch, tick)
+   {
+      var tx = this.mBHStagedStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      try
+      {
+         tx = this.BH_StagedRequire(token,epoch,tick,"begun","bhStepPrepare");
+         if(kernel("enter",this,token,epoch,tick,"prepare") !== true) throw new Error("native staged prepare entry failed");
+         tx.phase = "prepare";
+         var b = this.mBH;
+         var w = this.mcWorld;
+         var context = {objects:new Array(),errorPath:new Array(),fields:0,projectionKernel:b.nativeProjectionScanKernel};
+         tx.context = context;
+         var world = new Object();
+         for(var key in w)
+         {
+            var type = typeof w[key];
+            if(!CMain.BH_SkipField(key) && (type == "number" || type == "string" || type == "boolean"))
+            {
+               world[key] = w[key];
+            }
+         }
+         var rng = {seed:b.seed,state:b.rng,calls:b.rngCalls};
+         var navClass = World.Map.CMap_Cell;
+         var nav = {state:navClass.nState,id:navClass.nSID,time:navClass.nSTimer,distance:navClass.nSDist,fullScans:navClass.nFullScanCount,list:navClass.nList,pending:navClass.pList,session:navClass.mCurrentSessionID,mapSession:World.Map.CMap.mCheckSessionID};
+         var root = {scope:"full",tick:b.tick,rng:rng,settings:b.settings,mode:b.mode,map:b.map,characters:b.characters,world:world,entities:w.mThing_Collection.mThings,players:w.mThing_Collection.mPlayerThings,pendingDeletes:w.mThing_Collection.mDeleteThings,respawn:w.mThing_Collection.mRespawnPlayer,counters:w.mThing_Collection.mThingCounters,timeSlices:[w.mThing_Collection.mTimeSlice_25,w.mThing_Collection.mTimeSlice_8,w.mThing_Collection.mTimeSlice_4],mapState:w.mMap,grid:CMain.BH_Grid(w.mMap),upgrades:w.mUpgrades,hud:w.mHud,shake:w.mShake,track:w.lTrackPosition,spawnPlayers:w.mSpawnPoint_Player,spawnZombies:w.mSpawnPoint_Zombie,spawnDevils:w.mSpawnPoint_Devil,input:CMain.mInput.mKey_List_Registered,nextThingID:Thing.CThing.mAllocate_ID,processAllocator:Thing.CThing.mAllocate_ProcessID_Count,positionFactor:Thing.Math.CThing_Position.mPFactor,navStatics:nav};
+         if(b.initialPlayers == 1 || b.membershipVersion === 2) root.membership = {initial:b.initialPlayers,joined:b.playerCount};
+         if(b.membershipVersion === 1 || b.membershipVersion === 2) root.membership.generation = b.guestGeneration;
+         tx.root = root;
+         tx.rng = rng;
+         var projectStart = getTimer();
+         if(context.projectionKernel !== undefined && _global.boxheadNativeProjectionScanV1 !== context.projectionKernel)
+            throw new Error("native projection kernel identity changed");
+         if(CMain.BH_PersonalEnabled())
+         {
+            var personalScalarKernel = b.nativeScalarKernel;
+            if(personalScalarKernel !== undefined && _global.boxheadNativeScalarsV1 !== personalScalarKernel)
+               throw new Error("native scalar kernel identity changed");
+            root.personal = CMain.BH_PersonalSnapshot(true,personalScalarKernel);
+         }
+         tx.projectMs = getTimer() - projectStart;
+         this.BH_StagedCheck(tx);
+         if(kernel("leave",this,token,epoch,tick,"prepare") !== true) throw new Error("native staged prepare completion failed");
+         tx.phase = "prepared";
+         return {version:1,phase:"prepared",token:token,epoch:epoch,tick:tick};
+      }
+      catch(e)
+      {
+         var message = "staged frame prepare: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHStagedStep !== undefined || this.mBH.state != "error") this.BH_StagedFencePoison(message);
+         return this.BH_StagedError(message);
+      }
+   }
+
+   function BH_StagedStepProject(token, epoch, tick)
+   {
+      var tx = this.mBHStagedStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      try
+      {
+         tx = this.BH_StagedRequire(token,epoch,tick,"prepared","bhStepProject");
+         if(kernel("enter",this,token,epoch,tick,"project") !== true) throw new Error("native staged project entry failed");
+         tx.phase = "project";
+         var projectStart = getTimer();
+         tx.nativeState = CMain.BH_NativeProject(tx.root,tx.context);
+         tx.projectMs += getTimer() - projectStart;
+         this.BH_StagedCheck(tx);
+         if(kernel("leave",this,token,epoch,tick,"project") !== true) throw new Error("native staged project completion failed");
+         tx.phase = "projected";
+         return {version:1,phase:"projected",token:token,epoch:epoch,tick:tick};
+      }
+      catch(e)
+      {
+         var message = "staged frame project: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHStagedStep !== undefined || this.mBH.state != "error") this.BH_StagedFencePoison(message);
+         return this.BH_StagedError(message);
+      }
+   }
+
+   function BH_StagedStepCommit(token, epoch, tick)
+   {
+      var tx = this.mBHStagedStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      try
+      {
+         tx = this.BH_StagedRequire(token,epoch,tick,"projected","bhStepCommit");
+         if(kernel("enter",this,token,epoch,tick,"commit") !== true) throw new Error("native staged commit entry failed");
+         tx.phase = "commit";
+         var b = this.mBH;
+         var context = tx.context;
+         var nativeState = tx.nativeState;
+         var rng = tx.rng;
+         var projectMs = tx.projectMs;
+         var encodeMs = 0;
+         var hashStart = getTimer();
+         b.snapshotReceiptRequest = {token:token,epoch:epoch,tick:tick,used:false};
+         var fast = this.BH_ReceiptDigest(nativeState);
+         var nativeDigest;
+         var encodedBytes;
+         if(typeof fast.digest == "string" && fast.digest.length == 26 && fast.digest.substr(0,10) == "native-v2-" && CMain.BH_Integer(fast.bytes,0,8000000))
+         {
+            nativeDigest = fast.digest;
+            encodedBytes = fast.bytes;
+         }
+         else
+         {
+            throw new Error("canonical native digest accelerator unavailable");
+         }
+         var hashMs = getTimer() - hashStart - encodeMs;
+         var snapshot = {version:1,engine:"original-swf",state:b.state,tick:b.tick,scope:"full",digest:nativeDigest,digestSchema:"native-projection-v3",players:this.BH_Players(),rng:rng,native:nativeState,entities:nativeState.entities,snapshotBytes:encodedBytes,snapshotObjects:context.objects.length,snapshotFields:context.fields,profile:{projectMs:projectMs,encodeMs:encodeMs,hashMs:hashMs}};
+         b.snapshot = snapshot;
+         b.lastFullDigest = nativeDigest;
+         tx.snapshot = snapshot;
+         tx.cleanupAttempted = true;
+         for(var cleanup = 0; cleanup < context.objects.length; cleanup++)
+            delete context.objects[cleanup].__bhSnapshotRef;
+         tx.cleanupComplete = true;
+         delete tx.context;
+         delete tx.root;
+         delete tx.nativeState;
+         delete tx.rng;
+         this.BH_StagedCheck(tx);
+         this.BH_ReceiptPublish(snapshot,token);
+         if(kernel("leave",this,token,epoch,tick,"commit") !== true) throw new Error("native staged commit completion failed");
+         tx.phase = "committed";
+         return {tick:b.tick,digest:snapshot.digest,players:snapshot.players,worldTick:this.mcWorld.mTick,rng:snapshot.rng,complete:b.complete,profile:snapshot.profile,snapshotBytes:snapshot.snapshotBytes,snapshotObjects:snapshot.snapshotObjects,snapshotFields:snapshot.snapshotFields};
+      }
+      catch(e)
+      {
+         var message = "staged frame commit: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHStagedStep !== undefined || this.mBH.state != "error") this.BH_StagedFencePoison(message);
+         return this.BH_StagedError(message);
+      }
+   }
+
+   function BH_StagedStateReceipt(token, epoch, tick)
+   {
+      var tx = this.mBHStagedStep;
+      if(tx === undefined) return this.BH_StateReceipt(token,epoch,tick);
+      var kernel = tx.kernel;
+      try
+      {
+         tx = this.BH_StagedRequire(token,epoch,tick,"committed","bhStateReceipt");
+         if(tx.infoRead !== true || tx.cleanupComplete !== true) throw new Error("staged receipt preceded Info or cleanup");
+         var result = this.BH_StateReceipt(token,epoch,tick);
+         this.BH_StagedCheck(tx);
+         if(result.version !== 1 || result.token !== token || result.epoch !== epoch || result.tick !== tick
+            || result.scope !== "full" || result.header.tick !== tick || result.header.digest !== tx.snapshot.digest
+            || result.header.snapshotBytes !== tx.snapshot.snapshotBytes || result.error !== undefined
+            || this.mBH.snapshotReceiptPending !== undefined)
+            throw new Error("staged native receipt readback failed");
+         if(kernel("finish",this,token,epoch,tick) !== true) throw new Error("native staged receipt finish failed");
+         delete tx.snapshot;
+         tx.phase = "finished";
+         delete this.mBHStagedStep;
+         return result;
+      }
+      catch(e)
+      {
+         var message = "staged frame receipt: " + String(e);
+         tx.failure = message;
+         try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         if(this.mBHStagedStep !== undefined || this.mBH.state != "error") this.BH_StagedFencePoison(message);
+         return this.BH_StagedError(message);
+      }
+   }
+
+   function BH_StagedStepAbort(token, epoch, tick)
+   {
+      var tx = this.mBHStagedStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      var message = "staged frame cancelled";
+      try
+      {
+         if(tx === undefined || arguments.length != 3 || tx.token !== token || tx.epoch !== epoch || tx.tick !== tick
+            || tx.busy !== true || tx.callbackName !== "bhStepAbort")
+            throw new Error("staged cancellation identity mismatch");
+         tx.failure = message;
+         if(kernel("abort",this,token,epoch,tick) !== true) throw new Error("native staged abort failed");
+      }
+      catch(e)
+      {
+         message += ": " + String(e);
+      }
+      if(this.mBHStagedStep !== undefined || this.mBH.state != "error") this.BH_StagedFencePoison(message);
+      return this.BH_StagedError(message);
+   }

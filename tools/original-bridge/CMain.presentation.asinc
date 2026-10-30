@@ -1,0 +1,620 @@
+   // Online presentation only. The canonical world still executes exactly one
+   // original Process/Draw per commanded tick. Capture the original transient
+   // bitmap writes, then replay them into different BitmapData objects between
+   // ticks. Never call Draw/Render/Animate, advance time/RNG, or write positions
+   // while presenting. Offline and historical replay keep their original path.
+   function BH_PresentationConfig(enabled, mode)
+   {
+      var b = this.mBH;
+      if(typeof enabled != "boolean") return {version:1,ok:false};
+      if(mode !== undefined && mode !== "three-pose-v2" && mode !== "four-pose-v3") return {version:1,ok:false};
+      if(enabled && (b.active || b.state != "menu")) return {version:1,ok:false};
+      if(!enabled) this.BH_PresentationDispose();
+      b.presentationRequested = enabled;
+      if(mode === "three-pose-v2" || mode === "four-pose-v3") b.presentationMode = mode;
+      else delete b.presentationMode;
+      var result = {version:1,ok:true,enabled:enabled};
+      if(mode === "three-pose-v2" || mode === "four-pose-v3")
+      { result.mode = mode; result.poseVersion = mode === "four-pose-v3" ? 3 : 2; }
+      return result;
+   }
+
+   static function BH_PresentationAttach(world, bitmap, depth)
+   {
+      // Retain the actual original attachment depth so HUD MovieClips stay on
+      // top. No new display object is inserted above the original HUD.
+      world.attachBitmap(bitmap,depth,"always",false);
+      if(CMain.BH_Active()) CMain._this.mBH.presentationTarget = {world:world,depth:depth};
+   }
+
+   static function BH_PresentationPlane(index)
+   {
+      var p = CMain._this.mBH.presentation;
+      if(p == undefined || !p.capturing) return;
+      p.plane = index === undefined ? "coop" : String(index);
+      p.entity = undefined;
+   }
+
+   static function BH_PresentationDrawThing(thing)
+   {
+      var p = CMain._this.mBH.presentation;
+      if(p == undefined || !p.capturing) return thing.Draw();
+      // The native call and receiver are preserved. Capture only a display
+      // anchor; never replace a native coordinate, getter, angle or animation.
+      p.entity = p.plane + "/thing/" + String(thing.mUniqueID);
+      var position = thing.mPosition;
+      p.anchor = {x:position.mX * World.Map.CMap_Cell.mSize.x - thing.mWorld.mDrawPosition.x,
+         y:(position.mY + position.mZ * Thing.Math.CThing_Position.mPFactor) * World.Map.CMap_Cell.mSize.y - thing.mWorld.mDrawPosition.y};
+      // Native invincibility deliberately hides players on alternate ticks.
+      // Retain their read-only anchor even on a hidden tick so the next visible
+      // sprite can interpolate from the immediately preceding native position.
+      if(p.mode === "three-pose-v2" || p.mode === "four-pose-v3")
+      {
+         // Hidden Things count too: the command limit alone does not bound
+         // their anchors. An exhausted visual buffer still calls native Draw.
+         var missingAnchor = p.anchors[p.entity] === undefined;
+         if(p.entity.length > 256 || typeof p.anchor.x != "number" || typeof p.anchor.y != "number"
+            || !isFinite(p.anchor.x) || !isFinite(p.anchor.y)
+            || (missingAnchor && p.anchorCount >= 4096))
+         {
+            CMain._this.BH_PresentationFallback("presentation anchor limit or coordinates invalid");
+            return thing.Draw();
+         }
+         if(missingAnchor) p.anchorCount++;
+      }
+      p.anchors[p.entity] = p.anchor;
+      try { return thing.Draw(); }
+      finally { p.entity = undefined; p.anchor = undefined; }
+   }
+
+   static function BH_PresentationCopyPixels()
+   {
+      return CMain._this.BH_PresentationWrite(this,"copyPixels",arguments);
+   }
+
+   static function BH_PresentationDrawBitmap()
+   {
+      return CMain._this.BH_PresentationWrite(this,"draw",arguments);
+   }
+
+   static function BH_PresentationFillRect()
+   {
+      return CMain._this.BH_PresentationWrite(this,"fillRect",arguments);
+   }
+
+   static function BH_PresentationApplyFilter()
+   {
+      return CMain._this.BH_PresentationWrite(this,"applyFilter",arguments);
+   }
+
+   function BH_PresentationBegin()
+   {
+      var b = this.mBH;
+      if(!b.presentationRequested || b.replay == true || b.presentationError != undefined) return;
+      try
+      {
+         var p = b.presentation;
+         if(p == undefined)
+         {
+            var attached = b.presentationTarget;
+            var world = this.mcWorld;
+            if(attached.world !== world || !(world.bmDraw instanceof flash.display.BitmapData))
+               throw new Error("original bitmap attachment unavailable");
+            p = {world:world,depth:attached.depth,records:new Array(),commands:new Array(),
+               previous:Object(),anchors:Object(),scratch:new Array(),frames:0,interpolated:0,capturing:false};
+            if(b.presentationMode === "three-pose-v2" || b.presentationMode === "four-pose-v3")
+            {
+               p.mode = b.presentationMode;
+               p.older = Object();
+               if(p.mode === "four-pose-v3") p.oldest = Object();
+            }
+            b.presentation = p;
+            var targets = [world.bmDraw];
+            if(world.mSplitScreen != undefined) targets.push(world.mSplitScreen.bmDraw);
+            var names = ["copyPixels","draw","fillRect","applyFilter"];
+            var wrappers = [CMain.BH_PresentationCopyPixels,CMain.BH_PresentationDrawBitmap,CMain.BH_PresentationFillRect,CMain.BH_PresentationApplyFilter];
+            for(var i = 0; i < targets.length; i++)
+            {
+               var target = targets[i];
+               if(!(target instanceof flash.display.BitmapData) || target.width <= 0 || target.height <= 0 || target.width * target.height > 1048576)
+                  throw new Error("invalid presentation bitmap");
+               if(typeof target.transparent != "boolean") throw new Error("native bitmap transparency unavailable");
+               var record = {target:target,display:new flash.display.BitmapData(target.width,target.height,target.transparent,0),methods:Object(),index:i};
+               p.records.push(record);
+               for(var n = 0; n < names.length; n++)
+               {
+                  var name = names[n];
+                  if(typeof target[name] != "function") throw new Error("missing original bitmap method");
+                  record.methods[name] = {original:target[name],own:target.hasOwnProperty(name),wrapper:wrappers[n]};
+                  target[name] = wrappers[n];
+               }
+            }
+            // Initialize without displaying an empty bitmap before the first
+            // captured canonical Draw has completed.
+            p.records[0].display.copyPixels(world.bmDraw,world.bmDraw.rectangle,World.CWorld.zPoint);
+         }
+         if(p.mode === "three-pose-v2" || p.mode === "four-pose-v3")
+         {
+            if(p.world !== this.mcWorld) throw new Error("presentation world changed before disposal");
+            // Retain only scalar maps. Commands, bitmap sources and scratch
+            // pixels belong exclusively to the newest original Draw.
+            if(p.mode === "four-pose-v3")
+            {
+               p.oldest = p.older;
+               p.oldestTick = p.olderTick;
+               p.oldestMoving = false;
+            }
+            p.older = p.previous;
+            p.olderTick = p.previousTick;
+            p.previousTick = p.tick;
+            p.anchorCount = 0;
+            p.olderMoving = false;
+            p.newerMoving = false;
+         }
+         p.previous = p.anchors;
+         p.anchors = Object();
+         p.commands = new Array();
+         p.scratchUsed = 0;
+         p.moving = false;
+         p.plane = "coop";
+         p.entity = undefined;
+         p.capturing = true;
+      }
+      catch(error) { this.BH_PresentationFallback(String(error)); }
+   }
+
+   function BH_PresentationWrite(target, name, values)
+   {
+      var p = this.mBH.presentation;
+      var record;
+      for(var i = 0; i < p.records.length; i++)
+         if(p.records[i].target === target) record = p.records[i];
+      if(record == undefined) throw new Error("presentation bitmap wrapper lost its native target");
+      // Always execute the exact original operation first and exactly once.
+      // A native exception propagates normally; only capture errors fall back.
+      var result = record.methods[name].original.apply(target,values);
+      if(p.capturing)
+      {
+         try { this.BH_PresentationCapture(p,record,name,values); }
+         catch(error) { this.BH_PresentationFallback(String(error)); }
+      }
+      return result;
+   }
+
+   static function BH_PresentationRectangle(value)
+   {
+      return value === undefined ? undefined : new flash.geom.Rectangle(value.x,value.y,value.width,value.height);
+   }
+
+   static function BH_PresentationPoint(value)
+   {
+      return value === undefined ? undefined : new flash.geom.Point(value.x,value.y);
+   }
+
+   static function BH_PresentationMatrix(value)
+   {
+      return value === undefined ? undefined : new flash.geom.Matrix(value.a,value.b,value.c,value.d,value.tx,value.ty);
+   }
+
+   static function BH_PresentationColor(value)
+   {
+      return value === undefined ? undefined : new flash.geom.ColorTransform(value.redMultiplier,value.greenMultiplier,value.blueMultiplier,value.alphaMultiplier,
+         value.redOffset,value.greenOffset,value.blueOffset,value.alphaOffset);
+   }
+
+   function BH_PresentationCapture(p, record, name, values)
+   {
+      if(p.commands.length >= 4096) throw new Error("presentation command limit exceeded");
+      var buffered = p.mode === "three-pose-v2" || p.mode === "four-pose-v3";
+      var fourPoses = p.mode === "four-pose-v3";
+      // The pinned AVM1 runtime creates function arguments as a native Array.
+      // Its slice copies the same dense values without an AS2 push per entry.
+      var args = values.slice();
+      var command = {display:record.display,name:name,args:args};
+      if(name == "copyPixels")
+      {
+         args[1] = CMain.BH_PresentationRectangle(args[1]);
+         args[2] = CMain.BH_PresentationPoint(args[2]);
+         if(args[4] !== undefined) args[4] = CMain.BH_PresentationPoint(args[4]);
+      }
+      else if(name == "draw")
+      {
+         if(args[1] !== undefined) args[1] = CMain.BH_PresentationMatrix(args[1]);
+         if(args[2] !== undefined) args[2] = CMain.BH_PresentationColor(args[2]);
+         if(args[4] !== undefined) args[4] = CMain.BH_PresentationRectangle(args[4]);
+         if(!(args[0] instanceof flash.display.BitmapData))
+         {
+            // Original mcScratch is cleared immediately after draw. Freeze
+            // its current rendered pixels, not a live MovieClip reference.
+            // Reuse bounded buffers; no allocation proportional to play time.
+            if(typeof args[0] != "movieclip" || (args[3] !== undefined && args[3] != "normal"))
+               throw new Error("unsupported mutable presentation source");
+            var clip = args[4] === undefined ? record.target.rectangle : args[4];
+            var left = Math.max(0,Math.floor(clip.x));
+            var top = Math.max(0,Math.floor(clip.y));
+            var right = Math.min(record.target.width,Math.ceil(clip.x + clip.width));
+            var bottom = Math.min(record.target.height,Math.ceil(clip.y + clip.height));
+            if(right <= left || bottom <= top) return;
+            if(p.scratchUsed >= 16) throw new Error("mutable presentation source limit exceeded");
+            var frozen = p.scratch[p.scratchUsed];
+            if(frozen == undefined || frozen.width != right - left || frozen.height != bottom - top)
+            {
+               if(frozen != undefined) frozen.dispose();
+               frozen = new flash.display.BitmapData(right - left,bottom - top,true,0);
+               p.scratch[p.scratchUsed] = frozen;
+            }
+            p.scratchUsed++;
+            frozen.fillRect(frozen.rectangle,0);
+            var matrix = args[1] === undefined ? new flash.geom.Matrix() : CMain.BH_PresentationMatrix(args[1]);
+            matrix.tx -= left;
+            matrix.ty -= top;
+            frozen.draw(args[0],matrix,args[2],args[3],frozen.rectangle,args[5]);
+            command.name = "copyPixels";
+            command.args = [frozen,frozen.rectangle,new flash.geom.Point(left,top),undefined,undefined,true];
+         }
+      }
+      else if(name == "fillRect") args[0] = CMain.BH_PresentationRectangle(args[0]);
+      else if(name == "applyFilter")
+      {
+         args[1] = CMain.BH_PresentationRectangle(args[1]);
+         args[2] = CMain.BH_PresentationPoint(args[2]);
+         if(typeof args[3].clone != "function") throw new Error("unsupported presentation filter");
+         args[3] = args[3].clone();
+      }
+      if(p.entity !== undefined && p.anchor !== undefined && (command.name == "copyPixels" || command.name == "draw"))
+      {
+         command.key = p.entity;
+         command.anchor = {x:p.anchor.x,y:p.anchor.y};
+      }
+      else if(name == "copyPixels" && (args[0] === p.world.bmFloor || args[0] === p.world.bmCover))
+      {
+         command.key = p.plane + (args[0] === p.world.bmFloor ? "/floor" : "/cover");
+         command.camera = true;
+         command.anchor = {x:args[1].x,y:args[1].y};
+      }
+      if(command.key !== undefined && command.anchor !== undefined)
+      {
+         if(buffered)
+         {
+            if(typeof command.key != "string" || command.key.length > 256
+               || typeof command.anchor.x != "number" || typeof command.anchor.y != "number"
+               || !isFinite(command.anchor.x) || !isFinite(command.anchor.y))
+               throw new Error("invalid presentation anchor");
+            if(p.anchors[command.key] === undefined)
+            {
+               if(p.anchorCount >= 4096) throw new Error("presentation anchor limit exceeded");
+               p.anchorCount++;
+            }
+         }
+         p.anchors[command.key] = command.anchor;
+      }
+      // Captured arguments belong only to this presentation tick. Resolve
+      // transient bitmap sources and prepare reusable geometry once, instead
+      // of cloning arrays/Points/Matrices for every browser animation frame.
+      // Store the original coordinates separately: each phase is absolute,
+      // never an accumulated delta that could drift or spoil alpha-one parity.
+      args = command.args;
+      for(var source = 0; source < p.records.length; source++)
+         if(args[0] === p.records[source].target) args[0] = p.records[source].display;
+      var previous = p.previous[command.key];
+      var current = command.anchor;
+      if(previous !== undefined && current !== undefined)
+      {
+         var dx = previous.x - current.x;
+         var dy = previous.y - current.y;
+         // Spawn/respawn/teleport and large camera jumps snap. Do not invent
+         // travel through walls or through another spawn point.
+         var valid = isFinite(dx) && isFinite(dy) && dx * dx + dy * dy <= 4096;
+         var olderDx = dx;
+         var olderDy = dy;
+         var oldestDx = dx;
+         var oldestDy = dy;
+         if(buffered && valid)
+         {
+            var older = p.older[command.key];
+            if(older !== undefined && p.olderTick === p.previousTick - 1)
+            {
+               var adjacentX = older.x - previous.x;
+               var adjacentY = older.y - previous.y;
+               if(isFinite(adjacentX) && isFinite(adjacentY) && adjacentX * adjacentX + adjacentY * adjacentY <= 4096)
+               {
+                  olderDx = older.x - current.x;
+                  olderDy = older.y - current.y;
+                  oldestDx = olderDx;
+                  oldestDy = olderDy;
+                  if(fourPoses)
+                  {
+                     var oldest = p.oldest[command.key];
+                     if(oldest !== undefined && p.oldestTick === p.olderTick - 1)
+                     {
+                        var earliestX = oldest.x - older.x;
+                        var earliestY = oldest.y - older.y;
+                        if(isFinite(earliestX) && isFinite(earliestY) && earliestX * earliestX + earliestY * earliestY <= 4096)
+                        {
+                           oldestDx = oldest.x - current.x;
+                           oldestDy = oldest.y - current.y;
+                        }
+                     }
+                  }
+               }
+            }
+            // A missing/teleporting older pose holds the known previous pose;
+            // it never draws a path across a spawn or a discontinuity. A bad
+            // newest pair retains the original current-position snap policy.
+            command.olderDx = olderDx;
+            command.olderDy = olderDy;
+            if(fourPoses)
+            {
+               command.oldestDx = oldestDx;
+               command.oldestDy = oldestDy;
+            }
+         }
+         if(valid && (dx != 0 || dy != 0 || (buffered && (olderDx != 0 || olderDy != 0))
+            || (fourPoses && (oldestDx != 0 || oldestDy != 0))))
+         {
+            command.dx = dx;
+            command.dy = dy;
+            if(command.camera) command.geometry = args[1];
+            else if(command.name == "copyPixels") command.geometry = args[2];
+            else if(command.name == "draw")
+            {
+               if(args[1] === undefined) args[1] = new flash.geom.Matrix();
+               command.geometry = args[1];
+               command.matrix = true;
+            }
+            command.x = command.matrix ? command.geometry.tx : command.geometry.x;
+            command.y = command.matrix ? command.geometry.ty : command.geometry.y;
+            p.moving = true;
+            if(buffered)
+            {
+               if(dx != 0 || dy != 0) p.newerMoving = true;
+               if(olderDx != dx || olderDy != dy) p.olderMoving = true;
+               if(fourPoses && (oldestDx != olderDx || oldestDy != olderDy)) p.oldestMoving = true;
+            }
+         }
+      }
+      p.commands.push(command);
+   }
+
+   function BH_PresentationEnd(tick)
+   {
+      var p = this.mBH.presentation;
+      if(p == undefined || !p.capturing) return;
+      try
+      {
+         p.capturing = false;
+         if((p.mode === "three-pose-v2" || p.mode === "four-pose-v3") && p.previousTick !== undefined && tick !== p.previousTick + 1)
+         {
+            // A replaced/restarted stream has no adjacent historical poses.
+            // Restore canonical geometry; never reinterpret nonadjacent ticks.
+            p.previous = Object();
+            p.older = Object();
+            if(p.mode === "four-pose-v3")
+            {
+               p.oldest = Object();
+               delete p.oldestTick;
+               p.oldestMoving = false;
+            }
+            delete p.previousTick;
+            delete p.olderTick;
+            p.moving = false;
+            p.olderMoving = false;
+            p.newerMoving = false;
+            for(var c = 0; c < p.commands.length; c++)
+            {
+               p.commands[c].dx = 0;
+               p.commands[c].dy = 0;
+               p.commands[c].olderDx = 0;
+               p.commands[c].olderDy = 0;
+               if(p.mode === "four-pose-v3")
+               {
+                  p.commands[c].oldestDx = 0;
+                  p.commands[c].oldestDy = 0;
+               }
+            }
+         }
+         p.tick = tick;
+         p.presentedAlpha = -1;
+         p.presentedTick = -1;
+         // Newly captured native output is a safe initial image. Once the browser
+         // supplies an interpolation phase only the independent display is changed.
+         if(!p.attached)
+         {
+            p.records[0].display.copyPixels(p.world.bmDraw,p.world.bmDraw.rectangle,World.CWorld.zPoint);
+            p.world.attachBitmap(p.records[0].display,p.depth,"always",false);
+            p.attached = true;
+         }
+      }
+      catch(error) { this.BH_PresentationFallback(String(error)); }
+   }
+
+   function BH_Present(alpha)
+   {
+      var b = this.mBH;
+      var p = b.presentation;
+      var status = {version:1,enabled:p != undefined,rendered:false,tick:b.tick,alpha:alpha,commands:0,interpolated:0,totalFrames:p == undefined ? 0 : p.frames};
+      if(b.presentationMode === "three-pose-v2" || b.presentationMode === "four-pose-v3")
+      {
+         status.mode = b.presentationMode;
+         status.poseVersion = b.presentationMode === "four-pose-v3" ? 3 : 2;
+         // Preserve the original non-coercing rejection path. A malformed
+         // alpha object must not run valueOf before the receipt/state guards.
+         if(typeof alpha == "number" && alpha >= 0 && alpha <= 1)
+            status.poseTick = b.presentationMode === "four-pose-v3" ? b.tick - 3 + 3 * alpha : b.tick - 2 + 2 * alpha;
+      }
+      if(b.presentationError != undefined) status.error = b.presentationError;
+      if(p == undefined || !b.active || b.state != "playing" || b.replay == true || b.complete != undefined || b.stepping || p.capturing
+         || b.snapshotReceiptBusy || b.snapshotReceiptRequest !== undefined || b.snapshotReceiptPending !== undefined
+         || p.tick !== b.tick || typeof alpha != "number" || !isFinite(alpha) || alpha < 0 || alpha > 1) return status;
+      // Once alpha reaches one, identical idle repeats are not new frames.
+      var effectiveAlpha = alpha;
+      var buffered = p.mode === "three-pose-v2" || p.mode === "four-pose-v3";
+      var fourPoses = p.mode === "four-pose-v3";
+      var olderSegment = alpha < 0.5;
+      var oldestSegment = fourPoses && alpha < 1 / 3;
+      var middleSegment = fourPoses && alpha >= 1 / 3 && alpha < 2 / 3;
+      if(fourPoses)
+      {
+         // Adjacent static segments share their final real endpoint too; a
+         // missing early pose must not create an extra replay at a boundary.
+         if(oldestSegment && !p.oldestMoving)
+            effectiveAlpha = p.olderMoving ? 1 / 3 : (p.newerMoving ? 2 / 3 : 1);
+         else if(middleSegment && !p.olderMoving) effectiveAlpha = p.newerMoving ? 2 / 3 : 1;
+         else if(!oldestSegment && !middleSegment && !p.newerMoving) effectiveAlpha = 1;
+      }
+      else if(buffered)
+      {
+         // Replaying a static half of the history is not an additional frame.
+         if(alpha < 0.5 && !p.olderMoving) effectiveAlpha = 0.5;
+         else if(alpha >= 0.5 && !p.newerMoving) effectiveAlpha = 1;
+      }
+      if(p.presentedTick == b.tick && (!p.moving || p.presentedAlpha == effectiveAlpha))
+      {
+         status.unchanged = true;
+         return status;
+      }
+      try
+      {
+         var changed = 0;
+         var phase = 1 - alpha;
+         var bufferedPhase = olderSegment ? 2 * alpha : 2 - 2 * alpha;
+         for(var i = 0; i < p.commands.length; i++)
+         {
+            var command = p.commands[i];
+            if(command.geometry !== undefined)
+            {
+               var offsetX = command.dx * phase;
+               var offsetY = command.dy * phase;
+               if(fourPoses)
+               {
+                  if(oldestSegment)
+                  {
+                     offsetX = command.oldestDx + (command.olderDx - command.oldestDx) * (3 * alpha);
+                     offsetY = command.oldestDy + (command.olderDy - command.oldestDy) * (3 * alpha);
+                  }
+                  else if(middleSegment)
+                  {
+                     offsetX = command.olderDx + (command.dx - command.olderDx) * (3 * alpha - 1);
+                     offsetY = command.olderDy + (command.dy - command.olderDy) * (3 * alpha - 1);
+                  }
+                  else
+                  {
+                     offsetX = command.dx * (3 - 3 * alpha);
+                     offsetY = command.dy * (3 - 3 * alpha);
+                  }
+               }
+               else if(buffered)
+               {
+                  if(olderSegment)
+                  {
+                     offsetX = command.olderDx + (command.dx - command.olderDx) * bufferedPhase;
+                     offsetY = command.olderDy + (command.dy - command.olderDy) * bufferedPhase;
+                  }
+                  else
+                  {
+                     offsetX = command.dx * bufferedPhase;
+                     offsetY = command.dy * bufferedPhase;
+                  }
+               }
+               if(command.matrix)
+               {
+                  command.geometry.tx = command.x + offsetX;
+                  command.geometry.ty = command.y + offsetY;
+               }
+               else
+               {
+                  command.geometry.x = command.x + offsetX;
+                  command.geometry.y = command.y + offsetY;
+               }
+               if(buffered ? (offsetX != 0 || offsetY != 0) : phase != 0) changed++;
+            }
+            command.display[command.name].apply(command.display,command.args);
+         }
+         p.frames++;
+         p.interpolated += changed;
+         p.presentedTick = b.tick;
+         p.presentedAlpha = effectiveAlpha;
+         // Ruffle renders on its next browser animation frame without advancing
+         // the SWF timeline. Its original 25 Hz timeline/offline pacing stays.
+         updateAfterEvent();
+         status.rendered = true;
+         status.commands = p.commands.length;
+         status.interpolated = changed;
+         status.totalFrames = p.frames;
+      }
+      catch(error)
+      {
+         this.BH_PresentationFallback(String(error));
+         status.enabled = false;
+         status.error = b.presentationError;
+      }
+      return status;
+   }
+
+   function BH_PresentationInfo(checkPixels)
+   {
+      var b = this.mBH;
+      var p = b.presentation;
+      var result = {version:1,requested:b.presentationRequested == true,enabled:p != undefined,tick:b.tick,
+         totalFrames:p == undefined ? 0 : p.frames,interpolated:p == undefined ? 0 : p.interpolated,
+         commands:p == undefined ? 0 : p.commands.length,error:b.presentationError};
+      if(b.presentationMode === "three-pose-v2" || b.presentationMode === "four-pose-v3")
+      {
+         result.mode = b.presentationMode;
+         result.poseVersion = b.presentationMode === "four-pose-v3" ? 3 : 2;
+         result.poseCount = p == undefined ? 0 : 1 + (p.previousTick === undefined ? 0 : 1) + (p.olderTick === undefined ? 0 : 1)
+            + (p.mode === "four-pose-v3" && p.oldestTick !== undefined ? 1 : 0);
+         result.anchorCount = p == undefined ? 0 : p.anchorCount;
+      }
+      // Explicit diagnostic only, never run in the animation loop. Compare the
+      // actual native and replayed bitmap pixels without reading/modifying world.
+      if(checkPixels === true && p != undefined && !p.capturing)
+      {
+         var compared = p.records[0].display.compare(p.records[0].target);
+         result.pixelsEqual = compared === 0;
+         if(compared instanceof flash.display.BitmapData) compared.dispose();
+      }
+      return result;
+   }
+
+   function BH_PresentationFallback(message)
+   {
+      this.mBH.presentationError = String(message).substr(0,256);
+      this.BH_PresentationDispose();
+   }
+
+   function BH_PresentationDispose(world)
+   {
+      var p = this.mBH.presentation;
+      if(p == undefined || (world !== undefined && p.world !== world)) return;
+      p.capturing = false;
+      // Restore the original bitmap at its original depth, leaving HUD order.
+      if(p.attached) p.world.attachBitmap(p.records[0].target,p.depth,"always",false);
+      for(var i = 0; i < p.records.length; i++)
+      {
+         var record = p.records[i];
+         for(var name in record.methods)
+         {
+            var method = record.methods[name];
+            if(record.target[name] === method.wrapper)
+            {
+               if(method.own) record.target[name] = method.original;
+               else delete record.target[name];
+            }
+         }
+         record.display.dispose();
+      }
+      for(var n = 0; n < p.scratch.length; n++) p.scratch[n].dispose();
+      if(p.mode === "three-pose-v2" || p.mode === "four-pose-v3")
+      {
+         // No old maps, command arguments or scratch pixels survive this owner.
+         if(p.mode === "four-pose-v3") delete p.oldest;
+         delete p.older;
+         delete p.previous;
+         delete p.anchors;
+         p.commands = new Array();
+         p.scratch = new Array();
+      }
+      delete this.mBH.presentation;
+      updateAfterEvent();
+   }

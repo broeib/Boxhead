@@ -1,0 +1,98 @@
+// Exact baseline methods from CMain.bridge.asinc SHA256
+// 842e83bb5f011aa63f23bc54cd3bfad962eab44d17af1ed7330c4a19f5439dae.
+// This fixture is a frozen independent oracle for compact projection inlining.
+   static function BH_ProcessName(value)
+   {
+      var b = CMain._this.mBH;
+      // Process identity is already the cache key below. Retain its last hit
+      // as well: adjacent entities commonly use the same original function.
+      // Never cache an entity's selected Process or any mutable world value.
+      var process = value.Process;
+      if(b.processLastValid == true && b.processLastFunction === process)
+         return b.processLastName;
+      var functions = b.processFunctions;
+      var knownNames = b.processNames;
+      if(functions == undefined)
+      {
+         functions = b.processFunctions = new Array();
+         knownNames = b.processNames = new Array();
+      }
+      for(var index = 0; index < functions.length; index++)
+      {
+         if(functions[index] === process)
+         {
+            b.processLastFunction = process;
+            b.processLastName = knownNames[index];
+            b.processLastValid = true;
+            return b.processLastName;
+         }
+      }
+      var names = new Array();
+      for(var key in value)
+         if(key != "Process" && key.substr(0,7) == "Process" && value[key] === process) names.push(key);
+      names.sort();
+      var name = names.join("|");
+      functions.push(process);
+      knownNames.push(name);
+      b.processLastFunction = process;
+      b.processLastName = name;
+      b.processLastValid = true;
+      return name;
+   }
+
+   function BH_FrameState()
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      var started = getTimer();
+      var entities = new Object();
+      for(var id in w.mThing_Collection.mThings)
+      {
+         var thing = w.mThing_Collection.mThings[id];
+         var scalars = CMain.BH_Scalars(thing);
+         // Read all four source references first, as in the original temporary
+         // array, then convert coordinates in the same order. Explicit String
+         // calls preserve undefined/nonfinite formatting; no vector is cached.
+         var position = thing.mPosition;
+         var delta = thing.mDelta;
+         var direction = thing.mTarget_Direction;
+         var returning = thing.mReturn_Angle;
+         scalars.$vectors = [
+            String(position.mX) + "," + String(position.mY) + "," + String(position.mZ),
+            String(delta.mX) + "," + String(delta.mY) + "," + String(delta.mZ),
+            String(direction.mX) + "," + String(direction.mY) + "," + String(direction.mZ),
+            String(returning.mX) + "," + String(returning.mY) + "," + String(returning.mZ)];
+         scalars.$class = thing._CLASSID_;
+         scalars.$angle = String(thing.mAngle.mAngle);
+         scalars.$targetAngle = String(thing.mTarget_Angle.mAngle);
+         scalars.$frame = String(thing.mXSI_Animation.mCurrentFrameID);
+         scalars.$parent = String(thing.mParent.mUniqueID);
+         scalars.$process = CMain.BH_ProcessName(thing);
+         if(thing.mWeaponList != undefined)
+         {
+            var weapons = new Array();
+            for(var slot = 0; slot < thing.mWeaponList.length; slot++)
+            {
+               var weapon = thing.mWeaponList[slot];
+               weapons.push({active:weapon.mActive == true,name:weapon.mNameID,properties:CMain.BH_Scalars(weapon.mThing)});
+            }
+            scalars.$weapons = weapons;
+            scalars.$selected = String(thing.mWeapon_Current.mNameID);
+         }
+         entities[id] = scalars;
+      }
+      var rng = {seed:b.seed,state:b.rng,calls:b.rngCalls};
+      var native = {scope:"frame",tick:b.tick,rng:rng,entities:entities,world:CMain.BH_Scalars(w),upgrades:CMain.BH_Scalars(w.mUpgrades),level:CMain.BH_Scalars(w.mUpgrades.Level),hud:CMain.BH_Scalars(w.mHud),counters:CMain.BH_Scalars(w.mThing_Collection.mThingCounters),lastFullDigest:String(b.lastFullDigest)};
+      if(CMain.BH_PersonalEnabled()) native.personal = CMain.BH_PersonalSnapshot(false);
+      if(b.initialPlayers == 1) native.membership = {initial:1,joined:b.playerCount,characters:b.characters.slice()};
+      var projectMs = getTimer() - started;
+      var hashStart = getTimer();
+      var fast = flash.external.ExternalInterface.call("boxheadDigestOriginalState",native);
+      if(typeof fast.digest != "string" || fast.digest.length != 26 || fast.digest.substr(0,10) != "native-v2-" || !CMain.BH_Integer(fast.bytes,0,8000000))
+      {
+         throw new Error("canonical native digest accelerator unavailable");
+      }
+      b.snapshot = {version:1,engine:"original-swf",state:b.state,tick:b.tick,digest:fast.digest,digestSchema:"native-projection-v3",scope:"frame",players:this.BH_Players(),rng:rng,native:native,entities:entities,snapshotBytes:fast.bytes,snapshotObjects:0,snapshotFields:0,profile:{projectMs:projectMs,encodeMs:0,hashMs:getTimer()-hashStart}};
+      return b.snapshot;
+   }
+

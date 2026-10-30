@@ -1,0 +1,93 @@
+   // DIAGNOSTIC ONLY. Register in BH_Install with:
+   // flash.external.ExternalInterface.addCallback("bhAnimationProbe",this,this.BH_AnimationProbe);
+   // Reads existing animation references. Does not call Render, Animate,
+   // Update_CurrentFrame, GetWeaponPosition, or write any world/cache property.
+   function BH_AnimationProbe(requestedSlot)
+   {
+      // A pilot only needs its own current animation. Keep the no-argument
+      // fidelity probe unchanged, but select before walking animation/cache
+      // references so the scoped observation does not inspect other entities.
+      if(requestedSlot !== undefined && requestedSlot !== 1 && requestedSlot !== 2)
+         throw new Error("animation probe slot must be 1 or 2");
+      // These two cache values are also available before a world exists. The
+      // regression harness observes a real background-render phase before it
+      // asks the normal bridge to prepare; it never writes either value.
+      var result = {version:1,tick:this.mBH.tick,globalScale:DrawPrimitive.XSI.CDrawPrimitive_XSI.mGlobalScale,renderQueue:DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.mRenderStack.length,entities:new Array()};
+      if(requestedSlot !== undefined) result.requestedSlot = requestedSlot;
+      if(this.mcWorld == undefined) return result;
+      var things = this.mcWorld.mThing_Collection.mThings;
+      var selected = new Array();
+      var key;
+      for(key in this.mcWorld.mThing_Collection.mPlayerThings)
+      {
+         var player = this.mcWorld.mThing_Collection.mPlayerThings[key];
+         if(requestedSlot === undefined || player.mPlayerIndex + 1 === requestedSlot)
+            selected.push(player);
+      }
+      var zombies = 0;
+      if(requestedSlot === undefined) for(key in things)
+      {
+         if(things[key]._CLASSID_ == "CThing_Creature_Zombie" && zombies < 4)
+         {
+            selected.push(things[key]);
+            zombies++;
+         }
+      }
+      for(var entityIndex = 0; entityIndex < selected.length; entityIndex++)
+      {
+         var thing = selected[entityIndex];
+         var anim = thing.mXSI_Animation;
+         var object = anim.mAnimationObject;
+         if(object == undefined) continue;
+         var direction = object.mLookup256[thing.mAngle.mAngle256 & 255];
+         var frameIndex = anim.mCurrentFrameID & 16777215;
+         var current = anim.mCurrentFrame;
+         var expected = object.mDirections[direction].mFrames[frameIndex];
+         var muzzle = current.XSI_Info.XSI_Model_GunPosition_Right.nPosition;
+         var name = "";
+         for(key in anim.mCollection.mItems)
+            if(anim.mCollection.mItems[key].mAnimationObject === object) name = key;
+         var firstReferences = new Array();
+         var directionIds = new Array();
+         var directionMuzzles = new Array();
+         for(var dirIndex = 0; dirIndex < object.mDirections.length && dirIndex < 64; dirIndex++)
+         {
+            var first = object.mDirections[dirIndex].mFrames[0];
+            var referenceId = -1;
+            for(var refIndex = 0; refIndex < firstReferences.length; refIndex++)
+               if(firstReferences[refIndex] === first) referenceId = refIndex;
+            if(referenceId == -1)
+            {
+               referenceId = firstReferences.length;
+               firstReferences.push(first);
+            }
+            directionIds.push(referenceId);
+            var firstMuzzle = first.XSI_Info.XSI_Model_GunPosition_Right.nPosition;
+            directionMuzzles.push({x:firstMuzzle.mX,y:firstMuzzle.mY,z:firstMuzzle.mZ});
+         }
+         var frameReferences = new Array();
+         var frameIds = new Array();
+         var frames = object.mDirections[direction].mFrames;
+         for(var sampleIndex = 0; sampleIndex < frames.length && sampleIndex < 16; sampleIndex++)
+         {
+            referenceId = -1;
+            for(refIndex = 0; refIndex < frameReferences.length; refIndex++)
+               if(frameReferences[refIndex] === frames[sampleIndex]) referenceId = refIndex;
+            if(referenceId == -1)
+            {
+               referenceId = frameReferences.length;
+               frameReferences.push(frames[sampleIndex]);
+            }
+            frameIds.push(referenceId);
+         }
+         result.entities.push({id:thing.mUniqueID,className:thing._CLASSID_,slot:thing.mPlayerIndex == undefined ? 0 : thing.mPlayerIndex + 1,
+            x:thing.mPosition.mX,y:thing.mPosition.mY,life:thing.mLife,invincible:thing.mInvincible,visible:thing.mVisible,
+            animation:name,frame:anim.mCurrentFrameID,frameCount:anim.mFrameCount,angle:thing.mAngle.mAngle,angle256:thing.mAngle.mAngle256,
+            expectedDirection:direction,selectedFrame:frameIndex,currentFrameMatchesExpected:current === expected,
+            renderDirection:current.renderInfo.oFrame.mDirection,renderFrame:current.renderInfo.oFrame.mFrameIndex,
+            bitmapWidth:current.sBMD.width,bitmapHeight:current.sBMD.height,muzzle:{x:muzzle.mX,y:muzzle.mY,z:muzzle.mZ},
+            directionCount:object.mDirections.length,directionFirstFrameIds:directionIds,uniqueFirstFrames:firstReferences.length,
+            directionMuzzles:directionMuzzles,sampledFrameIds:frameIds,uniqueSampledFrames:frameReferences.length});
+      }
+      return result;
+   }

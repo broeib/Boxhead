@@ -1,0 +1,294 @@
+// Exact baseline methods from CMain.bridge.asinc SHA256
+// 9fdaf8f1529bf0f549b7b826b40f9f43342624d83b7f475370aa5cc4de597b7f.
+// Frozen original isFinite checks are independent of the candidate predicate.
+   static function BH_Project(value, context, path, depth)
+   {
+      var valueType = typeof value;
+      if(valueType == "number" && !isFinite(value))
+      {
+         return {$number:String(value)};
+      }
+      if(value === undefined) return {$undefined:1};
+      if(value == null || valueType == "string" || valueType == "number" || valueType == "boolean")
+      {
+         return value;
+      }
+      if(valueType == "function")
+      {
+         return undefined;
+      }
+      // Grid neighbours form a cyclic graph. Capture the complete mutable
+      // cell state and resident IDs, not the eight recursively-linked neighbours.
+      var className = value._CLASSID_;
+      if(className == "CMap_Cell")
+      {
+         return {$cell:String(value.mPosition.x) + "," + String(value.mPosition.y)};
+      }
+      if(className == "CMap")
+      {
+         return {width:value.mSize.x,height:value.mSize.y,first:value.mFirstTime,collideFlag:value.mCollide.mCollideFlag == undefined ? {$undefined:1} : value.mCollide.mCollideFlag};
+      }
+      var objects = context.objects;
+      // Only a failing snapshot needs its diagnostic path. Retain one short
+      // segment per active depth, not a copied full path for every graph node.
+      // The depth budget bounds this scratch array; it is never projected.
+      context.errorPath[depth] = path;
+      if(depth > 64 || objects.length > 200000 || context.fields > 1000000)
+      {
+         throw new Error("native snapshot budget exceeded at " + context.errorPath.slice(0,depth + 1).join(""));
+      }
+      // Synchronous, temporary non-enumerable identity marks avoid quadratic
+      // graph searches. BH_State always removes them in finally, before return.
+      var marked = value.__bhSnapshotRef;
+      if(marked != undefined)
+      {
+         if(objects[marked] !== value) throw new Error("snapshot marker collision");
+         return {$ref:marked};
+      }
+      value.__bhSnapshotRef = objects.length;
+      ASSetPropFlags(value,"__bhSnapshotRef",1,0);
+      objects.push(value);
+      var out = new Object();
+      // Most projected vectors/records contain primitive leaves only. They
+      // need neither a deferred-key array nor a sort. Reference IDs still
+      // follow exactly the same lexical order for actual recursive fields.
+      var keys;
+      var scalarFields = 0;
+      var upgrades = className == "CUpgrades";
+      var fieldCache = CMain.mBHFieldCache;
+      if(fieldCache == undefined)
+      {
+         fieldCache = CMain.mBHFieldCache = new Object();
+         CMain.mBHFieldCacheCount = 0;
+      }
+      // Only recursive fields require lexical traversal order for stable $ref
+      // IDs. Primitive leaves neither allocate graph IDs nor recurse. Copy
+      // them once while enumerating, and sort only the deferred fields. The
+      // canonical encoder still sorts every output key when computing digest.
+      for(var key in value)
+      {
+         // Original class accessors live on prototypes and only read values
+         // or allocate derived vectors. They never enter this own-field graph.
+         // Reject them before invoking getters or resolving prototype methods.
+         if(!value.hasOwnProperty(key)) continue;
+         var leaf = value[key];
+         var leafType = typeof leaf;
+          if(leafType != "function")
+         {
+             // The policy depends only on the key. Avoid a separate AVM1
+             // function dispatch/global lookup on every cache hit, while
+             // retaining the bounded helper and its reset on a cache miss.
+             var cacheKey = "field:" + key;
+             var skip = fieldCache[cacheKey];
+             if(skip == undefined)
+             {
+                skip = CMain.BH_SkipField(key);
+                fieldCache = CMain.mBHFieldCache;
+             }
+             if(skip) continue;
+            if(upgrades && key == "mLevels") continue;
+            if(upgrades && key == "mMultipliers")
+            {
+                if(keys == undefined) keys = new Array();
+               keys.push(key);
+               continue;
+            }
+            if(leaf === undefined)
+            {
+               out[key] = {$undefined:1};
+               scalarFields++;
+            }
+            else if(leaf == null || leafType == "string" || leafType == "boolean")
+            {
+               out[key] = leaf;
+               scalarFields++;
+            }
+            else if(leafType == "number")
+            {
+               out[key] = isFinite(leaf) ? leaf : {$number:String(leaf)};
+               scalarFields++;
+            }
+             else
+             {
+                if(keys == undefined) keys = new Array();
+                keys.push(key);
+             }
+         }
+      }
+      if(keys != undefined && keys.length > 1) keys.sort();
+      context.fields += scalarFields;
+      // Native fields historically override synthetic metadata in the sorted
+      // loop. Preserve that even if a scalar metadata-named field was copied
+      // above. Recursive metadata must still run before deferred fields, even
+      // when its result is shadowed, so graph identity numbering is unchanged.
+      if(value instanceof Array && !out.hasOwnProperty("$length"))
+      {
+         out.$length = value.length;
+      }
+      var parentID = value.mParent.mUniqueID;
+      if(parentID != undefined && !out.hasOwnProperty("$parentID"))
+      {
+         out.$parentID = parentID;
+      }
+      if(typeof value.Process == "function")
+      {
+         var processName = CMain.BH_ProcessName(value);
+         if(!out.hasOwnProperty("$process")) out.$process = processName;
+      }
+
+      if(value.mXSI_Animation != undefined)
+      {
+         var anim = value.mXSI_Animation;
+         var animName = "";
+         var animationItems = anim.mCollection.mItems;
+         var animationObject = anim.mAnimationObject;
+         for(var candidate in animationItems)
+         {
+            if(animationItems[candidate].mAnimationObject === animationObject)
+               animName = candidate;
+         }
+         var animationState = CMain.BH_Project({name:animName,frame:anim.mCurrentFrameID,count:anim.mFrameCount,ended:anim.mAnimEnd,preUpdate:anim.mPreUpdate,muzzle:anim.mCurrentFrame.XSI_Info.XSI_Model_GunPosition_Right.nPosition},context,"/animation",depth + 1);
+         if(!out.hasOwnProperty("$animation")) out.$animation = animationState;
+      }
+
+      for(var n = 0; keys != undefined && n < keys.length; n++)
+      {
+         key = keys[n];
+         if(upgrades && key == "mMultipliers")
+         {
+            // Definitions are fixed original code; only mActive changes during play.
+            var active = new Array();
+            for(var level = 0; level < value.mMultipliers.length; level++)
+            {
+               var definitions = value.mMultipliers[level];
+               for(var upgrade = 0; upgrade < definitions.length; upgrade++)
+                  if(definitions[upgrade].mActive == true) active.push(level + ":" + upgrade);
+            }
+            out[key] = active;
+            continue;
+         }
+         context.fields++;
+         // Deferred values are read at their original recursive traversal
+         // position; no world values or object shapes persist between ticks.
+         out[key] = CMain.BH_Project(value[key],context,"/" + key.length + ":" + key,depth + 1);
+      }
+      return out;
+   }
+
+
+   static function BH_Scalars(object)
+   {
+      var out = new Object();
+      var fieldCache = CMain.mBHFieldCache;
+      if(fieldCache == undefined)
+      {
+         fieldCache = CMain.mBHFieldCache = new Object();
+         CMain.mBHFieldCacheCount = 0;
+      }
+      for(var key in object)
+      {
+         // Inherited accessors are not scalar snapshot fields. Reject them
+         // before deriving temporary lists/vectors; read each own value once.
+         if(!object.hasOwnProperty(key)) continue;
+         var value = object[key];
+         var type = typeof value;
+         if(type == "number" || type == "boolean" || type == "string")
+         {
+            var cacheKey = "field:" + key;
+            var skip = fieldCache[cacheKey];
+            if(skip == undefined)
+            {
+               skip = CMain.BH_SkipField(key);
+               fieldCache = CMain.mBHFieldCache;
+            }
+            if(!skip) out[key] = type == "number" && !isFinite(value) ? {$number:String(value)} : value;
+         }
+      }
+      return out;
+   }
+
+   function BH_FrameState()
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      var started = getTimer();
+      var entities = new Object();
+      for(var id in w.mThing_Collection.mThings)
+      {
+         var thing = w.mThing_Collection.mThings[id];
+         // Inline the unchanged scalar projection for the frequent entity
+         // path. Keep its own-key guard, read order and one value read exactly;
+         // other callers still use BH_Scalars. Every output object is fresh.
+         var scalars = new Object();
+         var fieldCache = CMain.mBHFieldCache;
+         if(fieldCache == undefined)
+         {
+            fieldCache = CMain.mBHFieldCache = new Object();
+            CMain.mBHFieldCacheCount = 0;
+         }
+         for(var scalarKey in thing)
+         {
+            if(!thing.hasOwnProperty(scalarKey)) continue;
+            var scalarValue = thing[scalarKey];
+            var scalarType = typeof scalarValue;
+            if(scalarType == "number" || scalarType == "boolean" || scalarType == "string")
+            {
+               var scalarCacheKey = "field:" + scalarKey;
+               var skip = fieldCache[scalarCacheKey];
+               if(skip == undefined)
+               {
+                  skip = CMain.BH_SkipField(scalarKey);
+                  fieldCache = CMain.mBHFieldCache;
+               }
+               if(!skip) scalars[scalarKey] = scalarType == "number" && !isFinite(scalarValue) ? {$number:String(scalarValue)} : scalarValue;
+            }
+         }
+         // Read all four source references first, as in the original temporary
+         // array, then convert coordinates in the same order. Explicit String
+         // calls preserve undefined/nonfinite formatting; no vector is cached.
+         var position = thing.mPosition;
+         var delta = thing.mDelta;
+         var direction = thing.mTarget_Direction;
+         var returning = thing.mReturn_Angle;
+         scalars.$vectors = [
+            String(position.mX) + "," + String(position.mY) + "," + String(position.mZ),
+            String(delta.mX) + "," + String(delta.mY) + "," + String(delta.mZ),
+            String(direction.mX) + "," + String(direction.mY) + "," + String(direction.mZ),
+            String(returning.mX) + "," + String(returning.mY) + "," + String(returning.mZ)];
+         scalars.$class = thing._CLASSID_;
+         scalars.$angle = String(thing.mAngle.mAngle);
+         scalars.$targetAngle = String(thing.mTarget_Angle.mAngle);
+         scalars.$frame = String(thing.mXSI_Animation.mCurrentFrameID);
+         scalars.$parent = String(thing.mParent.mUniqueID);
+         var currentProcess = thing.Process;
+         if(b.processLastValid == true && b.processLastFunction === currentProcess)
+            scalars.$process = b.processLastName;
+         else scalars.$process = CMain.BH_ProcessName(thing,currentProcess,true);
+         if(thing.mWeaponList != undefined)
+         {
+            var weapons = new Array();
+            for(var slot = 0; slot < thing.mWeaponList.length; slot++)
+            {
+               var weapon = thing.mWeaponList[slot];
+               weapons.push({active:weapon.mActive == true,name:weapon.mNameID,properties:CMain.BH_Scalars(weapon.mThing)});
+            }
+            scalars.$weapons = weapons;
+            scalars.$selected = String(thing.mWeapon_Current.mNameID);
+         }
+         entities[id] = scalars;
+      }
+      var rng = {seed:b.seed,state:b.rng,calls:b.rngCalls};
+      var native = {scope:"frame",tick:b.tick,rng:rng,entities:entities,world:CMain.BH_Scalars(w),upgrades:CMain.BH_Scalars(w.mUpgrades),level:CMain.BH_Scalars(w.mUpgrades.Level),hud:CMain.BH_Scalars(w.mHud),counters:CMain.BH_Scalars(w.mThing_Collection.mThingCounters),lastFullDigest:String(b.lastFullDigest)};
+      if(CMain.BH_PersonalEnabled()) native.personal = CMain.BH_PersonalSnapshot(false);
+      if(b.initialPlayers == 1) native.membership = {initial:1,joined:b.playerCount,characters:b.characters.slice()};
+      var projectMs = getTimer() - started;
+      var hashStart = getTimer();
+      var fast = flash.external.ExternalInterface.call("boxheadDigestOriginalState",native);
+      if(typeof fast.digest != "string" || fast.digest.length != 26 || fast.digest.substr(0,10) != "native-v2-" || !CMain.BH_Integer(fast.bytes,0,8000000))
+      {
+         throw new Error("canonical native digest accelerator unavailable");
+      }
+      b.snapshot = {version:1,engine:"original-swf",state:b.state,tick:b.tick,digest:fast.digest,digestSchema:"native-projection-v3",scope:"frame",players:this.BH_Players(),rng:rng,native:native,entities:entities,snapshotBytes:fast.bytes,snapshotObjects:0,snapshotFields:0,profile:{projectMs:projectMs,encodeMs:0,hashMs:getTimer()-hashStart}};
+      return b.snapshot;
+   }
+

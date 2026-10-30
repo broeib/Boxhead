@@ -1,0 +1,148 @@
+   // DIAGNOSTIC ONLY. Append to a CMain copy after the deterministic rewrite.
+   // Register bhFieldCacheProbe only in that diagnostic copy, never production.
+   // One menu-only call. No gameplay constructor, prepare, step or world write.
+   function BH_FieldCacheProbe()
+   {
+      var report = {schema:"original-field-policy-cache-native-probe-v2",pass:false,
+         checks:new Array(),policyComparisons:0,maxCacheCount:0,capResets:0};
+      var savedCache = CMain.mBHFieldCache;
+      var savedCount = CMain.mBHFieldCacheCount;
+      var savedBridge = this.mBH;
+      var savedWorld = this.mcWorld;
+      var savedActive = savedBridge.active;
+      var savedStepping = savedBridge.stepping;
+      var savedState = savedBridge.state;
+      var savedTick = savedBridge.tick;
+      var savedSeed = savedBridge.seed;
+      var savedRng = savedBridge.rng;
+      var savedRngCalls = savedBridge.rngCalls;
+      var savedSnapshot = savedBridge.snapshot;
+      report.before = {active:String(savedActive),stepping:String(savedStepping),
+         state:String(savedState),tick:String(savedTick),seed:String(savedSeed),
+         rng:String(savedRng),rngCalls:String(savedRngCalls),
+         worldPresent:savedWorld !== undefined && savedWorld !== null,
+         bridgePresent:savedBridge !== undefined && savedBridge !== null,
+         cacheCount:String(savedCount),cachePresent:savedCache !== undefined && savedCache !== null};
+      var require = function(name, ok)
+      {
+         report.checks.push({name:name,passed:ok === true});
+         if(ok !== true) throw new Error("field cache probe: " + name);
+      };
+      try
+      {
+         require("menu_only",savedBridge !== undefined && savedBridge !== null
+            && savedActive === false && savedStepping === false
+            && savedState === "menu" && savedTick === 0 && savedWorld === undefined);
+         var own = Object.prototype.hasOwnProperty;
+         var bare = Object();
+         var constructed = new Object();
+         require("bare_value_is_object",typeof bare == "object");
+         require("bare_strictly_present",bare !== undefined && bare !== null);
+         require("bare_loose_equality_control",(bare == undefined) === true);
+         report.objectSemantics = {bareType:typeof bare,bareLooseUndefined:bare == undefined,
+            bareStrictUndefined:bare === undefined,constructedType:typeof constructed};
+         require("bare_object_has_no_proto_slot",own.call(bare,"__proto__") === false);
+         require("bare_object_has_no_constructor_slot",own.call(bare,"__constructor__") === false);
+         require("bare_object_has_no_inherited_method",bare.hasOwnProperty === undefined);
+         require("constructed_control_has_proto",own.call(constructed,"__proto__") === true);
+         require("constructed_control_has_constructor",own.call(constructed,"__constructor__") === true);
+         bare.mLife = false;
+         require("bare_retains_own_false",own.call(bare,"mLife") === true && bare.mLife === false);
+         CMain.mBHFieldCache = undefined;
+         CMain.mBHFieldCacheCount = 0;
+         var samplePolicy = CMain.BH_SkipFieldUncached("mLife");
+         require("actual_cache_retains_own_false",CMain.BH_SkipField("mLife") === samplePolicy
+            && samplePolicy === false && typeof CMain.mBHFieldCache == "object"
+            && own.call(CMain.mBHFieldCache,"mLife") === true && CMain.mBHFieldCache.mLife === false
+            && CMain.mBHFieldCacheCount === 1);
+         report.policyComparisons++;
+         var sampleCache = CMain.mBHFieldCache;
+         require("actual_false_hit_preserves_identity",CMain.BH_SkipField("mLife") === samplePolicy
+            && CMain.mBHFieldCache === sampleCache && CMain.mBHFieldCacheCount === 1);
+         report.policyComparisons++;
+         var keys = new Array("mLife","mcHidden","mMap_Cells","mmap_cells","MLife","mLIFE",
+            "mDamage","mWorld","mParent","__proto__","__PROTO__","constructor","Constructor",
+            "__constructor__","__CONSTRUCTOR__","prototype","__resolve","hasOwnProperty",
+            "isPrototypeOf","isPropertyEnumerable","toString","toLocaleString","valueOf",
+            "watch","unwatch","addProperty","length","0","1","01","-1","1.25","NaN",
+            "Infinity","","field:mLife","field:__proto__","_x","_X","mcVisible","McVisible",
+            "bmFrame","BmFrame","mXSI_Data","mxsi_data","LastSound","lastsound","SomeSample",
+            "somesample","$ref","$length");
+         report.specialKeys = keys;
+         for(var pass = 0; pass < 3; pass++)
+         {
+            CMain.mBHFieldCache = undefined;
+            CMain.mBHFieldCacheCount = 0;
+            for(var index = 0; index < keys.length; index++)
+            {
+               var key = keys[pass == 1 ? keys.length - index - 1 : index];
+               var expected = CMain.BH_SkipFieldUncached(key);
+               var actual = CMain.BH_SkipField(key);
+               require("policy_" + pass + "_" + index,typeof actual == "boolean" && actual === expected);
+               report.policyComparisons++;
+               var count = CMain.mBHFieldCacheCount;
+               require("repeat_" + pass + "_" + index,CMain.BH_SkipField(key) === expected
+                  && CMain.mBHFieldCacheCount === count);
+               report.policyComparisons++;
+               if(count > report.maxCacheCount) report.maxCacheCount = count;
+            }
+            require("primitive_proto_" + pass,CMain.mBHFieldCache.__proto__ === true);
+            require("false_reserved_hit_" + pass,CMain.mBHFieldCache.__constructor__ === false
+               && CMain.mBHFieldCache.hasOwnProperty === false && CMain.mBHFieldCache.__resolve === false);
+            require("empty_name_not_counted_" + pass,own.call(CMain.mBHFieldCache,"") === false
+               && CMain.mBHFieldCacheCount === keys.length - 1);
+         }
+         CMain.mBHFieldCache = undefined;
+         CMain.mBHFieldCacheCount = 0;
+         var priorCache;
+         for(var n = 0; n < 1030; n++)
+         {
+            var dynamicKey = "cacheProbeField" + n;
+            var result = CMain.BH_SkipField(dynamicKey);
+            if(typeof result != "boolean" || result !== CMain.BH_SkipFieldUncached(dynamicKey))
+               throw new Error("field cache probe: dynamic policy " + n);
+            report.policyComparisons++;
+            if(priorCache !== undefined && CMain.mBHFieldCache !== priorCache) report.capResets++;
+            priorCache = CMain.mBHFieldCache;
+            if(CMain.mBHFieldCacheCount > report.maxCacheCount) report.maxCacheCount = CMain.mBHFieldCacheCount;
+            if(CMain.mBHFieldCacheCount > 1024) throw new Error("field cache probe: cap exceeded");
+         }
+         require("bounded_reset",report.capResets === 1 && report.maxCacheCount === 1024
+            && CMain.mBHFieldCacheCount === 6);
+         var countBeforeHit = CMain.mBHFieldCacheCount;
+         require("false_hit_does_not_grow",CMain.BH_SkipField("cacheProbeField1029") === false
+            && CMain.mBHFieldCacheCount === countBeforeHit);
+         var cacheBeforeForcedReset = CMain.mBHFieldCache;
+         CMain.mBHFieldCacheCount = 1024;
+         require("helper_reset_refreshes_identity",CMain.BH_SkipField("mLife") === false
+            && CMain.mBHFieldCache !== cacheBeforeForcedReset && CMain.mBHFieldCacheCount === 1);
+         report.pass = true;
+      }
+      catch(error)
+      {
+         report.error = String(error);
+         report.pass = false;
+      }
+      finally
+      {
+         CMain.mBHFieldCache = savedCache;
+         CMain.mBHFieldCacheCount = savedCount;
+         report.restored = {cacheIdentity:CMain.mBHFieldCache === savedCache,
+            cacheCount:CMain.mBHFieldCacheCount === savedCount,
+            bridgeIdentity:this.mBH === savedBridge,worldIdentity:this.mcWorld === savedWorld,
+            active:savedBridge.active === savedActive,stepping:savedBridge.stepping === savedStepping,
+            state:savedBridge.state === savedState,tick:savedBridge.tick === savedTick,
+            seed:savedBridge.seed === savedSeed,rng:savedBridge.rng === savedRng,
+            rngCalls:savedBridge.rngCalls === savedRngCalls,snapshotIdentity:savedBridge.snapshot === savedSnapshot};
+         for(var field in report.restored)
+            if(report.restored[field] !== true) report.pass = false;
+         report.after = {active:String(savedBridge.active),stepping:String(savedBridge.stepping),
+            state:String(savedBridge.state),tick:String(savedBridge.tick),seed:String(savedBridge.seed),
+            rng:String(savedBridge.rng),rngCalls:String(savedBridge.rngCalls),
+            worldPresent:this.mcWorld !== undefined && this.mcWorld !== null,
+            bridgePresent:this.mBH !== undefined && this.mBH !== null,
+            cacheCount:String(CMain.mBHFieldCacheCount),
+            cachePresent:CMain.mBHFieldCache !== undefined && CMain.mBHFieldCache !== null};
+      }
+      return report;
+   }

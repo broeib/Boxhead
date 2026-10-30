@@ -1,1 +1,0 @@
-Sets  the difficulty of the level: esculates the level  and the upgrades accordingly

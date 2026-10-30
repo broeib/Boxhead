@@ -1,0 +1,356 @@
+   // Exact native graph checkpoints. Original world objects remain original
+   // classes; the pinned Ruffle codec retains data slots, property flags,
+   // prototypes, reference topology, IEEE numbers and native bitmap pixels.
+   // Immutable code/assets and the receiving world's display surface are
+   // explicit anchors. A checkpoint never fabricates historical Step receipts.
+   function BH_CheckpointAvailable()
+   {
+      // Version 1 checkpoints do not serialize membership generations.
+      if(this.mBH != undefined && (this.mBH.membershipVersion === 1 || this.mBH.membershipVersion === 2)) return false;
+      if(typeof _global.boxheadNativeGraphV1 != "function") return false;
+      try
+      {
+         var capability = _global.boxheadNativeGraphV1("capability");
+         return capability.version === 1 && capability.contract === "bh-avm1-graph-v1";
+      }
+      catch(e) { return false; }
+   }
+
+   function BH_CPRequire(test, message)
+   {
+      if(test !== true) throw new Error("checkpoint: " + message);
+   }
+
+   function BH_CPAnchor(anchors, id, value, deep)
+   {
+      this.BH_CPRequire(typeof id == "string" && id.length > 0 && value !== undefined && value !== null,
+         "missing anchor " + id);
+      this.BH_CPRequire(typeof value == "object" || typeof value == "function" || typeof value == "movieclip",
+         "non-object anchor " + id);
+      anchors.push({id:id,value:value,deep:deep === true});
+   }
+
+   function BH_CPClass(anchors, id, constructor, methods, statics)
+   {
+      this.BH_CPRequire(typeof constructor == "function", "constructor " + id);
+      this.BH_CPAnchor(anchors,"class:" + id,constructor,false);
+      this.BH_CPAnchor(anchors,"prototype:" + id,constructor.prototype,false);
+      for(var i = 0; i < methods.length; i++)
+      {
+         var method = constructor.prototype[methods[i]];
+         this.BH_CPRequire(typeof method == "function", "method " + id + "." + methods[i]);
+         this.BH_CPAnchor(anchors,"method:" + id + "." + methods[i],method,false);
+      }
+      for(i = 0; i < statics.length; i++)
+      {
+         method = constructor[statics[i]];
+         this.BH_CPRequire(typeof method == "function", "static " + id + "." + statics[i]);
+         this.BH_CPAnchor(anchors,"static:" + id + "." + statics[i],method,false);
+      }
+   }
+
+   function BH_CPFieldPack(target, allowed)
+   {
+      var keys = new Array();
+      for(var key in target)
+      {
+         if(!target.hasOwnProperty(key)) continue;
+         for(var i = 0; i < allowed.length; i++)
+            if(key === allowed[i]) { keys.push(key); break; }
+      }
+      // For-in is the AVM1 enumeration order. Keep its exact order in a value
+      // list rather than reinserting named keys into a temporary AS2 object.
+      var values = new Array();
+      for(i = 0; i < keys.length; i++) values.push(target[keys[i]]);
+      for(i = 0; i < allowed.length; i++)
+      {
+         if(!target.hasOwnProperty(allowed[i])) continue;
+         var found = false;
+         for(var j = 0; j < keys.length; j++) if(keys[j] === allowed[i]) found = true;
+         this.BH_CPRequire(found,"nonenumerable native holder field " + allowed[i]);
+      }
+      return {keys:keys,values:values};
+   }
+
+   function BH_CPValidateFields(pack, allowed)
+   {
+      this.BH_CPRequire(pack !== undefined && pack.keys instanceof Array && pack.values instanceof Array
+         && pack.keys.length === pack.values.length && pack.keys.length <= allowed.length,"field pack");
+      var seen = new Object();
+      for(var i = 0; i < pack.keys.length; i++)
+      {
+         var key = pack.keys[i];
+         var known = false;
+         for(var j = 0; j < allowed.length; j++) if(key === allowed[j]) known = true;
+         this.BH_CPRequire(known && seen[key] !== true,"unexpected or repeated holder field " + key);
+         seen[key] = true;
+      }
+   }
+
+   function BH_CPInstallFields(target, pack, allowed)
+   {
+      this.BH_CPValidateFields(pack,allowed);
+      for(var i = 0; i < allowed.length; i++)
+         if(target.hasOwnProperty(allowed[i]))
+            this.BH_CPRequire(delete target[allowed[i]],"holder field is not deletable " + allowed[i]);
+      // The native object-graph codec preserves exact internal property order;
+      // these few MovieClip/static holder slots are ordinary AS2 assignments.
+      // Reinsert in reverse for-in order, matching the original AVM1 order.
+      for(i = pack.keys.length - 1; i >= 0; i--) target[pack.keys[i]] = pack.values[i];
+   }
+
+   function BH_CPWorldFields()
+   {
+      return ["mArea","mScreenSize","mScreenSizeHalf","mScreenCentre","mMap","mUpgrades",
+         "mThing_Collection","mHud","mShake","mBrightness","mTick","mDrawPosition",
+         "mTrackPositions","mTrackPosition","lTrackPosition","mSpawnPoint_Zombie",
+         "mSpawnPoint_Devil","mSpawnPoint_Player","mSpawnPoint_PlayerStart","mSpawnPoint_Pickup",
+         "mBHPersonalProgress","mPaused","mCompleteState","mLoaded","mSplitScreen",
+         "mAmbienceTicker","mZombieSampleIndex","mZombie_DrawCount","mZombie_NumberOfSounds",
+         "mZombie_AvgPosition","mZombieChannels","mZombieFrequency","mZombieVolume","mZombieSamples",
+         "bmFloor","bmCover","bmDecalMask","bmCurrentDraw"];
+   }
+
+   function BH_CPBridgeFields()
+   {
+      return ["tick","clock","seed","rng","rngCalls","cacheRng","cacheCalls","audioRng",
+         "frameMs","mode","map","characters","initialPlayers","playerCount","personalProgression",
+         "settings","logicCalls","drawCalls"];
+   }
+
+   function BH_CPStaticSpecs()
+   {
+      return [
+         {id:"Thing.CThing",target:Thing.CThing,keys:["mAllocate_ID","mAllocate_ProcessID_Count"]},
+         {id:"Thing.Math.CThing_Position",target:Thing.Math.CThing_Position,keys:["mPFactor"]},
+         {id:"World.CWorld",target:World.CWorld,keys:["mGameMode","m2Player"]},
+         {id:"World.Map.CMap",target:World.Map.CMap,keys:["mCheckSessionID"]},
+         {id:"World.Map.CMap_Cell",target:World.Map.CMap_Cell,keys:["nState","nSID","nSTimer","nSDist","nFullScanCount","nList","pList","mCurrentSessionID","xPOI","yPOI"]},
+         {id:"DrawPrimitive.CDrawPrimitive",target:DrawPrimitive.CDrawPrimitive,keys:["mGlobalScale","mDrawMatrix"]},
+         {id:"DrawPrimitive.MovieClip.CDrawPrimitive_MovieClip",target:DrawPrimitive.MovieClip.CDrawPrimitive_MovieClip,keys:["pGlobalScale"]},
+         {id:"DrawPrimitive.MovieClip.CDrawPrimitive_MovieClip_OmniDirectional",target:DrawPrimitive.MovieClip.CDrawPrimitive_MovieClip_OmniDirectional,keys:["mGlobalScale"]},
+         {id:"DrawPrimitive.XSI.CDrawPrimitive_XSI",target:DrawPrimitive.XSI.CDrawPrimitive_XSI,keys:["mGlobalScale"]},
+         {id:"Thing.Object.CThing_Object_Barrel",target:Thing.Object.CThing_Object_Barrel,keys:["mcDrawObject"]},
+         {id:"Thing.Object.CThing_Object_Wall",target:Thing.Object.CThing_Object_Wall,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Object.CThing_Object_Pickup",target:Thing.Object.CThing_Object_Pickup,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Object.CThing_Object_Mine",target:Thing.Object.CThing_Object_Mine,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Object.CThing_Object_ChargePack",target:Thing.Object.CThing_Object_ChargePack,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_Explosion",target:Thing.Effect.CThing_Effect_Explosion,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_BulletHit",target:Thing.Effect.CThing_Effect_BulletHit,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_BloodSplat",target:Thing.Effect.CThing_Effect_BloodSplat,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_SmokeCloud",target:Thing.Effect.CThing_Effect_SmokeCloud,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_RocketSmoke",target:Thing.Effect.CThing_Effect_RocketSmoke,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Effect.CThing_Effect_FireBall_Held",target:Thing.Effect.CThing_Effect_FireBall_Held,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Shot.CThing_Shot_FireBall",target:Thing.Shot.CThing_Shot_FireBall,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Shot.CThing_Shot_Rocket",target:Thing.Shot.CThing_Shot_Rocket,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Shot.CThing_Shot_HomingMissile",target:Thing.Shot.CThing_Shot_HomingMissile,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Shot.CThing_Shot_Devastator",target:Thing.Shot.CThing_Shot_Devastator,keys:["mcDrawObject_Cache"]},
+         {id:"Thing.Shot.CThing_Shot_Grenade",target:Thing.Shot.CThing_Shot_Grenade,keys:["mcDrawObject"]},
+         {id:"Thing.Shot.CThing_Shot_ClusterShell",target:Thing.Shot.CThing_Shot_ClusterShell,keys:["mcDrawObject"]},
+         {id:"Thing.Weapon.CThing_Weapon_Pistol",target:Thing.Weapon.CThing_Weapon_Pistol,keys:["mcMuzzleFlash"]},
+         {id:"Thing.Weapon.CThing_Weapon_UZI",target:Thing.Weapon.CThing_Weapon_UZI,keys:["mcMuzzleFlash"]},
+         {id:"Thing.Weapon.CThing_Weapon_Shotgun",target:Thing.Weapon.CThing_Weapon_Shotgun,keys:["mcMuzzleFlash"]},
+         {id:"Thing.Weapon.CThing_Weapon_Railgun",target:Thing.Weapon.CThing_Weapon_Railgun,keys:["mcMuzzleFlash"]},
+         {id:"World.Map.CMap_Decal",target:World.Map.CMap_Decal,keys:["bmBloodSplat","bmScorchMark"]}
+      ];
+   }
+
+   function BH_CPAnchors(importing)
+   {
+      var anchors = new Array();
+      var w = this.mcWorld;
+      this.BH_CPClass(anchors,"Object",Object,[],[]);
+      this.BH_CPClass(anchors,"Array",Array,[],[]);
+      this.BH_CPClass(anchors,"Function",Function,[],[]);
+      this.BH_CPClass(anchors,"MovieClip",MovieClip,[],[]);
+      this.BH_CPClass(anchors,"flash.geom.Point",flash.geom.Point,[],[]);
+      this.BH_CPClass(anchors,"flash.geom.Rectangle",flash.geom.Rectangle,[],[]);
+      this.BH_CPClass(anchors,"flash.geom.Matrix",flash.geom.Matrix,[],[]);
+      this.BH_CPClass(anchors,"flash.geom.ColorTransform",flash.geom.ColorTransform,[],[]);
+      this.BH_CPClass(anchors,"flash.display.BitmapData",flash.display.BitmapData,[],[]);
+      this.BH_CPClassRegistry(anchors);
+      this.BH_CPAnchor(anchors,"world",w,false);
+      this.BH_CPAnchor(anchors,"surface:world",w.bmDraw,false);
+      if(w.mSplitScreen !== undefined) this.BH_CPAnchor(anchors,"surface:split",w.mSplitScreen.bmDraw,false);
+      var input = CMain.mInput;
+      this.BH_CPRequire(input.mKey_List_Registered.length === 34,"network key count");
+      // BH_NetworkKeys replaces every gameplay key and the registered list.
+      // ResetKeys' unused physical table remains the fresh local input table;
+      // its Key.isDown closures must never become historical network controls.
+      this.BH_CPRequire(input.mKey_List instanceof Array && input.mKey_List.length === 256,"physical key table");
+      this.BH_CPAnchor(anchors,"input:unused-physical-table",input.mKey_List,false);
+      var methods = ["IsDown","IsUp","IsPressed","IsReleased","Renew"];
+      for(var i = 0; i < 35; i++)
+      {
+         var key = i < 34 ? input.mKey_List_Registered[i] : input.KEY_PAUSE;
+         for(var j = 0; j < methods.length; j++)
+            this.BH_CPAnchor(anchors,"input:" + i + ":" + methods[j],key[methods[j]],false);
+      }
+      // These functions use only their receiver. They close over no old
+      // player/world. Import allocates separate exact adapters for each slot.
+      for(i = 0; i < 2; i++)
+      {
+         var hud = w.mBHPersonalProgress[i].upgrades.mWorld.mHud;
+         var level;
+         var upgrade;
+         if(importing)
+         {
+            level = function(text) {};
+            upgrade = function(text)
+            {
+               if(!this.mSilentMessages) this.mWorld.mHud.AddMessage_Upgrade("P" + this.mSlot + ": " + text);
+            };
+         }
+         else
+         {
+            if(hud === undefined) continue;
+            level = hud.AddMessage_Level;
+            upgrade = hud.AddMessage_Upgrade;
+         }
+         this.BH_CPAnchor(anchors,"personal:" + i + ":level",level,false);
+         this.BH_CPAnchor(anchors,"personal:" + i + ":upgrade",upgrade,false);
+      }
+      for(i = 0; i < 4; i++)
+         this.BH_CPAnchor(anchors,"asset:player:" + i,Thing.Creature.CThing_Creature_Player.mXSI_Collections[i],true);
+      this.BH_CPAnchor(anchors,"asset:zombie",Thing.Creature.CThing_Creature_Zombie.mXSI_Collection,true);
+      this.BH_CPAnchor(anchors,"asset:devil",Thing.Creature.CThing_Creature_Devil.mXSI_Collection,true);
+      var sampleGroups = [{id:"samples",items:CSound.mSamples},{id:"ambience",items:CSound.mAmbience}];
+      for(i = 0; i < sampleGroups.length; i++)
+      {
+         var names = new Array();
+         for(var name in sampleGroups[i].items) if(sampleGroups[i].items.hasOwnProperty(name)) names.push(name);
+         names.sort();
+         for(j = 0; j < names.length; j++)
+            this.BH_CPAnchor(anchors,"audio:" + sampleGroups[i].id + ":" + names[j],sampleGroups[i].items[names[j]],false);
+      }
+      if(w.mHud.mcPlayerFrags !== undefined) this.BH_CPAnchor(anchors,"hud:frags",w.mHud.mcPlayerFrags,false);
+      for(i = 0; i < 2; i++)
+         if(w.mHud.mcPlayers[i] !== undefined) this.BH_CPAnchor(anchors,"hud:player:" + i,w.mHud.mcPlayers[i],false);
+      return anchors;
+   }
+
+   function BH_CPAssertQuiescent()
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      this.BH_CPRequire(this.BH_CheckpointAvailable(),"native graph codec unavailable");
+      this.BH_CPRequire(b.active === true && (b.state == "ready" || b.state == "playing") && !b.stepping
+         && b.complete === undefined && b.error === "" && !b.cache,"world is not quiescent");
+      this.BH_CPRequire(b.snapshotReceiptBusy !== true && b.snapshotReceiptPending === undefined
+         && b.snapshotReceiptRequest === undefined && b.snapshotReceiptProof === undefined,"receipt in progress");
+      this.BH_CPRequire(this.fState === this.State_RunWorld && w.mLoaded === true && w.mPaused === false
+         && w.mTick === b.tick && DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.RenderStack_Finished(),"world is not ready");
+      this.BH_CPRequire(b.initialPlayers === 1 && b.playerCount === 1 && b.personalProgression === true,
+         "checkpoint requires a solo online world");
+   }
+
+   function BH_CPBuildRoot()
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      var statics = new Array();
+      var specs = this.BH_CPStaticSpecs();
+      for(var i = 0; i < specs.length; i++) statics.push({id:specs[i].id,fields:this.BH_CPFieldPack(specs[i].target,specs[i].keys)});
+      return {schema:"boxhead-world-checkpoint-v1",tick:b.tick,digest:b.snapshot.digest,
+         mode:b.mode,map:b.map,seed:b.seed,characters:b.characters,settings:b.settings,
+         world:this.BH_CPFieldPack(w,this.BH_CPWorldFields()),bridge:this.BH_CPFieldPack(b,this.BH_CPBridgeFields()),
+         input:CMain.mInput,statics:statics,quality:_root._quality};
+   }
+
+   function BH_CheckpointExport()
+   {
+      var b = this.mBH;
+      var tick = b.tick;
+      try
+      {
+         this.BH_CPAssertQuiescent();
+         this.BH_CPRequire(tick % 25 === 0 && b.snapshot.tick === tick && b.snapshot.scope === "full","full checkpoint boundary required");
+         var digest = b.snapshot.digest;
+         var w = this.mcWorld;
+         var collection = w.mThing_Collection;
+         var rng = b.rng;
+         var calls = b.rngCalls;
+         var start = getTimer();
+         var payload = _global.boxheadNativeGraphV1("export",this.BH_CPBuildRoot(),this.BH_CPAnchors(false));
+         this.BH_CPRequire(typeof payload == "string" && payload.length > 5 && payload.length <= 16777216,"checkpoint payload bound");
+         this.BH_CPRequire(this.mcWorld === w && w.mThing_Collection === collection && b.tick === tick
+            && w.mTick === tick && b.rng === rng && b.rngCalls === calls && b.snapshot.digest === digest,
+            "export changed the native world");
+         return {version:1,tick:tick,digest:digest,payload:payload,exportMs:getTimer() - start};
+      }
+      catch(e)
+      {
+         // Export is readonly. Unsupported graphs leave the solo host alive;
+         // the coordinator can retain its existing verified history path.
+         return {version:1,tick:tick,error:String(e),available:false};
+      }
+   }
+
+   function BH_CheckpointImport(payload, expectedTick, expectedDigest)
+   {
+      var b = this.mBH;
+      try
+      {
+         this.BH_CPAssertQuiescent();
+         this.BH_CPRequire(b.tick === 0 && b.state === "ready" && b.localSlot === 2 && b.replay === true
+            && b.checkpointImported !== true,"import requires the fresh joining guest");
+         this.BH_CPRequire(typeof payload == "string" && payload.length > 5 && payload.length <= 16777216
+            && CMain.BH_Integer(expectedTick,0,2147483647) && expectedTick % 25 === 0
+            && typeof expectedDigest == "string" && expectedDigest.length === 26,"invalid checkpoint envelope");
+         var w = this.mcWorld;
+         var previousCollection = w.mThing_Collection;
+         var oldPlayer;
+         for(var oldID in previousCollection.mPlayerThings) oldPlayer = previousCollection.mPlayerThings[oldID];
+         // The original HUD creates its player display on Process_Init.
+         // Prepare only that display anchor, without any gameplay constructor,
+         // Step, inventory, RNG, wave or input change.
+         if(expectedTick > 0 && w.mHud.mcPlayers[0] === undefined) w.mHud.AddPlayer({mPlayerIndex:0});
+         var graph = _global.boxheadNativeGraphV1("import",payload,this.BH_CPAnchors(true));
+         this.BH_CPRequire(graph.schema === "boxhead-world-checkpoint-v1" && graph.tick === expectedTick
+            && graph.digest === expectedDigest && graph.mode === b.mode && graph.map === b.map
+            && graph.seed === b.seed,"checkpoint configuration differs");
+         this.BH_CPRequire(graph.characters instanceof Array && graph.characters.length === 2
+            && graph.characters[0] === b.characters[0] && graph.characters[1] === b.characters[1],"checkpoint characters differ");
+         var settingNames = ["difficulty","speed","devils","collisions","damage","gameAmount"];
+         for(var i = 0; i < settingNames.length; i++)
+            this.BH_CPRequire(graph.settings[settingNames[i]] === b.settings[settingNames[i]],"checkpoint settings differ");
+         this.BH_CPValidateFields(graph.world,this.BH_CPWorldFields());
+         this.BH_CPValidateFields(graph.bridge,this.BH_CPBridgeFields());
+         var specs = this.BH_CPStaticSpecs();
+         this.BH_CPRequire(graph.statics instanceof Array && graph.statics.length === specs.length,"static checkpoint count");
+         for(i = 0; i < specs.length; i++)
+         {
+            this.BH_CPRequire(graph.statics[i].id === specs[i].id,"static checkpoint identity");
+            this.BH_CPValidateFields(graph.statics[i].fields,specs[i].keys);
+         }
+         this.BH_CPRequire(graph.input.__proto__ === CInput.prototype && graph.input.mKey_List_Registered.length === 34
+            && (graph.quality === "HIGH" || graph.quality === "MEDIUM" || graph.quality === "LOW" || graph.quality === "BEST"),"native roots differ");
+         // All decoding, bounds, anchor resolution and metadata checks precede
+         // installation. Failure after this point poisons only this fresh guest.
+         this.BH_CPInstallFields(w,graph.world,this.BH_CPWorldFields());
+         CMain.mInput = graph.input;
+         for(i = 0; i < specs.length; i++) this.BH_CPInstallFields(specs[i].target,graph.statics[i].fields,specs[i].keys);
+         this.BH_CPInstallFields(b,graph.bridge,this.BH_CPBridgeFields());
+         _root._quality = graph.quality;
+         this.BH_CPRequire(w.mThing_Collection !== previousCollection && w.mThing_Collection.mWorld === w
+            && w.mMap.mWorld === w && w.mUpgrades.mWorld === w && w.mHud.mWorld === w,
+            "native root identity was not replaced");
+         var player;
+         var players = 0;
+         for(var id in w.mThing_Collection.mPlayerThings) { player = w.mThing_Collection.mPlayerThings[id]; players++; }
+         this.BH_CPRequire(players === 1 && player !== oldPlayer && player.mPlayerIndex === 0
+            && player.mThing_Collection === w.mThing_Collection && player.mWorld === w,"restored player topology differs");
+         this.BH_CPRequire(b.tick === expectedTick && w.mTick === expectedTick && b.playerCount === 1
+            && b.initialPlayers === 1 && b.localSlot === 2 && b.replay === true,"restored clock or membership differs");
+         b.state = expectedTick === 0 ? "ready" : "playing";
+         b.checkpointImported = true;
+         delete b.snapshot;
+         delete b.lastFullDigest;
+         var state = this.BH_State(true,true);
+         this.BH_CPRequire(state.error === undefined && state.tick === expectedTick && state.scope === "full"
+            && state.digest === expectedDigest,"restored native full state differs");
+         state.checkpoint = {version:1,restored:true,sourceTick:expectedTick,previousTick:0,rootReplaced:true};
+         return state;
+      }
+      catch(e) { return this.BH_Fail("checkpoint import: " + String(e)); }
+   }

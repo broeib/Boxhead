@@ -1,0 +1,306 @@
+   // Private compiled compact/full lifecycle fixtures. The menu's real owner/registrations
+   // are retained, but a disposable MovieClip and explicit fixture data stand
+   // in for a world. This never prepares a game, advances a zombie wave, or
+   // qualifies gameplay/FPS. Every successful fixture restores its menu state;
+   // a poisoned runtime is disposed by the runner without trying to resume it.
+   var mBHCompactProbeFixture;
+
+   function BH_CompactProbeStaticSpecs()
+   {
+      // Explicit private-world inputs. Original menu animation preparation can
+      // change mPFactor between successful arms; none of that ambient menu
+      // state is an input to this disposable fixture. Preserve every actual
+      // prior own-slot/value identity and restore it before returning to menu.
+      return [
+         {target:Thing.Math.CThing_Position,key:"mPFactor",value:1},
+         {target:Thing.CThing,key:"mAllocate_ID",value:0},
+         {target:Thing.CThing,key:"mAllocate_ProcessID_Count",value:3},
+         {target:World.Map.CMap_Cell,key:"nState",value:0},
+         {target:World.Map.CMap_Cell,key:"nSID",value:0},
+         {target:World.Map.CMap_Cell,key:"nSTimer",value:0},
+         {target:World.Map.CMap_Cell,key:"nSDist",value:0},
+         {target:World.Map.CMap_Cell,key:"nFullScanCount",value:0},
+         {target:World.Map.CMap_Cell,key:"nList",value:new Array()},
+         {target:World.Map.CMap_Cell,key:"pList",value:new Array()},
+         {target:World.Map.CMap_Cell,key:"mCurrentSessionID",value:0},
+         {target:World.Map.CMap,key:"mCheckSessionID",value:1}];
+   }
+
+   function BH_CompactProbeInstallStatics()
+   {
+      var specs = this.BH_CompactProbeStaticSpecs();
+      for(var i = 0; i < specs.length; i++)
+      {
+         var spec = specs[i];
+         spec.own = Object.prototype.hasOwnProperty.call(spec.target,spec.key);
+         spec.previous = spec.target[spec.key];
+         spec.target[spec.key] = spec.value;
+      }
+      return specs;
+   }
+
+   function BH_CompactProbeReadStatics()
+   {
+      var nav = World.Map.CMap_Cell;
+      return {positionFactor:Thing.Math.CThing_Position.mPFactor,nextThingID:Thing.CThing.mAllocate_ID,
+         processAllocator:Thing.CThing.mAllocate_ProcessID_Count,
+         navStatics:{state:nav.nState,id:nav.nSID,time:nav.nSTimer,distance:nav.nSDist,
+            fullScans:nav.nFullScanCount,list:nav.nList,pending:nav.pList,
+            session:nav.mCurrentSessionID,mapSession:World.Map.CMap.mCheckSessionID}};
+   }
+
+   function BH_CompactProbeRestoreStatics(specs)
+   {
+      for(var i = 0; i < specs.length; i++)
+      {
+         var spec = specs[i];
+         if(spec.own) spec.target[spec.key] = spec.previous;
+         else if(!(delete spec.target[spec.key])) return false;
+      }
+      for(i = 0; i < specs.length; i++)
+      {
+         spec = specs[i];
+         if(Object.prototype.hasOwnProperty.call(spec.target,spec.key) != spec.own
+            || spec.target[spec.key] !== spec.previous) return false;
+      }
+      return true;
+   }
+
+   static function BH_CompactProbePlayer(slot)
+   {
+      return {_CLASSID_:"CThing_Creature_Player",mPlayerIndex:slot - 1,mUniqueID:slot + 100,
+         sUniqueID:"private" + slot,mPosition:{mX:slot,mY:2,mZ:0},mAngle:{mAngle:0},
+         mLife:100,mFlags:0,mStateID:"private",mWeapon_Current:{mNameID:"pistol",mAmmo:20}};
+   }
+
+   static function BH_CompactProbePersonal(player)
+   {
+      var upgrades = {mBHOwnerSlot:player.mPlayerIndex + 1,mMultiplier:1,mMultiplierTick:0,
+         mWorld:{mThing_Collection:{mPlayerThings:{owner:player}}},
+         CThing_Weapon_Pistol:{power:7,mOriginalStats:{power:5}},Level:{Zombie_Count:2},
+         mMultipliers:[[{mActive:true},{mActive:false}]],mMultipleKills:{double:[{score:30}]}};
+      return {slot:player.mPlayerIndex + 1,score:10 * player.mPlayerIndex,kills:player.mPlayerIndex,
+         level:0,initialized:true,upgrades:upgrades};
+   }
+
+   function BH_CompactProbeSetup(kind, mode)
+   {
+      var original = this.mBH;
+      if(arguments.length != 2 || (mode != "sync" && mode != "compact")
+         || (kind != "first" && kind != "normal" && kind != "personal" && kind != "terminal" && kind != "join" && kind != "sequence"
+            && kind != "wrong-phase" && kind != "early-receipt" && kind != "abort"
+            && kind != "scalar-reentry" && kind != "receipt-reentry" && kind != "presentation-error")
+         || original.active || original.state != "menu" || this.mcWorld != undefined
+         || this.mBHStagedStep !== undefined || this.mBHCompactStep !== undefined || this.mBHCompactProbeFixture !== undefined
+         || original.stagedStepVersion !== 1 || original.compactStepVersion !== 1 || original.nativeProjectKernel === undefined)
+         throw new Error("private compact fixture requires an idle menu and the actual native kernels");
+      var baseTick = kind == "first" ? 0 : kind == "sequence" ? 23 : 6;
+      var saved = {bridge:original,world:this.mcWorld,state:this.fState,
+         input:CMain.mInput,background:CMain.ProcessBGTasks,sound:CSound.ProcessAll,
+         fps:CMain.mFPS,timeSlice:this.mTimeSlice,stateCount:this.mStateCount,
+         secondCharacter:CMain.mSaveData._Player2_CharacterIndex,secondCharacterOwn:CMain.mSaveData.hasOwnProperty("_Player2_CharacterIndex"),
+         twoPlayer:World.CWorld.m2Player,
+         cache:CMain.mBHFieldCache,cacheCount:CMain.mBHFieldCacheCount,
+         menuBounds:this.BH_MenuBounds,menuBoundsOwn:this.hasOwnProperty("BH_MenuBounds"),
+         stateMethod:this.BH_State,stateMethodOwn:this.hasOwnProperty("BH_State"),
+         debrief:this.State_Debrief,debriefOwn:this.hasOwnProperty("State_Debrief"),
+         statics:this.BH_CompactProbeInstallStatics()};
+      var fixture = {saved:saved,kind:kind,mode:mode,trace:new Array(),ambient:new Array(),
+         getters:0,serializationGetters:0,debriefCalls:0,markerTargets:new Array()};
+      this.mBHCompactProbeFixture = fixture;
+      var witness = fixture.witness = {_CLASSID_:"PrivateWitness",ambient:0,keys:0,pointers:0,p1:0,p2:0};
+      var p1 = CMain.BH_CompactProbePlayer(1);
+      var p2 = CMain.BH_CompactProbePlayer(2);
+      var first = {_CLASSID_:"PrivateScalar",value:7,alias:p1};
+      first.self = first;
+      first.addProperty("observed",function()
+      {
+         fixture.getters++;
+         if(fixture.kind == "scalar-reentry")
+            flash.external.ExternalInterface.call("boxheadCompactReentryProbe","scalar",CMain._this.mBHCompactStep === undefined);
+         return 19;
+      },null);
+      var players = {p1:p1};
+      var things = {p1:p1,first:first,witness:witness};
+      if(kind != "join") { players.p2 = p2; things.p2 = p2; }
+      var collection = {mThings:things,mPlayerThings:players,mDeleteThings:new Array(),
+         mRespawnPlayer:new Array(),mThingCounters:{players:kind == "join" ? 1 : 2},
+         mTimeSlice_25:new Array(),mTimeSlice_8:new Array(),mTimeSlice_4:new Array()};
+      var world = this.createEmptyMovieClip("_bhCompactFixtureWorld",this.getNextHighestDepth());
+      fixture.world = world;
+      this.mcWorld = world;
+      world._visible = false;
+      world.mLoaded = true;
+      world.mPaused = false;
+      world.mTick = baseTick;
+      world.BH_InitializeRules = function() { fixture.trace.push("rules"); };
+      world.mThing_Collection = collection;
+      world.mMap = {mCells:[[{mCollide:0,mChildCount:0,nID:1,nDist:0,nVD:0,mObjects:{p1:p1}}]],mCheck:1};
+      world.mUpgrades = {Level:{Zombie_Count:2},mLevelIndex:0};
+      world.mHud = {mTotalScore:10};
+      world.mShake = 0;
+      world.lTrackPosition = {mX:1,mY:2,mZ:0};
+      world.mSpawnPoint_Player = [{mX:1,mY:2}];
+      world.mSpawnPoint_Zombie = [{mX:3,mY:4}];
+      world.mSpawnPoint_Devil = new Array();
+      world.mBHPersonalProgress = [CMain.BH_CompactProbePersonal(p1),CMain.BH_CompactProbePersonal(p2)];
+      world.addProperty("fixtureScalar",function() { fixture.trace.push("world-scalar"); return 11; },null);
+      world.Process = function()
+      {
+         if(!CMain.BH_EnterWorld("logic")) throw new Error("private fixture logic guard failed");
+         fixture.trace.push("process");
+         witness.ambient = 0; witness.keys = 0; witness.pointers = 0;
+         CMain._this.mBH.rng = 2; CMain._this.mBH.rngCalls = 3;
+         this.mTick++;
+         if(fixture.kind == "terminal") this.mCompleteState = "player dead";
+      };
+      world.Draw = function()
+      {
+         if(!CMain.BH_EnterWorld("draw")) throw new Error("private fixture draw guard failed");
+         fixture.trace.push("draw");
+         this.bmDraw.fillRect(this.bmDraw.rectangle,0xff102030);
+         this.bmDraw.copyPixels(fixture.sprite,fixture.sprite.rectangle,new flash.geom.Point(1,1),undefined,undefined,true);
+         if(fixture.kind == "presentation-error") CMain._this.mBH.presentationError = "private presentation failure";
+      };
+      world.Spawn_Player_Other = function(index)
+      {
+         fixture.trace.push("join:" + index);
+         if(index != 1 || players.p2 !== undefined) throw new Error("invalid private fixture spawn");
+         players.p2 = p2; things.p2 = p2; collection.mThingCounters.players = 2;
+         return true;
+      };
+      world.onEnterFrame = function()
+      {
+         witness.ambient++;
+         flash.external.ExternalInterface.call("boxheadCompactAmbientProbe","frame",this.mTick,witness.ambient);
+      };
+      fixture.listener = {onKeyDown:function()
+      {
+         witness.keys++;
+         flash.external.ExternalInterface.call("boxheadCompactAmbientProbe","key",world.mTick,witness.keys);
+      },onMouseMove:function()
+      {
+         witness.pointers++;
+         flash.external.ExternalInterface.call("boxheadCompactAmbientProbe","mouse",world.mTick,witness.pointers);
+      }};
+      Key.addListener(fixture.listener);
+      Mouse.addListener(fixture.listener);
+      CMain.mInput = {mKey_List_Registered:[0,1],BH_ApplyMasks:function(one,two)
+      {
+         fixture.trace.push("masks:" + one + ":" + two); witness.p1 = one; witness.p2 = two;
+      }};
+      CMain.ProcessBGTasks = function() { fixture.trace.push("background"); };
+      CSound.ProcessAll = function() { fixture.trace.push("sound"); };
+      this.State_Debrief = function()
+      {
+         fixture.debriefCalls++;
+         flash.external.ExternalInterface.call("boxheadCompactAmbientProbe","debrief",world.mTick,fixture.debriefCalls);
+      };
+      this.BH_MenuBounds = function()
+      {
+         var tx = this.mBHCompactStep === undefined ? this.mBHStagedStep : this.mBHCompactStep;
+         if(fixture.kind == "receipt-reentry" && tx !== undefined && tx.phase == "committed")
+         {
+            var outgoing = new Object();
+            outgoing.addProperty("value",function()
+            {
+               fixture.serializationGetters++;
+               return flash.external.ExternalInterface.call("boxheadCompactReentryProbe","receipt",CMain._this.mBHStagedStep === undefined && CMain._this.mBHCompactStep === undefined);
+            },null);
+            tx.snapshot.privateOutgoingProbe = outgoing;
+         }
+         return saved.menuBounds.call(this);
+      };
+      // Only the baseline arm substitutes these separately compiled, exact
+      // byte-predecessor methods. Compact and full callbacks use production bodies.
+      if(mode == "sync") this.BH_State = this.BH_CompactOriginalState;
+      this.mBH = {active:true,state:baseTick == 0 ? "ready" : "playing",tick:baseTick,clock:baseTick * 40,error:"",stepping:false,cache:false,
+         logicCalls:0,drawCalls:0,seed:1,rng:2,rngCalls:3,cacheRng:104730,cacheCalls:0,
+         snapshotReceiptEpoch:0,snapshotReceiptBusy:false,frameMs:40,replay:false,
+         mode:"Coop",map:"private-compact-fixture",settings:{difficulty:0,speed:1,devils:1,collisions:1,damage:1,gameAmount:1},
+         initialPlayers:kind == "join" ? 1 : 2,playerCount:kind == "join" ? 1 : 2,
+         characters:kind == "join" ? [0] : [0,3],personalProgression:kind == "personal",
+         nativeScalarKernel:original.nativeScalarKernel,nativeProjectionScanKernel:original.nativeProjectionScanKernel,
+         nativeProjectKernel:original.nativeProjectKernel,nativeProjectOwner:original.nativeProjectOwner,
+         nativeProjectFunction:original.nativeProjectFunction,stagedFenceKernel:original.stagedFenceKernel,
+         stagedStepVersion:1,compactStepVersion:1,compactFenceKernel:original.compactFenceKernel,
+         lastFullDigest:"native-v2-0123456789abcdef",presentationRequested:true,presentationMode:"three-pose-v2"};
+      CMain.mBHFieldCache = Object();
+      CMain.mBHFieldCacheCount = 0;
+      this.fState = this.State_RunWorld;
+      world.bmDraw = new flash.display.BitmapData(8,8,true,0);
+      fixture.sprite = new flash.display.BitmapData(2,2,true,0xffaabbcc);
+      CMain.BH_PresentationAttach(world,world.bmDraw,0);
+      fixture.markerTargets = [first,p1,p2,witness,things,players,collection,
+         world.mMap,world.mUpgrades,world.mHud,world.lTrackPosition,
+         world.mSpawnPoint_Player,world.mSpawnPoint_Zombie,world.mSpawnPoint_Devil];
+      return {version:1,kind:kind,mode:mode,privateFixture:true,worldTick:world.mTick,tick:this.mBH.tick,
+         fixtureStatics:this.BH_CompactProbeReadStatics(),previousPositionFactor:saved.statics[0].previous,
+         nativeBefore:CMain.BH_NativeProjectInfo(original.nativeProjectKernel),
+         actualFence:original.stagedFenceKernel === _global.boxheadNativeStepFenceV1,
+         actualCompactFence:original.compactFenceKernel === _global.boxheadNativeCompactFenceV1};
+   }
+
+   function BH_CompactProbeInspect()
+   {
+      var fixture = this.mBHCompactProbeFixture;
+      var b = this.mBH;
+      if(fixture === undefined || this.mBHStagedStep !== undefined || this.mBHCompactStep !== undefined || b.snapshotReceiptPending !== undefined)
+         throw new Error("private compact fixture observation requires a completed receipt");
+      var clean = true;
+      for(var i = 0; i < fixture.markerTargets.length; i++)
+         if(fixture.markerTargets[i].hasOwnProperty("__bhSnapshotRef")) clean = false;
+      var pixels = new Array();
+      for(var y = 0; y < 8; y++) for(var x = 0; x < 8; x++) pixels.push(this.mcWorld.bmDraw.getPixel32(x,y));
+      return {version:1,kind:fixture.kind,mode:fixture.mode,tick:b.tick,worldTick:this.mcWorld.mTick,
+         logicCalls:b.logicCalls,drawCalls:b.drawCalls,trace:fixture.trace,getters:fixture.getters,
+         markersClean:clean,receiptAbsent:b.snapshotReceiptPending === undefined && b.snapshotReceiptRequest === undefined && b.snapshotReceiptProof === undefined,
+         stagedAbsent:this.mBHStagedStep === undefined,compactAbsent:this.mBHCompactStep === undefined,ambient:fixture.witness.ambient,
+         pixels:pixels,presentation:this.BH_PresentationInfo(true),
+         fixtureStatics:this.BH_CompactProbeReadStatics(),
+         keys:fixture.witness.keys,pointers:fixture.witness.pointers,debriefCalls:fixture.debriefCalls,
+         snapshotDigest:b.snapshot.digest,snapshotScope:b.snapshot.scope,snapshotObjects:b.snapshot.snapshotObjects,
+         snapshotFields:b.snapshot.snapshotFields,nativeAfter:CMain.BH_NativeProjectInfo(b.nativeProjectKernel)};
+   }
+
+   function BH_CompactProbeRestore()
+   {
+      var observed = this.BH_CompactProbeInspect();
+      var fixture = this.mBHCompactProbeFixture;
+      var saved = fixture.saved;
+      Key.removeListener(fixture.listener);
+      Mouse.removeListener(fixture.listener);
+      delete fixture.world.onEnterFrame;
+      this.BH_PresentationDispose();
+      fixture.world.bmDraw.dispose();
+      fixture.sprite.dispose();
+      fixture.world.removeMovieClip();
+      this.mcWorld = saved.world;
+      this.fState = saved.state;
+      this.mTimeSlice = saved.timeSlice;
+      this.mStateCount = saved.stateCount;
+      if(saved.menuBoundsOwn) this.BH_MenuBounds = saved.menuBounds;
+      else delete this.BH_MenuBounds;
+      if(saved.stateMethodOwn) this.BH_State = saved.stateMethod;
+      else delete this.BH_State;
+      if(saved.debriefOwn) this.State_Debrief = saved.debrief;
+      else delete this.State_Debrief;
+      CMain.mInput = saved.input;
+      CMain.ProcessBGTasks = saved.background;
+      CSound.ProcessAll = saved.sound;
+      CMain.mFPS = saved.fps;
+      if(saved.secondCharacterOwn) CMain.mSaveData._Player2_CharacterIndex = saved.secondCharacter;
+      else delete CMain.mSaveData._Player2_CharacterIndex;
+      World.CWorld.m2Player = saved.twoPlayer;
+      CMain.mBHFieldCache = saved.cache;
+      CMain.mBHFieldCacheCount = saved.cacheCount;
+      var staticsRestored = this.BH_CompactProbeRestoreStatics(saved.statics);
+      this.mBH = saved.bridge;
+      delete this.mBHCompactProbeFixture;
+      return {version:1,restored:this.mBH === saved.bridge && this.mcWorld === saved.world
+         && this.fState === saved.state && CMain.mInput === saved.input
+         && CMain.ProcessBGTasks === saved.background && CSound.ProcessAll === saved.sound
+         && CMain.mBHFieldCache === saved.cache && CMain.mBHFieldCacheCount === saved.cacheCount && staticsRestored,
+         staticsRestored:staticsRestored,
+         state:this.mBH.state,tick:this.mBH.tick,active:this.mBH.active,observed:observed};
+   }

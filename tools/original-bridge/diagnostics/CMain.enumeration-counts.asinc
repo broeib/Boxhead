@@ -1,0 +1,94 @@
+   // Diagnostic-only bridge state. Never inserted into native/snapshot output.
+   // Each projection starts a fresh record; no world values or shapes persist.
+   static function BH_EnumBegin(scope, tick)
+   {
+      var b = CMain._this.mBH;
+      var previous = b.enumerationDiagnostic;
+      var sequence = previous === undefined ? 1 : previous.sequence + 1;
+      b.enumerationDiagnostic = {version:1,sequence:sequence,tick:tick,scope:scope,finalized:false,error:"",methods:[
+         {method:"BH_Project",calls:0,total:0,own:0,inherited:0},
+         {method:"BH_Scalars",calls:0,total:0,own:0,inherited:0},
+         {method:"BH_FrameState.entity",calls:0,total:0,own:0,inherited:0}],classes:new Array()};
+   }
+
+   static function BH_EnumRecord(method, className, total, own)
+   {
+      var d = CMain._this.mBH.enumerationDiagnostic;
+      if(d === undefined || d.finalized === true) return;
+      var row = d.methods[method];
+      row.calls++;
+      row.total += total;
+      row.own += own;
+      row.inherited += total - own;
+      // className is an already-read primitive: BH_Project's local or the
+      // fresh compact output's $class. BH_Scalars supplies undefined, so it
+      // never performs an additional _CLASSID_ read on its source object.
+      var name = typeof className == "string" && className.length <= 100 ? className : "<unclassified>";
+      var found;
+      for(var i = 0; i < d.classes.length; i++)
+      {
+         if(d.classes[i].method == row.method && d.classes[i].className == name)
+         {
+            found = d.classes[i];
+            break;
+         }
+      }
+      if(found === undefined)
+      {
+         if(d.classes.length >= 256)
+         {
+            d.error = "diagnostic class capacity exceeded";
+            return;
+         }
+         found = {method:row.method,className:name,calls:0,total:0,own:0,inherited:0};
+         d.classes.push(found);
+      }
+      found.calls++;
+      found.total += total;
+      found.own += own;
+      found.inherited += total - own;
+   }
+
+   static function BH_EnumFinish(snapshot)
+   {
+      var d = CMain._this.mBH.enumerationDiagnostic;
+      if(d === undefined) return;
+      if(snapshot.tick !== d.tick || snapshot.scope !== d.scope)
+      {
+         d.error = "diagnostic snapshot identity differs";
+         return;
+      }
+      d.digest = snapshot.digest;
+      d.snapshotObjects = snapshot.snapshotObjects;
+      d.snapshotFields = snapshot.snapshotFields;
+      d.finalized = true;
+   }
+
+   function BH_EnumerationCounts()
+   {
+      var d = this.mBH.enumerationDiagnostic;
+      if(d === undefined) return {version:1,schema:"original-native-enumeration-counts-v1",available:false,tick:this.mBH.tick};
+      // Copy bridge-private primitives only. No world access, native projection,
+      // reset, snapshot replacement, seed/timer/RNG operation or simulation.
+      var methods = new Array();
+      var classes = new Array();
+      for(var i = 0; i < d.methods.length; i++)
+      {
+         var row = d.methods[i];
+         methods.push({method:row.method,calls:row.calls,total:row.total,own:row.own,inherited:row.inherited});
+      }
+      for(var j = 0; j < d.classes.length; j++)
+      {
+         var entry = d.classes[j];
+         classes.push({method:entry.method,className:entry.className,calls:entry.calls,total:entry.total,own:entry.own,inherited:entry.inherited});
+      }
+      return {version:1,schema:"original-native-enumeration-counts-v1",available:true,sequence:d.sequence,
+         tick:d.tick,scope:d.scope,digest:d.digest,snapshotObjects:d.snapshotObjects,snapshotFields:d.snapshotFields,
+         finalized:d.finalized,error:d.error,methods:methods,classes:classes};
+   }
+
+   function BH_EnumerationRegister()
+   {
+      if(flash.external.ExternalInterface.available && !flash.external.ExternalInterface.addCallback("bhEnumerationCounts",this,this.BH_ReceiptGuard("bhEnumerationCounts",this.BH_EnumerationCounts)))
+         this.BH_Fail("diagnostic enumeration callback registration failed");
+   }

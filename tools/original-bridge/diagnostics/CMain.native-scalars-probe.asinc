@@ -1,0 +1,360 @@
+   // Diagnostic-only members, appended after normal deterministic rewrites.
+   // All source/output objects below are private. No world is prepared/stepped.
+   static function BH_NativeScalarProbeRequire(report, name, passed)
+   {
+      report.checks.push({name:name,passed:passed === true});
+      if(passed !== true) throw new Error("native scalar probe: " + name);
+   }
+
+   static function BH_NativeScalarProbeShape(value)
+   {
+      var keys = new Array();
+      for(var key in value) if(value.hasOwnProperty(key)) keys.push(key);
+      keys.sort();
+      var result = new Array();
+      for(var index = 0; index < keys.length; index++)
+      {
+         key = keys[index];
+         var item = value[key];
+         var type = typeof item;
+         var text = String(item);
+         if(type == "number" && item == 0) text = "0:reciprocal=" + String(1 / item);
+         if(type == "object" && item !== null && item.hasOwnProperty("$number"))
+            text = "$number:" + item.$number;
+         result.push(key.length + ":" + key + ":" + type + ":" + text);
+      }
+      return result;
+   }
+
+   static function BH_NativeScalarProbeGetter(state, key, value)
+   {
+      return function()
+      {
+         state.log.push("get:" + key);
+         if(state.kind == "getter-throw" && key == "mProbeRead") throw state.sentinel;
+         if(state.kind == "getter-mutation" && key == "mProbeMutator")
+         {
+            delete state.source.mProbeLater;
+            state.source.mProbeInserted = 91;
+            state.mutable = 73;
+         }
+         if(state.kind == "hasOwn-replacement" && key == "mProbeMutator")
+            state.source.hasOwnProperty = function(name)
+            {
+               state.log.push("own2:" + name);
+               return Object.prototype.hasOwnProperty.call(this,name);
+            };
+         if(state.kind == "policy-replacement" && key == "mProbeMutator")
+            CMain.BH_SkipField = function(name)
+            {
+               state.log.push("policy2:" + name);
+               return state.policy(name);
+            };
+         if(key == "mProbeChanged") return state.mutable;
+         return value;
+      };
+   }
+
+   static function BH_NativeScalarProbeFixture(kind)
+   {
+      var state = {kind:kind,log:new Array(),sentinel:{marker:"private-scalar-sentinel"},mutable:17,reads:0};
+      var object = new Object();
+      var output = new Object();
+      state.source = object;
+      state.output = output;
+      var prototype = new Object();
+      prototype.addProperty("mProbeInherited",function()
+      {
+         state.log.push("INHERITED_GETTER_MUST_NOT_RUN");
+         throw state.sentinel;
+      },null);
+      object.__proto__ = prototype;
+      var keys = ["mLife","mcHidden","mProbeLater","mProbeChanged","mProbeMutator","mProbeRead",
+         "mProbeFalse","mProbeText","mProbeNull","mProbeUndefined","mProbeObject","mProbeFunction"];
+      var values = [12,true,19,17,23,29,false,"scalar",null,undefined,{nested:31},function() {}];
+      if(kind == "nonfinite-and-negative-zero")
+      {
+         keys = ["mProbeNaN","mProbeInfinity","mProbeNegativeInfinity","mProbeNegativeZero","mProbeZero"];
+         values = [NaN,Infinity,-Infinity,-1 / Infinity,0];
+      }
+      else if(kind == "special-and-case-keys")
+      {
+         keys = ["0","01","constructor","__constructor__","mLife","MLife","mLIFE","$ref","field:mLife"];
+         values = [0,1,2,3,4,5,6,7,8];
+      }
+      else if(kind == "cache-reset")
+      {
+         keys = ["mProbeResetA","mProbeResetB","mProbeResetC"];
+         values = [41,43,47];
+      }
+      for(var index = 0; index < keys.length; index++)
+         object.addProperty(keys[index],CMain.BH_NativeScalarProbeGetter(state,keys[index],values[index]),null);
+      object.hasOwnProperty = function(key)
+      {
+         state.log.push("own:" + key);
+         if(state.kind == "hasOwn-throw" && key == "mProbeRead") throw state.sentinel;
+         if(state.kind == "hasOwn-mutation" && key == "mProbeChanged") state.mutable = 79;
+         return Object.prototype.hasOwnProperty.call(this,key);
+      };
+      if(kind == "hasOwn-accessor")
+      {
+         var ownMethod = object.hasOwnProperty;
+         object.addProperty("hasOwnProperty",function()
+         {
+            state.log.push("method:get");
+            return ownMethod;
+         },null);
+      }
+      output.addProperty("mLife",function() { return state.writtenLife; },function(value)
+      {
+         state.log.push("set:mLife:" + String(value));
+         if(state.kind == "setter-throw") throw state.sentinel;
+         state.writtenLife = value;
+      });
+      return state;
+   }
+
+   // Original scalar loop, with only a private successful-read count added.
+   // The kernel receives this same fresh output and already initialized cache.
+   static function BH_NativeScalarProbeLegacy(object, out, fieldCache, state)
+   {
+      for(var key in object)
+      {
+         if(!object.hasOwnProperty(key)) continue;
+         var value = object[key];
+         state.reads++;
+         var type = typeof value;
+         if(type == "number" || type == "boolean" || type == "string")
+         {
+            var skip = fieldCache[key];
+            if(skip == undefined)
+            {
+               skip = CMain.BH_SkipField(key);
+               fieldCache = CMain.mBHFieldCache;
+            }
+            if(!skip) out[key] = type == "number" && (value - value) !== 0 ? {$number:String(value)} : value;
+         }
+      }
+      return state.reads;
+   }
+
+   static function BH_NativeScalarProbeArm(kind, kernel, nativeRun)
+   {
+      var state = CMain.BH_NativeScalarProbeFixture(kind);
+      var policy = CMain.BH_SkipField;
+      state.policy = policy;
+      CMain.mBHFieldCache = Object();
+      CMain.mBHFieldCacheCount = 0;
+      if(kind == "cache-reset")
+         for(var index = 0; index < 1023; index++) policy("probePrimed" + index);
+      if(kind == "cache-hit")
+      {
+         policy("mLife");
+         policy("mcHidden");
+      }
+      var cache = CMain.mBHFieldCache;
+      var before = CMain.BH_NativeScalarInfo(kernel);
+      CMain.BH_SkipField = function(key)
+      {
+         state.log.push("policy:" + key);
+         if(state.kind == "policy-throw" && key == "mProbeRead") throw state.sentinel;
+         return policy(key);
+      };
+      var threw = false;
+      var sentinel = false;
+      var errorText = "";
+      var reads;
+      try
+      {
+         reads = nativeRun ? kernel("run",state.source,state.output,cache,CMain)
+            : CMain.BH_NativeScalarProbeLegacy(state.source,state.output,cache,state);
+      }
+      catch(e)
+      {
+         threw = true;
+         sentinel = e === state.sentinel;
+         errorText = sentinel ? "private-scalar-sentinel" : String(e);
+      }
+      finally { CMain.BH_SkipField = policy; }
+      var after = CMain.BH_NativeScalarInfo(kernel);
+      var log = state.log.slice();
+      var result = {kind:kind,nativeRun:nativeRun,threw:threw,sentinel:sentinel,error:errorText,
+         reads:nativeRun ? after.ownReads - before.ownReads : state.reads,
+         returnedReads:reads === undefined ? "undefined" : String(reads),
+         cacheCount:CMain.mBHFieldCacheCount,cacheReplaced:CMain.mBHFieldCache !== cache,
+         log:log,shape:CMain.BH_NativeScalarProbeShape(state.output),
+         counterDelta:{calls:after.calls-before.calls,completed:after.completed-before.completed,
+            unsupported:after.unsupported-before.unsupported,keys:after.keys-before.keys,ownReads:after.ownReads-before.ownReads}};
+      return result;
+   }
+
+   function BH_NativeScalarsProbe()
+   {
+      var b = this.mBH;
+      var world = this.mcWorld;
+      var cache = CMain.mBHFieldCache;
+      var count = CMain.mBHFieldCacheCount;
+      var policy = CMain.BH_SkipField;
+      var stringHelper = CMain.BH_NativeScalarString;
+      var kernel = b.nativeScalarKernel;
+      var snapshot = b.snapshot;
+      var before = {active:String(b.active),stepping:String(b.stepping),state:String(b.state),tick:String(b.tick),
+         clock:String(b.clock),seed:String(b.seed),rng:String(b.rng),rngCalls:String(b.rngCalls),
+         cacheRng:String(b.cacheRng),cacheCalls:String(b.cacheCalls),worldPresent:world !== undefined};
+      var report = {schema:"original-native-scalar-private-probe-v1",pass:false,checks:new Array(),pairs:new Array(),
+         unsupported:new Array(),invalidArguments:new Array(),invalidResults:new Array(),before:before,engineBoundaryFixturesRequired:true,
+         timeoutProvenHere:false,baseClipRemovalProvenHere:false};
+      try
+      {
+         CMain.BH_NativeScalarProbeRequire(report,"menu_only",b.active === false && b.stepping === false
+            && b.state == "menu" && b.tick === 0 && world === undefined && b.snapshotReceiptBusy !== true);
+         CMain.BH_NativeScalarProbeRequire(report,"native_capability",typeof kernel == "function"
+            && kernel === _global.boxheadNativeScalarsV1);
+         report.nativeBefore = CMain.BH_NativeScalarInfo(kernel);
+         var cases = ["scalars","nonfinite-and-negative-zero","special-and-case-keys","getter-mutation",
+            "hasOwn-mutation","hasOwn-accessor","hasOwn-replacement","policy-replacement",
+            "cache-hit","cache-reset","getter-throw","hasOwn-throw","setter-throw","policy-throw"];
+         for(var index = 0; index < cases.length; index++)
+         {
+            var kind = cases[index];
+            var original = CMain.BH_NativeScalarProbeArm(kind,kernel,false);
+            var actual = CMain.BH_NativeScalarProbeArm(kind,kernel,true);
+            report.pairs.push({name:kind,original:original,native:actual});
+            CMain.BH_NativeScalarProbeRequire(report,"pair_log_" + kind,original.log.join("\n") === actual.log.join("\n"));
+            CMain.BH_NativeScalarProbeRequire(report,"pair_output_" + kind,original.shape.join("\n") === actual.shape.join("\n"));
+            CMain.BH_NativeScalarProbeRequire(report,"pair_reads_" + kind,original.reads === actual.reads
+               && original.returnedReads === actual.returnedReads);
+            CMain.BH_NativeScalarProbeRequire(report,"pair_cache_" + kind,original.cacheCount === actual.cacheCount
+               && original.cacheReplaced === actual.cacheReplaced);
+            CMain.BH_NativeScalarProbeRequire(report,"pair_error_" + kind,original.threw === actual.threw
+               && original.sentinel === actual.sentinel && original.error === actual.error);
+            CMain.BH_NativeScalarProbeRequire(report,"native_path_" + kind,actual.counterDelta.calls === 1
+               && actual.counterDelta.unsupported === 0 && actual.counterDelta.completed === (actual.threw ? 0 : 1));
+            if(kind == "cache-reset") CMain.BH_NativeScalarProbeRequire(report,"actual_cache_reset",
+               actual.cacheReplaced === true && actual.cacheCount === 2);
+            if(kind == "nonfinite-and-negative-zero")
+            {
+               var shaped = actual.shape.join("\n");
+               CMain.BH_NativeScalarProbeRequire(report,"nonfinite_tags_and_signed_zero",
+                  shaped.indexOf("$number:NaN") >= 0 && shaped.indexOf("$number:Infinity") >= 0
+                  && shaped.indexOf("$number:-Infinity") >= 0
+                  && shaped.indexOf("mProbeNegativeZero:number:0:reciprocal=-Infinity") >= 0
+                  && shaped.indexOf("mProbeZero:number:0:reciprocal=Infinity") >= 0);
+            }
+         }
+         var unsupported = [new Array(),new Number(7),new String("private"),new Boolean(true)];
+         for(index = 0; index < unsupported.length; index++)
+         {
+            var touched = 0;
+            var object = unsupported[index];
+            object.hasOwnProperty = function() { touched++; throw new Error("unsupported source was touched"); };
+            object.addProperty("mProbeGetter",function() { touched++; throw new Error("unsupported getter was read"); },null);
+            var out = new Object();
+            CMain.mBHFieldCache = Object(); CMain.mBHFieldCacheCount = 0;
+            var unsupportedBefore = CMain.BH_NativeScalarInfo(kernel);
+            var answer = kernel("run",object,out,CMain.mBHFieldCache,CMain);
+            var unsupportedAfter = CMain.BH_NativeScalarInfo(kernel);
+            report.unsupported.push({index:index,returnedFalse:answer === false,touched:touched,
+               outputFields:CMain.BH_NativeScalarProbeShape(out).length,
+               counterDelta:{calls:unsupportedAfter.calls-unsupportedBefore.calls,
+                  completed:unsupportedAfter.completed-unsupportedBefore.completed,
+                  unsupported:unsupportedAfter.unsupported-unsupportedBefore.unsupported,
+                  keys:unsupportedAfter.keys-unsupportedBefore.keys,ownReads:unsupportedAfter.ownReads-unsupportedBefore.ownReads}});
+            CMain.BH_NativeScalarProbeRequire(report,"unsupported_before_read_" + index,answer === false && touched === 0
+               && CMain.BH_NativeScalarProbeShape(out).length === 0 && CMain.mBHFieldCacheCount === 0
+               && unsupportedAfter.calls === unsupportedBefore.calls + 1
+               && unsupportedAfter.unsupported === unsupportedBefore.unsupported + 1
+               && unsupportedAfter.completed === unsupportedBefore.completed && unsupportedAfter.keys === unsupportedBefore.keys
+               && unsupportedAfter.ownReads === unsupportedBefore.ownReads);
+         }
+         var malformed = ["arity","source-output-alias","cache-output-alias","null-owner","array-output","undefined-cache","operation"];
+         for(index = 0; index < malformed.length; index++)
+         {
+            var touched = 0;
+            var object = new Object();
+            object.addProperty("mLife",function() { touched++; return 7; },null);
+            var out = new Object();
+            CMain.mBHFieldCache = Object(); CMain.mBHFieldCacheCount = 0;
+            var invalidBefore = CMain.BH_NativeScalarInfo(kernel);
+            var rejected = false;
+            try
+            {
+               if(malformed[index] == "arity") kernel("run",object,out,CMain.mBHFieldCache);
+               else if(malformed[index] == "source-output-alias") kernel("run",object,object,CMain.mBHFieldCache,CMain);
+               else if(malformed[index] == "cache-output-alias") kernel("run",object,out,out,CMain);
+               else if(malformed[index] == "null-owner") kernel("run",object,out,CMain.mBHFieldCache,null);
+               else if(malformed[index] == "array-output") kernel("run",object,new Array(),CMain.mBHFieldCache,CMain);
+               else if(malformed[index] == "undefined-cache") kernel("run",object,out,undefined,CMain);
+               else kernel("unknown-operation",object,out,CMain.mBHFieldCache,CMain);
+            }
+            catch(e) { rejected = true; }
+            var invalidAfter = CMain.BH_NativeScalarInfo(kernel);
+            report.invalidArguments.push({name:malformed[index],rejected:rejected,touched:touched,
+               keysDelta:invalidAfter.keys-invalidBefore.keys,ownReadsDelta:invalidAfter.ownReads-invalidBefore.ownReads});
+            CMain.BH_NativeScalarProbeRequire(report,"malformed_before_read_" + malformed[index],rejected && touched === 0
+               && invalidAfter.keys === invalidBefore.keys && invalidAfter.ownReads === invalidBefore.ownReads);
+         }
+         var conversionSentinel = {marker:"private-conversion-sentinel"};
+         var conversionCalls = 0;
+         CMain.BH_NativeScalarString = function(value) { conversionCalls++; throw conversionSentinel; };
+         CMain.mBHFieldCache = Object(); CMain.mBHFieldCacheCount = 0;
+         out = new Object();
+         var conversionRejected = false;
+         try { kernel("run",{mProbeNaN:NaN},out,CMain.mBHFieldCache,CMain); }
+         catch(e) { conversionRejected = e === conversionSentinel; }
+         finally { CMain.BH_NativeScalarString = stringHelper; }
+         CMain.BH_NativeScalarProbeRequire(report,"conversion_throw_before_tag_write",conversionRejected
+            && conversionCalls === 1 && CMain.BH_NativeScalarProbeShape(out).length === 0);
+         // Exercise the compiled AS2 fail-closed result gate with a private
+         // function parameter; the registered native hook is never replaced.
+         var invalid = [undefined,null,true,-1,0.5,NaN,Infinity,"0",new Object()];
+         for(index = 0; index < invalid.length; index++)
+         {
+            var resultValue = invalid[index];
+            var readCount = 0;
+            object = new Object();
+            object.addProperty("mLife",function() { readCount++; return 5; },null);
+            var fake = function(operation, source, output, fieldCache, owner)
+            {
+               output.mLife = source.mLife;
+               return resultValue;
+            };
+            var rejected = false;
+            try { CMain.BH_ThingScalars(object,fake); }
+            catch(e) { rejected = true; }
+            report.invalidResults.push({index:index,rejected:rejected,sourceReads:readCount});
+            CMain.BH_NativeScalarProbeRequire(report,"invalid_result_no_retry_" + index,rejected && readCount === 1);
+         }
+         readCount = 0;
+         object = new Object();
+         object.addProperty("mLife",function() { readCount++; return 11; },null);
+         var fallback = function() { return false; };
+         out = CMain.BH_ThingScalars(object,fallback);
+         CMain.BH_NativeScalarProbeRequire(report,"unsupported_fallback_once",readCount === 1 && out.mLife === 11);
+         readCount = 0;
+         out = CMain.BH_ThingScalars(object,undefined);
+         CMain.BH_NativeScalarProbeRequire(report,"absent_hook_legacy_once",readCount === 1 && out.mLife === 11);
+         report.nativeAfter = CMain.BH_NativeScalarInfo(kernel);
+         CMain.BH_NativeScalarProbeRequire(report,"actual_native_completed",report.nativeAfter.completed > report.nativeBefore.completed
+            && report.nativeAfter.ownReads > report.nativeBefore.ownReads);
+         report.pass = true;
+      }
+      catch(e) { report.error = String(e); }
+      finally
+      {
+         CMain.mBHFieldCache = cache;
+         CMain.mBHFieldCacheCount = count;
+         CMain.BH_SkipField = policy;
+         CMain.BH_NativeScalarString = stringHelper;
+         report.restored = {cacheIdentity:CMain.mBHFieldCache === cache,cacheCount:CMain.mBHFieldCacheCount === count,
+            policyIdentity:CMain.BH_SkipField === policy,stringHelperIdentity:CMain.BH_NativeScalarString === stringHelper,
+            bridgeIdentity:this.mBH === b,worldIdentity:this.mcWorld === world,snapshotIdentity:b.snapshot === snapshot,
+            kernelIdentity:b.nativeScalarKernel === kernel && _global.boxheadNativeScalarsV1 === kernel};
+         report.after = {active:String(b.active),stepping:String(b.stepping),state:String(b.state),tick:String(b.tick),
+            clock:String(b.clock),seed:String(b.seed),rng:String(b.rng),rngCalls:String(b.rngCalls),
+            cacheRng:String(b.cacheRng),cacheCalls:String(b.cacheCalls),worldPresent:this.mcWorld !== undefined};
+         for(var key in report.restored) if(report.restored[key] !== true) report.pass = false;
+         for(key in before) if(report.after[key] !== before[key]) report.pass = false;
+      }
+      return report;
+   }

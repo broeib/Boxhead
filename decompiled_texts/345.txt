@@ -1,1 +1,0 @@
-Number of games to play in Death Match mode! First one to reach 5, 10, 20 or 50 Frags.

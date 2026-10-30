@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "scope": "guest-membership-v2-to-v1-bridge",
+  "after": {
+    "sha256": "3350ecdcad4da28b4fade9bc4d735367ee1baaf27970ec3eb1ecb8209ec9a6c9",
+    "bytes": 68702
+  },
+  "before": {
+    "sha256": "9084a4431291bf124f9a46bf8ba77f294b17206453606f851dfccdecb099ffdc",
+    "bytes": 67801
+  },
+  "hunks": [
+    {
+      "offset": 20274,
+      "after": "         if(network.membershipVersion != undefined && network.membershipVersion !== 1 && network.membershipVersion !== 2) return {error:\"invalid membership version\"};\n         membershipVersion = network.membershipVersion == undefined ? 0 : network.membershipVersion;\n",
+      "before": "         if(network.membershipVersion != undefined && network.membershipVersion !== 1) return {error:\"invalid membership version\"};\n         membershipVersion = network.membershipVersion == 1 ? 1 : 0;\n"
+    },
+    {
+      "offset": 20746,
+      "after": "         // v2 preserves the original DeathMatch world and match score, or an\n         // initially two-player personal Cooperative world, across departures.\n         if(membershipVersion == 2 && (!personalProgression || (mode == \"Coop\" && initialPlayers != 2)))\n            return {error:\"invalid membership version 2 configuration\"};\n         if(replay && (localSlot != 2 || (membershipVersion != 2 && (initialPlayers != 1 || !personalProgression))))\n",
+      "before": "         if(replay && (initialPlayers != 1 || localSlot != 2 || !personalProgression))\n"
+    },
+    {
+      "offset": 22212,
+      "after": "      b.guestGeneration = membershipVersion == 2 && initialPlayers == 2 ? 1 : 0;\n",
+      "before": "      b.guestGeneration = 0;\n"
+    },
+    {
+      "offset": 23612,
+      "after": "         if(initialPlayers == 1 || membershipVersion == 2)\n",
+      "before": "         if(initialPlayers == 1)\n"
+    },
+    {
+      "offset": 30774,
+      "after": "      if(b.membershipVersion != 1 && b.membershipVersion != 2) this.BH_ReplayFinish();\n      if(b.membershipVersion == 1 || b.membershipVersion == 2)\n",
+      "before": "      if(b.membershipVersion != 1) this.BH_ReplayFinish();\n      if(b.membershipVersion == 1)\n"
+    },
+    {
+      "offset": 31874,
+      "after": "      if(!((b.membershipVersion === 1 && b.initialPlayers === 1 && b.mode == \"Coop\") || (b.membershipVersion === 2 && (b.mode == \"DeathMatch\" || (b.mode == \"Coop\" && b.initialPlayers === 2)))) || !b.personalProgression\n",
+      "before": "      if(b.membershipVersion !== 1 || b.initialPlayers !== 1 || !b.personalProgression || b.mode != \"Coop\"\n"
+    },
+    {
+      "offset": 32523,
+      "after": "      if(!b.stepping || (b.membershipVersion !== 1 && b.membershipVersion !== 2) || b.playerCount !== 2 || c == undefined\n",
+      "before": "      if(!b.stepping || b.membershipVersion !== 1 || b.playerCount !== 2 || c == undefined\n"
+    },
+    {
+      "offset": 33821,
+      "after": "         || (b.mode == \"Coop\" && (w.mBHPersonalProgress == undefined || w.mBHPersonalProgress[1] == undefined\n         || w.mBHPersonalProgress[1].upgrades.mWorld.mThing_Collection.mPlayerThings.owner !== guest)))\n",
+      "before": "         || w.mBHPersonalProgress == undefined || w.mBHPersonalProgress[1] == undefined\n         || w.mBHPersonalProgress[1].upgrades.mWorld.mThing_Collection.mPlayerThings.owner !== guest)\n"
+    },
+    {
+      "offset": 35892,
+      "after": "      if(b.mode == \"Coop\") w.mBHPersonalProgress[1] = undefined;\n",
+      "before": "      w.mBHPersonalProgress[1] = undefined;\n"
+    },
+    {
+      "offset": 61545,
+      "after": "      if(b.initialPlayers == 1 || b.membershipVersion === 2) native.membership = {initial:b.initialPlayers,joined:b.playerCount,characters:b.characters.slice()};\n      if(b.membershipVersion === 1 || b.membershipVersion === 2) native.membership.generation = b.guestGeneration;\n",
+      "before": "      if(b.initialPlayers == 1) native.membership = {initial:1,joined:b.playerCount,characters:b.characters.slice()};\n      if(b.membershipVersion === 1) native.membership.generation = b.guestGeneration;\n"
+    },
+    {
+      "offset": 66090,
+      "after": "      if(b.initialPlayers == 1 || b.membershipVersion === 2) root.membership = {initial:b.initialPlayers,joined:b.playerCount};\n      if(b.membershipVersion === 1 || b.membershipVersion === 2) root.membership.generation = b.guestGeneration;\n",
+      "before": "      if(b.initialPlayers == 1) root.membership = {initial:1,joined:b.playerCount};\n      if(b.membershipVersion === 1) root.membership.generation = b.guestGeneration;\n"
+    }
+  ]
+}

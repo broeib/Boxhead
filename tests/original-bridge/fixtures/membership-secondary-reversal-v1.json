@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "entries": {
+    "tools/original-bridge/CMain.staged-step.asinc": {
+      "before": "2ea17c55bf60e15bca18ae369d5f424a92eb669282f2fa590b344b70ef245c10",
+      "after": "d19931545b5cf850c21c579870a29335b31811543bd4e761340ebe02bda113d8",
+      "hunks": [
+        {
+          "offset": 8061,
+          "after": "   function BH_StagedStepBegin(tick, p1Mask, p2Mask, join, receiptToken, leave)\n",
+          "before": "   function BH_StagedStepBegin(tick, p1Mask, p2Mask, join, receiptToken)\n"
+        },
+        {
+          "offset": 8242,
+          "after": "         if((arguments.length != 5 && arguments.length != 6) || b.stagedStepVersion !== 1 || typeof kernel != \"function\"\n",
+          "before": "         if(arguments.length != 5 || b.stagedStepVersion !== 1 || typeof kernel != \"function\"\n"
+        },
+        {
+          "offset": 9534,
+          "after": "         if(leave !== undefined && !this.BH_ValidLeave(leave,join,p2Mask)) throw new Error(\"invalid player leave\");\n",
+          "before": ""
+        },
+        {
+          "offset": 10746,
+          "after": "            if(leave !== undefined) this.BH_LeavePlayer();\n",
+          "before": ""
+        },
+        {
+          "offset": 14952,
+          "after": "         if(b.membershipVersion === 1) root.membership.generation = b.guestGeneration;\n",
+          "before": ""
+        }
+      ]
+    },
+    "tools/original-bridge/CMain.progression.asinc": {
+      "before": "02e4d7c7d958be55d96d246a363e265a9a3b32fcd6a4096c036be08e526dc53b",
+      "after": "aee7e0dda5e048874b68ccedf51961da573367ce61bc6ef83c390d39e8761625",
+      "hunks": [
+        {
+          "offset": 603,
+          "after": "         {\n            if(!CMain.BH_Integer(cursor.mPlayerIndex,0,1)) return 0;\n            var playerSlot = cursor.mPlayerIndex + 1;\n            if(CMain._this.mBH.membershipVersion === 1 && CMain.BH_PersonalPlayer(playerSlot) !== cursor) return 0;\n            return playerSlot;\n         }\n         if(CMain.BH_Integer(cursor.mBHCreditSlot,1,2))\n         {\n            if(CMain._this.mBH.membershipVersion === 1 && cursor.mBHCreditSlot == 2\n               && (cursor.mBHCreditGeneration !== CMain._this.mBH.guestGeneration || CMain.BH_PersonalPlayer(2) == undefined)) return 0;\n            return cursor.mBHCreditSlot;\n         }\n",
+          "before": "            return CMain.BH_Integer(cursor.mPlayerIndex,0,1) ? cursor.mPlayerIndex + 1 : 0;\n         if(CMain.BH_Integer(cursor.mBHCreditSlot,1,2)) return cursor.mBHCreditSlot;\n"
+        },
+        {
+          "offset": 4485,
+          "after": "      var generation = slot == 2 && CMain._this.mBH.membershipVersion === 1 ? CMain._this.mBH.guestGeneration : undefined;\n      if(thing.mBHUpgradeSlot != slot || (generation !== undefined && thing.mBHUpgradeGeneration !== generation))\n",
+          "before": "      if(thing.mBHUpgradeSlot != slot)\n"
+        },
+        {
+          "offset": 4768,
+          "after": "         if(generation !== undefined) thing.mBHUpgradeGeneration = generation;\n",
+          "before": ""
+        },
+        {
+          "offset": 6139,
+          "after": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2)\n         thing.mBHKillerGeneration = CMain._this.mBH.guestGeneration;\n",
+          "before": ""
+        },
+        {
+          "offset": 6737,
+          "after": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2)\n         barrel.mBHCreditGeneration = CMain._this.mBH.guestGeneration;\n",
+          "before": ""
+        },
+        {
+          "offset": 6992,
+          "after": "      {\n",
+          "before": ""
+        },
+        {
+          "offset": 7059,
+          "after": "         if(CMain._this.mBH.membershipVersion === 1 && child.mBHCreditSlot == 2)\n            child.mBHCreditGeneration = CMain._this.mBH.guestGeneration;\n      }\n",
+          "before": ""
+        },
+        {
+          "offset": 7616,
+          "after": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2\n         && (thing.mBHKillerGeneration !== CMain._this.mBH.guestGeneration || CMain.BH_PersonalPlayer(2) == undefined)) return;\n",
+          "before": ""
+        }
+      ]
+    },
+    "tools/original-bridge/CMain.replay.asinc": {
+      "before": "43d7dca55de77f27a554e739e1737610c11628e461b149862cfca369f9176fef",
+      "after": "6e75332a47a3e61c988e601cefc6847ce62e9a6e172cfbe454d3c2f00d3cfa85",
+      "hunks": [
+        {
+          "offset": 1062,
+          "after": "      if(flash.external.ExternalInterface.available && !flash.external.ExternalInterface.addCallback(\"bhReplayEnd\",this,this.BH_ReceiptGuard(\"bhReplayEnd\",this.BH_ReplayEnd)))\n         this.BH_Fail(\"replay boundary callback registration failed\");\n   }\n\n   function BH_ReplayEnd(tick)\n   {\n      var b = this.mBH;\n      if(arguments.length != 1 || b.membershipVersion !== 1 || b.replay !== true || !b.replayInstalled\n         || b.stepping || b.localSlot !== 2 || b.playerCount !== 1 || tick !== b.tick\n         || b.snapshotReceiptRequest !== undefined || b.snapshotReceiptProof !== undefined || b.snapshotReceiptPending !== undefined\n         || (b.state != \"ready\" && b.state != \"playing\")) return this.BH_Fail(\"invalid historical boundary\");\n      try { this.BH_ReplayRestore(true); }\n      catch(e) { return this.BH_Fail(\"historical boundary restoration: \" + String(e)); }\n      b.replay = false;\n      return this.BH_Info();\n",
+          "before": ""
+        },
+        {
+          "offset": 10980,
+          "after": "   function BH_ReplayRestore(keepReplay)\n",
+          "before": "   function BH_ReplayRestore()\n"
+        },
+        {
+          "offset": 11050,
+          "after": "      // Installation/failure cleanup disables suppression immediately. The\n      // explicit boundary keeps replay set until restoration has succeeded.\n      if(keepReplay !== true) b.replay = false;\n",
+          "before": "      // Disable suppression before touching methods, including failure cleanup.\n      b.replay = false;\n"
+        }
+      ]
+    }
+  }
+}

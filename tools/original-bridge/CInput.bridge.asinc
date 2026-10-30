@@ -1,0 +1,84 @@
+   function BH_NetworkKeys()
+   {
+      this.mKey_List_Registered = new Array();
+      var names = ["UP","DOWN","LEFT","RIGHT","FIRE","NEXT_WEAPON","PREV_WEAPON","SELECT1","SELECT2","SELECT3","SELECT4","SELECT5","SELECT6","SELECT7","SELECT8","SELECT9","SELECT0"];
+      for(var player = 0; player < 2; player++)
+      {
+         for(var index = 0; index < names.length; index++)
+         {
+            var key = this.BH_NewKey();
+            this["KEY_" + names[index] + (player == 0 ? "" : "2")] = key;
+            this.mKey_List_Registered.push(key);
+         }
+      }
+      this.KEY_PAUSE = this.BH_NewKey();
+      this.mMouseDown = false;
+   }
+
+   function BH_NewKey()
+   {
+      var key = {mNetworkDown:false,mDown:false,mPressed:false,mReleased:false,mTimePressed:0,mTimeDown:0,mTimeReleased:0};
+      key.IsDown = function()
+      {
+         return this.mNetworkDown;
+      };
+      key.IsUp = function()
+      {
+         return !this.mNetworkDown;
+      };
+      key.IsPressed = function()
+      {
+         var result = this.mPressed;
+         this.mPressed = false;
+         return result;
+      };
+      key.IsReleased = function()
+      {
+         if(this.mReleased)
+         {
+            this.mReleased = false;
+            this.mPressed = false;
+            return true;
+         }
+         return false;
+      };
+      key.Renew = function()
+      {
+         this.mReleased = false;
+         this.mPressed = false;
+         this.mDown = false;
+      };
+      return key;
+   }
+
+   function BH_ApplyMasks(p1, p2)
+   {
+      var masks = [p1,p2];
+      for(var player = 0; player < 2; player++)
+      {
+         for(var index = 0; index < 17; index++)
+         {
+            var key = this.mKey_List_Registered[player * 17 + index];
+            key.mNetworkDown = (masks[player] & (1 << index)) != 0;
+            this.UpdateKey(key);
+         }
+      }
+   }
+
+   function BH_ResetGuestKeys()
+   {
+      // No key edges or held durations may cross between two occupants.
+      for(var index = 17; index < 34; index++)
+         if(this.mKey_List_Registered[index] == undefined) throw new Error("guest input keys unavailable");
+      for(index = 17; index < 34; index++)
+      {
+         var key = this.mKey_List_Registered[index];
+         key.mNetworkDown = false;
+         key.mDown = false;
+         key.mPressed = false;
+         key.mReleased = false;
+         key.mTimePressed = 0;
+         key.mTimeDown = 0;
+         key.mTimeReleased = 0;
+      }
+   }

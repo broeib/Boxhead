@@ -1,1 +1,0 @@
-Sets the speed of the  game, slow = speed / 2, normal =  normal speed, and  Fast  =  speed x 2

@@ -1,0 +1,986 @@
+   var mBH;
+
+   function BH_Install()
+   {
+      this.mBH = {active:false,state:"menu",tick:0,clock:0,error:"",stepping:false,cache:false,logicCalls:0,drawCalls:0,seed:1,rng:1,rngCalls:0,cacheRng:104730,cacheCalls:0};
+      if(!flash.external.ExternalInterface.available)
+      {
+         return;
+      }
+      var ok = flash.external.ExternalInterface.addCallback("bhInfo",this,this.BH_Info);
+      ok = flash.external.ExternalInterface.addCallback("bhPrepare",this,this.BH_Prepare) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhStep",this,this.BH_Step) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhState",this,this.BH_ReadState) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhMenuPoll",this,this.BH_MenuPoll) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhMenuUpdate",this,this.BH_MenuUpdate) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhRenderCheck",this,this.BH_RenderCheck) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhControls",this,this.BH_Controls) && ok;
+      ok = flash.external.ExternalInterface.addCallback("bhAnimationProbe",this,this.BH_AnimationProbe) && ok;
+      if(!ok)
+      {
+         this.mBH.state = "error";
+         this.mBH.error = "ExternalInterface callback registration failed";
+      }
+   }
+
+   static function BH_Active()
+   {
+      return CMain._this.mBH.active == true;
+   }
+
+   static function BH_Timer()
+   {
+      var b = CMain._this.mBH;
+      if(!b.active || b.cache || b.complete != undefined)
+      {
+         return getTimer();
+      }
+      return b.clock;
+   }
+
+   static function BH_Seed()
+   {
+      return !CMain.BH_Active() ? 0 : CMain._this.mBH.seed;
+   }
+
+   static function BH_Float()
+   {
+      var b = CMain._this.mBH;
+      if(!b.active)
+      {
+         return Math.random();
+      }
+      if(b.complete != undefined) return CMain.BH_AudioFloat();
+      if(b.cache)
+      {
+         b.cacheRng = b.cacheRng * 16807 % 2147483647;
+         b.cacheCalls++;
+         return (b.cacheRng - 1) / 2147483646;
+      }
+      if((b.state == "ready" || b.state == "playing") && !b.stepping)
+      {
+         CMain._this.BH_Fail("random call outside commanded frame");
+         return 0;
+      }
+      b.rng = b.rng * 16807 % 2147483647;
+      b.rngCalls++;
+      return (b.rng - 1) / 2147483646;
+   }
+
+   static function BH_Random(n)
+   {
+      if(!CMain.BH_Active())
+      {
+         return random(n);
+      }
+      n = Number(n) >> 0;
+      if(n <= 0)
+      {
+         return 0;
+      }
+      return Math.floor(CMain.BH_Float() * n);
+   }
+
+
+   static function BH_AudioFloat()
+   {
+      var b = CMain._this.mBH;
+      if(!b.active) return Math.random();
+      b.audioRng = b.audioRng * 16807 % 2147483647;
+      return (b.audioRng - 1) / 2147483646;
+   }
+
+   static function BH_AudioRandom(n)
+   {
+      if(!CMain.BH_Active()) return random(n);
+      n = Number(n) >> 0;
+      return n <= 0 ? 0 : Math.floor(CMain.BH_AudioFloat() * n);
+   }
+
+   static function BH_AudioTimer()
+   {
+      return getTimer();
+   }
+
+   static function BH_RenderStackProcess(start, budget)
+   {
+      var b = CMain._this.mBH;
+      if(!b.active)
+      {
+         return DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.RenderStack_Process(start,budget);
+      }
+      var previous = b.cache;
+      b.cache = true;
+      var result;
+      try
+      {
+         result = DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.RenderStack_Process(getTimer(),budget);
+      }
+      catch(e)
+      {
+         b.cache = previous;
+         CMain._this.BH_Fail("render cache exception: " + String(e));
+         throw e;
+      }
+      b.cache = previous;
+      return result;
+   }
+
+   static function BH_EnterWorld(kind)
+   {
+      if(!CMain.BH_Active())
+      {
+         return true;
+      }
+      var b = CMain._this.mBH;
+      if(!b.stepping)
+      {
+         CMain._this.BH_Fail("unscheduled world " + kind);
+         return false;
+      }
+      if(kind == "logic")
+      {
+         b.logicCalls++;
+      }
+      else
+      {
+         b.drawCalls++;
+      }
+      return true;
+   }
+
+   function BH_Fail(message)
+   {
+      this.mBH.state = "error";
+      this.mBH.error = String(message);
+      return this.BH_Info();
+   }
+
+   function BH_Info()
+   {
+      var b = this.mBH;
+      var result = {version:1,menuVersion:1,menuScreen:this.mcScreen.idScreen,menuReady:this.mcScreen.idScreen == "Screen_Main" && this.mcScreen.mNormal,menuState:b.menuMode,menuBounds:this.BH_MenuBounds(),engine:"original-swf",state:b.state,tick:b.tick,qualified:false,digestSchema:"native-projection-v3",canPrepare:!b.active && CMain.mInput != undefined && this.mcWorld == undefined && CMain.mInitBGTasks};
+      if(b.active && b.tick == 0 && (b.state == "loading" || b.state == "error"))
+      {
+         var w = this.mcWorld;
+         var phase = "waiting-for-world";
+         if(w != undefined)
+         {
+            phase = w.onEnterFrame == w.Init ? "Init" :
+               w.onEnterFrame == w.InitDrawPlanes ? "InitDrawPlanes" :
+               w.onEnterFrame == w.InitThings ? "InitThings" :
+               w.onEnterFrame == w.InitCleanUp ? "InitCleanUp" :
+               w.onEnterFrame == w.InitFinished ? "InitFinished" : "finished";
+         }
+         result.loading = {elapsedMs:getTimer() - b.started,phase:phase,loaded:w.mLoaded == true,renderQueue:DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.mRenderStack.length,worldWidth:w.mArea.width,worldHeight:w.mArea.height,initObjects:w.mInitList.length};
+      }
+      if(b.error != "")
+      {
+         result.error = b.error;
+      }
+      if(b.complete != undefined)
+      {
+         result.complete = b.complete;
+      }
+      return result;
+   }
+
+   static function BH_Integer(value, low, high)
+   {
+      return typeof value == "number" && !isNaN(value) && isFinite(value) && Math.floor(value) == value && value >= low && value <= high;
+   }
+
+   static function BH_ValidLink(value)
+   {
+      if(typeof value != "string" || value.length < 1 || value.length > 100)
+      {
+         return false;
+      }
+      for(var i = 0; i < value.length; i++)
+      {
+         var c = value.charCodeAt(i);
+         if(!((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 95))
+         {
+            return false;
+         }
+      }
+      return true;
+   }
+
+   function BH_Prepare(seed, mode, mapLink, p1Character, p2Character, settings, network)
+   {
+      var b = this.mBH;
+      if(b.active)
+      {
+         return {version:1,engine:"original-swf",state:b.state,tick:b.tick,error:"prepare already accepted; reload SWF for another session"};
+      }
+      if(!CMain.BH_Integer(seed,0,4294967295) || (mode != "Coop" && mode != "DeathMatch") || !CMain.BH_ValidLink(mapLink) || !CMain.BH_Integer(p1Character,0,3) || !CMain.BH_Integer(p2Character,0,3))
+      {
+         return {version:1,engine:"original-swf",state:b.state,tick:b.tick,error:"invalid prepare arguments"};
+      }
+      if(CMain.mInput == undefined || this.mcWorld != undefined || !CMain.mInitBGTasks)
+      {
+         return {version:1,engine:"original-swf",state:b.state,tick:b.tick,error:"prepare requires initialized original menu without an existing world"};
+      }
+      if(b.state == "error")
+      {
+         return this.BH_Info();
+      }
+
+      var config = {difficulty:0,speed:1,devils:1,collisions:1,damage:1,gameAmount:1};
+      var maxima = {difficulty:3,speed:2,devils:1,collisions:1,damage:1,gameAmount:3};
+      if(settings != undefined)
+      {
+         if(typeof settings != "object" || settings == null || settings instanceof Array)
+            return {error:"invalid game settings"};
+         for(var setting in settings)
+         {
+            if(!config.hasOwnProperty(setting) || !CMain.BH_Integer(settings[setting],0,maxima[setting]))
+               return {error:"invalid game setting: " + setting};
+            config[setting] = settings[setting];
+         }
+      }
+
+      var initialPlayers = 2;
+      var personalProgression = false;
+      var localSlot = 1;
+      var replay = false;
+      if(network != undefined)
+      {
+         if(typeof network != "object" || network == null || network instanceof Array || !CMain.BH_Integer(network.initialPlayers,1,2) || typeof network.personalProgression != "boolean" || !CMain.BH_Integer(network.localSlot,1,2))
+            return {error:"invalid online membership options"};
+         for(var option in network)
+            if(option != "initialPlayers" && option != "personalProgression" && option != "localSlot" && option != "replay") return {error:"unknown online membership option"};
+         if(network.replay != undefined && typeof network.replay != "boolean") return {error:"invalid historical presentation option"};
+         initialPlayers = network.initialPlayers;
+         personalProgression = network.personalProgression;
+         localSlot = network.localSlot;
+         replay = network.replay == true;
+         if(replay && (initialPlayers != 1 || localSlot != 2 || !personalProgression))
+            return {error:"historical presentation requires a joining solo-room guest"};
+      }
+
+      var music = CMain.mSaveData.mMusicActive;
+      var sound = CMain.mSaveData.mSoundActive;
+      this.BH_MenuRemove();
+      b.active = true;
+      b.state = "loading";
+      b.tick = 0;
+      b.clock = 0;
+      b.seed = seed;
+      b.rng = seed % 2147483646 + 1;
+      b.cacheRng = (b.rng + 104729) % 2147483646 + 1;
+      b.audioRng = (b.rng + 130363) % 2147483646 + 1;
+      b.rngCalls = 0;
+      b.cacheCalls = 0;
+      b.started = getTimer();
+      b.settings = config;
+      b.frameMs = config.speed == 0 ? 80 : (config.speed == 2 ? 20 : 40);
+      b.mode = mode;
+      b.map = mapLink;
+      b.characters = [p1Character,p2Character];
+      b.initialPlayers = initialPlayers;
+      b.playerCount = initialPlayers;
+      b.personalProgression = personalProgression;
+      b.localSlot = localSlot;
+      b.replay = replay;
+      b.replayInstalled = false;
+      b.replayRestored = false;
+      b.replaySkipped = 0;
+      b.replayTargets = new Array();
+      try
+      {
+         CMain.mSaveData = new CSaveData();
+         CMain.mSaveData._MusicActive = music;
+         CMain.mSaveData._SoundActive = sound;
+         CMain.mSaveData._Difficulty = config.difficulty;
+         CMain.mSaveData._GameSpeed = config.speed;
+         CMain.mSaveData._DevilsActive = config.devils;
+         CMain.mSaveData._CollisionsActive = config.collisions;
+         CMain.mSaveData._DamageActive = config.damage;
+         CMain.mSaveData._GameAmount = config.gameAmount;
+         Thing.Creature.CThing_Creature.mDamageActive = mode == "DeathMatch" ? true : Boolean(config.damage);
+         CMain.mSaveData._Player1_CharacterIndex = p1Character;
+         CMain.mSaveData._Player2_CharacterIndex = p2Character;
+         _global.mDebug = false;
+         _global.mCheatsActive = false;
+         _global.mCheat_OneZombie = false;
+         _global.mInfinateLife = false;
+         _root._quality = "HIGH";
+         CMain.mFPS = 25;
+         World.CWorld.mGameMode = mode;
+         World.CWorld.m2Player = initialPlayers == 2;
+         CMain.mInput = new CInput();
+         this.mWorldLibLink = mapLink;
+         this.mReturn_SelectWorld = "State_SelectWorld_" + mode;
+         if(initialPlayers == 1)
+         {
+            // A joining character must never queue asset preparation mid-frame.
+            for(var character = 0; character < 4; character++) Thing.Creature.CThing_Creature_Player.GetCollection(character);
+         }
+         else
+         {
+            Thing.Creature.CThing_Creature_Player.GetCollection(p1Character);
+            Thing.Creature.CThing_Creature_Player.GetCollection(p2Character);
+         }
+         this.SetState("State_LoadWorld");
+      }
+      catch(e)
+      {
+         return this.BH_Fail("prepare exception: " + String(e));
+      }
+      return this.BH_Info();
+   }
+
+   function BH_Pump()
+   {
+      var b = this.mBH;
+      if(b.complete != undefined && b.state != "error")
+      {
+         // The last native snapshot remains available after the original
+         // debrief disposes the world; no more gameplay ticks are accepted.
+         if((this.fState == this.State_Debrief || this.fState == this.State_Debrief_Winner) && (b.debriefAt == undefined || getTimer() - b.debriefAt >= 40))
+         {
+            b.debriefAt = getTimer();
+            this.fState(true);
+            CSound.ProcessAll();
+            CMain.ProcessBGTasks();
+         }
+         return;
+      }
+      if(b.state != "loading")
+      {
+         return;
+      }
+      if(getTimer() - b.started > 180000)
+      {
+         this.BH_Fail("original world initialization timeout");
+         return;
+      }
+      try
+      {
+         if(this.mcWorld.mCompleteState == "error")
+         {
+            this.BH_Fail("original world linkage failed");
+            return;
+         }
+         if(this.fState != this.State_RunWorld)
+         {
+            this.fState(true);
+            CSound.ProcessAll();
+            CMain.ProcessBGTasks();
+         }
+         if(this.fState == this.State_RunWorld && this.mcWorld.mLoaded)
+         {
+            if(this.mcWorld.mTick != 0 || this.mcWorld.mPaused)
+            {
+               this.BH_Fail("world advanced or remained paused during prepare");
+               return;
+            }
+            if(!DrawPrimitive.XSI.CDrawPrimitive_XSI_DI.RenderStack_Finished())
+            {
+               CMain.ProcessBGTasks();
+               return;
+            }
+            b.state = "ready";
+            this.BH_State(true);
+         }
+      }
+      catch(e)
+      {
+         this.BH_Fail("loading exception: " + String(e));
+      }
+   }
+
+   function BH_Step(tick, p1Mask, p2Mask, join)
+   {
+      var b = this.mBH;
+      if(!b.active || (b.state != "ready" && b.state != "playing"))
+      {
+         var unavailable = this.BH_Info();
+         unavailable.error = "world is not ready for a frame";
+         return unavailable;
+      }
+      if(b.stepping || b.complete != undefined || !CMain.BH_Integer(tick,1,2147483647) || tick != b.tick + 1 || !CMain.BH_Integer(p1Mask,0,131071) || !CMain.BH_Integer(p2Mask,0,131071))
+      {
+         return this.BH_Fail("invalid, duplicate, reentrant, or post-completion frame");
+      }
+      if(this.fState != this.State_RunWorld || !this.mcWorld.mLoaded || this.mcWorld.mPaused)
+      {
+         return this.BH_Fail("original world cannot accept a frame");
+      }
+      if(join != undefined)
+      {
+         if(typeof join != "object" || join == null || join instanceof Array || join.slot != 2 || !CMain.BH_Integer(join.character,0,3) || b.playerCount != 1)
+            return this.BH_Fail("invalid or duplicate player join");
+         for(var joinKey in join) if(joinKey != "slot" && joinKey != "character") return this.BH_Fail("unknown player join property");
+      }
+      else if(b.playerCount == 1 && p2Mask != 0) return this.BH_Fail("second player input before spawn");
+      var before = this.mcWorld.mTick;
+      b.clock = tick * b.frameMs;
+      b.logicCalls = 0;
+      b.drawCalls = 0;
+      b.stepping = true;
+      try
+      {
+         if(join != undefined) this.BH_JoinPlayer(join.character);
+         CMain.mInput.BH_ApplyMasks(p1Mask,p2Mask);
+         this.State_RunWorld(true);
+         // Preserve original first-frame order: initialize players, draw, apply difficulty.
+         if(before == 0) this.mcWorld.BH_InitializeRules();
+         CSound.ProcessAll();
+         CMain.ProcessBGTasks();
+      }
+      catch(e)
+      {
+         b.stepping = false;
+         return this.BH_Fail("frame exception: " + String(e));
+      }
+      b.stepping = false;
+      if(b.state == "error")
+      {
+         return this.BH_Info();
+      }
+      if(b.logicCalls != 1 || b.drawCalls != 1 || this.mcWorld.mTick != before + 1)
+      {
+         return this.BH_Fail("frame did not execute exactly one original logic and draw tick");
+      }
+      b.tick = tick;
+      b.state = "playing";
+      if(this.mcWorld.mCompleteState)
+      {
+         b.complete = this.mcWorld.mCompleteState;
+      }
+      var state = this.BH_State(true);
+      if(state.error != undefined)
+      {
+         return state;
+      }
+      return {tick:b.tick,digest:state.digest,players:state.players,worldTick:this.mcWorld.mTick,rng:state.rng,complete:b.complete,profile:state.profile,snapshotBytes:state.snapshotBytes,snapshotObjects:state.snapshotObjects,snapshotFields:state.snapshotFields};
+   }
+
+   function BH_JoinPlayer(character)
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      if(!b.stepping || b.playerCount != 1) throw new Error("player spawn outside membership frame");
+      this.BH_ReplayFinish();
+      b.characters[1] = character;
+      CMain.mSaveData._Player2_CharacterIndex = character;
+      World.CWorld.m2Player = true;
+      if(!w.Spawn_Player_Other(1))
+      {
+         // The original spawn sites can all be occupied by enemies. Spawn at
+         // the live host with original spawn invincibility instead of resetting
+         // or failing the match. The same fallback executes on both native VMs.
+         var host = w.mThing_Collection.GetClosestPlayer();
+         var fallback = host == undefined ? w.mSpawnPoint_PlayerStart : {mPosition:host.mPosition,mAngle:host.mAngle};
+         if(!w._Spawn_Player(1,fallback)) throw new Error("no player spawn position");
+      }
+      b.playerCount = 2;
+   }
+
+   static var mBHFieldCache;
+   static var mBHFieldCacheCount = 0;
+
+   // This predicate depends only on the field name. Cache its result without
+   // caching any world values; cap dynamic entity keys in long-running games.
+   static function BH_SkipField(key)
+   {
+      // AVM1 ignores writes to the empty property name. Do not count an entry
+      // that cannot be retained; this exceptional miss stays name-only.
+      if(key === "") return CMain.BH_SkipFieldUncached(key);
+      var cache = CMain.mBHFieldCache;
+      if(cache == undefined || CMain.mBHFieldCacheCount >= 1024)
+      {
+         // On the pinned AVM1 runtime, Object() (without new) creates a bare
+         // object with no prototype or own __constructor__ slot. Values in
+         // this private dictionary are only Boolean policy results. Even a
+         // cached __proto__ result is a primitive and cannot add a prototype.
+         cache = Object();
+         CMain.mBHFieldCache = cache;
+         CMain.mBHFieldCacheCount = 0;
+      }
+      var cached = cache[key];
+      if(cached != undefined) return cached;
+      var skip = CMain.BH_SkipFieldUncached(key);
+      cache[key] = skip;
+      CMain.mBHFieldCacheCount++;
+      return skip;
+   }
+
+   static function BH_SkipFieldUncached(key)
+   {
+      if(key == "mMap_Cells" || key == "mCells" || key == "mWorld" || key == "mThing_Collection" || key == "mParent" || key == "pClass" || key == "mBH" || key == "onEnterFrame" || key == "mHud" || key == "mControls" || key == "mZombieSamples" || key == "mScreen_Collection" || key == "_parent" || key == "_root" || key == "_level0" || key == "__proto__" || key == "constructor")
+      {
+         return true;
+      }
+      if(key.substr(0,2) == "mc" || key.substr(0,2) == "bm" || key.substr(0,4) == "mXSI" || key.indexOf("Sound") >= 0 || key.indexOf("Sample") >= 0)
+      {
+         return true;
+      }
+      return key == "_x" || key == "_y" || key == "_width" || key == "_height" || key == "_alpha" || key == "_visible" || key == "_name" || key == "_target" || key == "_quality" || key == "_currentframe" || key == "_totalframes" || key == "_framesloaded";
+   }
+
+
+   static function BH_ProcessName(value, suppliedProcess, hasSuppliedProcess)
+   {
+      var b = CMain._this.mBH;
+      // Process identity is already the cache key below. Retain its last hit
+      // as well: adjacent entities commonly use the same original function.
+      // Never cache an entity's selected Process or any mutable world value.
+      // The compact caller has already read Process at this exact point in
+      // its original metadata sequence. A cache miss must not read it twice.
+      var process = hasSuppliedProcess === true ? suppliedProcess : value.Process;
+      if(b.processLastValid == true && b.processLastFunction === process)
+         return b.processLastName;
+      var functions = b.processFunctions;
+      var knownNames = b.processNames;
+      if(functions == undefined)
+      {
+         functions = b.processFunctions = new Array();
+         knownNames = b.processNames = new Array();
+      }
+      for(var index = 0; index < functions.length; index++)
+      {
+         if(functions[index] === process)
+         {
+            b.processLastFunction = process;
+            b.processLastName = knownNames[index];
+            b.processLastValid = true;
+            return b.processLastName;
+         }
+      }
+      var names = new Array();
+      for(var key in value)
+         if(key != "Process" && key.substr(0,7) == "Process" && value[key] === process) names.push(key);
+      names.sort();
+      var name = names.join("|");
+      functions.push(process);
+      knownNames.push(name);
+      b.processLastFunction = process;
+      b.processLastName = name;
+      b.processLastValid = true;
+      return name;
+   }
+
+   static function BH_Project(value, context, path, depth)
+   {
+      var valueType = typeof value;
+      if(valueType == "number" && (value - value) !== 0)
+      {
+         return {$number:String(value)};
+      }
+      if(value === undefined) return {$undefined:1};
+      if(value == null || valueType == "string" || valueType == "number" || valueType == "boolean")
+      {
+         return value;
+      }
+      if(valueType == "function")
+      {
+         return undefined;
+      }
+      // Grid neighbours form a cyclic graph. Capture the complete mutable
+      // cell state and resident IDs, not the eight recursively-linked neighbours.
+      var className = value._CLASSID_;
+      if(className == "CMap_Cell")
+      {
+         return {$cell:String(value.mPosition.x) + "," + String(value.mPosition.y)};
+      }
+      if(className == "CMap")
+      {
+         return {width:value.mSize.x,height:value.mSize.y,first:value.mFirstTime,collideFlag:value.mCollide.mCollideFlag == undefined ? {$undefined:1} : value.mCollide.mCollideFlag};
+      }
+      var objects = context.objects;
+      // Only a failing snapshot needs its diagnostic path. Retain one short
+      // segment per active depth, not a copied full path for every graph node.
+      // The depth budget bounds this scratch array; it is never projected.
+      context.errorPath[depth] = path;
+      if(depth > 64 || objects.length > 200000 || context.fields > 1000000)
+      {
+         throw new Error("native snapshot budget exceeded at " + context.errorPath.slice(0,depth + 1).join(""));
+      }
+      // Synchronous, temporary non-enumerable identity marks avoid quadratic
+      // graph searches. BH_State always removes them in finally, before return.
+      var marked = value.__bhSnapshotRef;
+      if(marked != undefined)
+      {
+         if(objects[marked] !== value) throw new Error("snapshot marker collision");
+         return {$ref:marked};
+      }
+      value.__bhSnapshotRef = objects.length;
+      ASSetPropFlags(value,"__bhSnapshotRef",1,0);
+      objects.push(value);
+      var out = new Object();
+      // Most projected vectors/records contain primitive leaves only. They
+      // need neither a deferred-key array nor a sort. Reference IDs still
+      // follow exactly the same lexical order for actual recursive fields.
+      var keys;
+      var scalarFields = 0;
+      var upgrades = className == "CUpgrades";
+      var fieldCache = CMain.mBHFieldCache;
+      if(fieldCache == undefined)
+      {
+         fieldCache = CMain.mBHFieldCache = Object();
+         CMain.mBHFieldCacheCount = 0;
+      }
+      // Only recursive fields require lexical traversal order for stable $ref
+      // IDs. Primitive leaves neither allocate graph IDs nor recurse. Copy
+      // them once while enumerating, and sort only the deferred fields. The
+      // canonical encoder still sorts every output key when computing digest.
+      for(var key in value)
+      {
+         // Original class accessors live on prototypes and only read values
+         // or allocate derived vectors. They never enter this own-field graph.
+         // Reject them before invoking getters or resolving prototype methods.
+         if(!value.hasOwnProperty(key)) continue;
+         var leaf = value[key];
+         var leafType = typeof leaf;
+          if(leafType != "function")
+         {
+             // The policy depends only on the key. Avoid a separate AVM1
+             // function dispatch/global lookup on every cache hit, while
+             // retaining the bounded helper and its reset on a cache miss.
+             var skip = fieldCache[key];
+             if(skip == undefined)
+             {
+                skip = CMain.BH_SkipField(key);
+                fieldCache = CMain.mBHFieldCache;
+             }
+             if(skip) continue;
+            if(upgrades && key == "mLevels") continue;
+            if(upgrades && key == "mMultipliers")
+            {
+                if(keys == undefined) keys = new Array();
+               keys.push(key);
+               continue;
+            }
+            if(leaf === undefined)
+            {
+               out[key] = {$undefined:1};
+               scalarFields++;
+            }
+            else if(leaf == null || leafType == "string" || leafType == "boolean")
+            {
+               out[key] = leaf;
+               scalarFields++;
+            }
+            else if(leafType == "number")
+            {
+               out[key] = (leaf - leaf) === 0 ? leaf : {$number:String(leaf)};
+               scalarFields++;
+            }
+             else
+             {
+                if(keys == undefined) keys = new Array();
+                keys.push(key);
+             }
+         }
+      }
+      if(keys != undefined && keys.length > 1) keys.sort();
+      context.fields += scalarFields;
+      // Native fields historically override synthetic metadata in the sorted
+      // loop. Preserve that even if a scalar metadata-named field was copied
+      // above. Recursive metadata must still run before deferred fields, even
+      // when its result is shadowed, so graph identity numbering is unchanged.
+      if(value instanceof Array && !out.hasOwnProperty("$length"))
+      {
+         out.$length = value.length;
+      }
+      var parentID = value.mParent.mUniqueID;
+      if(parentID != undefined && !out.hasOwnProperty("$parentID"))
+      {
+         out.$parentID = parentID;
+      }
+      if(typeof value.Process == "function")
+      {
+         var processName = CMain.BH_ProcessName(value);
+         if(!out.hasOwnProperty("$process")) out.$process = processName;
+      }
+
+      if(value.mXSI_Animation != undefined)
+      {
+         var anim = value.mXSI_Animation;
+         var animName = "";
+         var animationItems = anim.mCollection.mItems;
+         var animationObject = anim.mAnimationObject;
+         for(var candidate in animationItems)
+         {
+            if(animationItems[candidate].mAnimationObject === animationObject)
+               animName = candidate;
+         }
+         var animationState = CMain.BH_Project({name:animName,frame:anim.mCurrentFrameID,count:anim.mFrameCount,ended:anim.mAnimEnd,preUpdate:anim.mPreUpdate,muzzle:anim.mCurrentFrame.XSI_Info.XSI_Model_GunPosition_Right.nPosition},context,"/animation",depth + 1);
+         if(!out.hasOwnProperty("$animation")) out.$animation = animationState;
+      }
+
+      for(var n = 0; keys != undefined && n < keys.length; n++)
+      {
+         key = keys[n];
+         if(upgrades && key == "mMultipliers")
+         {
+            // Definitions are fixed original code; only mActive changes during play.
+            var active = new Array();
+            for(var level = 0; level < value.mMultipliers.length; level++)
+            {
+               var definitions = value.mMultipliers[level];
+               for(var upgrade = 0; upgrade < definitions.length; upgrade++)
+                  if(definitions[upgrade].mActive == true) active.push(level + ":" + upgrade);
+            }
+            out[key] = active;
+            continue;
+         }
+         context.fields++;
+         // Deferred values are read at their original recursive traversal
+         // position; no world values or object shapes persist between ticks.
+         out[key] = CMain.BH_Project(value[key],context,"/" + key.length + ":" + key,depth + 1);
+      }
+      return out;
+   }
+
+
+   static function BH_Grid(map)
+   {
+      var rows = new Array();
+      for(var y = 0; y < map.mCells.length; y++)
+      {
+         var cells = map.mCells[y];
+         for(var x = 0; x < cells.length; x++)
+         {
+            var c = cells[x];
+            var ids = new Array();
+            // Preserve resident enumeration order; collision resolves in that order.
+            for(var resident in c.mObjects) ids.push(c.mObjects[resident].sUniqueID);
+            // Keep conversion/read order and resident order unchanged, without
+            // allocating a second six-element array for every map cell.
+            rows.push(String(c.mCollide) + ";" + String(c.mChildCount) + ";" + String(c.nID) + ";" + String(c.nDist) + ";" + String(c.nVD) + ";" + ids.join(","));
+         }
+      }
+      return rows.join("|");
+   }
+
+   function BH_Players()
+   {
+      var result = new Array();
+      for(var key in this.mcWorld.mThing_Collection.mPlayerThings)
+      {
+         var p = this.mcWorld.mThing_Collection.mPlayerThings[key];
+         var player = {slot:p.mPlayerIndex + 1,id:p.mUniqueID,x:p.mPosition.mX,y:p.mPosition.mY,z:p.mPosition.mZ,angle:p.mAngle.mAngle,life:p.mLife,flags:p.mFlags,state:p.mStateID,weapon:p.mWeapon_Current.mNameID,ammo:p.mWeapon_Current.mAmmo};
+         if(CMain.BH_PersonalEnabled())
+         {
+            var progress = this.mcWorld.mBHPersonalProgress[p.mPlayerIndex];
+            player.character = this.mBH.characters[p.mPlayerIndex];
+            player.score = progress == undefined ? 0 : progress.score;
+            player.kills = progress == undefined ? 0 : progress.kills;
+            player.level = progress == undefined ? 0 : progress.level;
+            player.multiplier = progress == undefined ? 1 : progress.upgrades.mMultiplier;
+         }
+         result.push(player);
+      }
+      result.sortOn("slot",Array.NUMERIC);
+      return result;
+   }
+
+
+   static function BH_Scalars(object)
+   {
+      var out = new Object();
+      var fieldCache = CMain.mBHFieldCache;
+      if(fieldCache == undefined)
+      {
+         fieldCache = CMain.mBHFieldCache = Object();
+         CMain.mBHFieldCacheCount = 0;
+      }
+      for(var key in object)
+      {
+         // Inherited accessors are not scalar snapshot fields. Reject them
+         // before deriving temporary lists/vectors; read each own value once.
+         if(!object.hasOwnProperty(key)) continue;
+         var value = object[key];
+         var type = typeof value;
+         if(type == "number" || type == "boolean" || type == "string")
+         {
+            var skip = fieldCache[key];
+            if(skip == undefined)
+            {
+               skip = CMain.BH_SkipField(key);
+               fieldCache = CMain.mBHFieldCache;
+            }
+            if(!skip) out[key] = type == "number" && (value - value) !== 0 ? {$number:String(value)} : value;
+         }
+      }
+      return out;
+   }
+
+   function BH_FrameState()
+   {
+      var b = this.mBH;
+      var w = this.mcWorld;
+      var started = getTimer();
+      var entities = new Object();
+      for(var id in w.mThing_Collection.mThings)
+      {
+         var thing = w.mThing_Collection.mThings[id];
+         // Inline the unchanged scalar projection for the frequent entity
+         // path. Keep its own-key guard, read order and one value read exactly;
+         // other callers still use BH_Scalars. Every output object is fresh.
+         var scalars = new Object();
+         var fieldCache = CMain.mBHFieldCache;
+         if(fieldCache == undefined)
+         {
+            fieldCache = CMain.mBHFieldCache = Object();
+            CMain.mBHFieldCacheCount = 0;
+         }
+         for(var scalarKey in thing)
+         {
+            if(!thing.hasOwnProperty(scalarKey)) continue;
+            var scalarValue = thing[scalarKey];
+            var scalarType = typeof scalarValue;
+            if(scalarType == "number" || scalarType == "boolean" || scalarType == "string")
+            {
+               var skip = fieldCache[scalarKey];
+               if(skip == undefined)
+               {
+                  skip = CMain.BH_SkipField(scalarKey);
+                  fieldCache = CMain.mBHFieldCache;
+               }
+               if(!skip) scalars[scalarKey] = scalarType == "number" && (scalarValue - scalarValue) !== 0 ? {$number:String(scalarValue)} : scalarValue;
+            }
+         }
+         // Read all four source references first, as in the original temporary
+         // array, then convert coordinates in the same order. Explicit String
+         // calls preserve undefined/nonfinite formatting; no vector is cached.
+         var position = thing.mPosition;
+         var delta = thing.mDelta;
+         var direction = thing.mTarget_Direction;
+         var returning = thing.mReturn_Angle;
+         scalars.$vectors = [
+            String(position.mX) + "," + String(position.mY) + "," + String(position.mZ),
+            String(delta.mX) + "," + String(delta.mY) + "," + String(delta.mZ),
+            String(direction.mX) + "," + String(direction.mY) + "," + String(direction.mZ),
+            String(returning.mX) + "," + String(returning.mY) + "," + String(returning.mZ)];
+         scalars.$class = thing._CLASSID_;
+         scalars.$angle = String(thing.mAngle.mAngle);
+         scalars.$targetAngle = String(thing.mTarget_Angle.mAngle);
+         scalars.$frame = String(thing.mXSI_Animation.mCurrentFrameID);
+         scalars.$parent = String(thing.mParent.mUniqueID);
+         var currentProcess = thing.Process;
+         if(b.processLastValid == true && b.processLastFunction === currentProcess)
+            scalars.$process = b.processLastName;
+         else scalars.$process = CMain.BH_ProcessName(thing,currentProcess,true);
+         if(thing.mWeaponList != undefined)
+         {
+            var weapons = new Array();
+            for(var slot = 0; slot < thing.mWeaponList.length; slot++)
+            {
+               var weapon = thing.mWeaponList[slot];
+               weapons.push({active:weapon.mActive == true,name:weapon.mNameID,properties:CMain.BH_Scalars(weapon.mThing)});
+            }
+            scalars.$weapons = weapons;
+            scalars.$selected = String(thing.mWeapon_Current.mNameID);
+         }
+         entities[id] = scalars;
+      }
+      var rng = {seed:b.seed,state:b.rng,calls:b.rngCalls};
+      var native = {scope:"frame",tick:b.tick,rng:rng,entities:entities,world:CMain.BH_Scalars(w),upgrades:CMain.BH_Scalars(w.mUpgrades),level:CMain.BH_Scalars(w.mUpgrades.Level),hud:CMain.BH_Scalars(w.mHud),counters:CMain.BH_Scalars(w.mThing_Collection.mThingCounters),lastFullDigest:String(b.lastFullDigest)};
+      if(CMain.BH_PersonalEnabled()) native.personal = CMain.BH_PersonalSnapshot(false);
+      if(b.initialPlayers == 1) native.membership = {initial:1,joined:b.playerCount,characters:b.characters.slice()};
+      var projectMs = getTimer() - started;
+      var hashStart = getTimer();
+      var fast = flash.external.ExternalInterface.call("boxheadDigestOriginalState",native);
+      if(typeof fast.digest != "string" || fast.digest.length != 26 || fast.digest.substr(0,10) != "native-v2-" || !CMain.BH_Integer(fast.bytes,0,8000000))
+      {
+         throw new Error("canonical native digest accelerator unavailable");
+      }
+      b.snapshot = {version:1,engine:"original-swf",state:b.state,tick:b.tick,digest:fast.digest,digestSchema:"native-projection-v3",scope:"frame",players:this.BH_Players(),rng:rng,native:native,entities:entities,snapshotBytes:fast.bytes,snapshotObjects:0,snapshotFields:0,profile:{projectMs:projectMs,encodeMs:0,hashMs:getTimer()-hashStart}};
+      return b.snapshot;
+   }
+
+   function BH_ReadState(refresh, forceFull, singleProjection)
+   {
+      var snapshot = this.BH_State(refresh,forceFull);
+      // The ordinary callback still returns the exact original snapshot.
+      // Opt-in callers may transfer its entity projection only under native.
+      // Never hide an error or an unexpected difference between the aliases.
+      if(singleProjection !== true || snapshot == undefined || snapshot.error != undefined
+         || snapshot.native == undefined || typeof snapshot.native != "object"
+         || snapshot.entities !== snapshot.native.entities) return snapshot;
+      var envelope = new Object();
+      for(var key in snapshot)
+         if(key != "entities" && snapshot.hasOwnProperty(key)) envelope[key] = snapshot[key];
+      return envelope;
+   }
+
+   function BH_State(refresh, forceFull)
+   {
+      var b = this.mBH;
+      if(!b.active || (b.state != "ready" && b.state != "playing"))
+      {
+         return this.BH_Info();
+      }
+      if(b.stepping)
+      {
+         return {tick:b.tick,error:"snapshot requested during frame"};
+      }
+      if(b.snapshot != undefined && b.snapshot.tick == b.tick && (b.complete != undefined || (refresh != true && forceFull != true))) return b.snapshot;
+      if(forceFull != true && b.tick % 25 != 0)
+      {
+         try { return this.BH_FrameState(); }
+         catch(frameError) { return this.BH_Fail("native frame snapshot: " + String(frameError)); }
+      }
+      var w = this.mcWorld;
+      var context = {objects:new Array(),errorPath:new Array(),fields:0};
+      var world = new Object();
+      for(var key in w)
+      {
+         var type = typeof w[key];
+         if(!CMain.BH_SkipField(key) && (type == "number" || type == "string" || type == "boolean"))
+         {
+            world[key] = w[key];
+         }
+      }
+      var rng = {seed:b.seed,state:b.rng,calls:b.rngCalls};
+      var navClass = World.Map.CMap_Cell;
+      var nav = {state:navClass.nState,id:navClass.nSID,time:navClass.nSTimer,distance:navClass.nSDist,fullScans:navClass.nFullScanCount,list:navClass.nList,pending:navClass.pList,session:navClass.mCurrentSessionID,mapSession:World.Map.CMap.mCheckSessionID};
+      var root = {scope:"full",tick:b.tick,rng:rng,settings:b.settings,mode:b.mode,map:b.map,characters:b.characters,world:world,entities:w.mThing_Collection.mThings,players:w.mThing_Collection.mPlayerThings,pendingDeletes:w.mThing_Collection.mDeleteThings,respawn:w.mThing_Collection.mRespawnPlayer,counters:w.mThing_Collection.mThingCounters,timeSlices:[w.mThing_Collection.mTimeSlice_25,w.mThing_Collection.mTimeSlice_8,w.mThing_Collection.mTimeSlice_4],mapState:w.mMap,grid:CMain.BH_Grid(w.mMap),upgrades:w.mUpgrades,hud:w.mHud,shake:w.mShake,track:w.lTrackPosition,spawnPlayers:w.mSpawnPoint_Player,spawnZombies:w.mSpawnPoint_Zombie,spawnDevils:w.mSpawnPoint_Devil,input:CMain.mInput.mKey_List_Registered,nextThingID:Thing.CThing.mAllocate_ID,processAllocator:Thing.CThing.mAllocate_ProcessID_Count,positionFactor:Thing.Math.CThing_Position.mPFactor,navStatics:nav};
+      if(b.initialPlayers == 1) root.membership = {initial:1,joined:b.playerCount};
+      try
+      {
+         var projectStart = getTimer();
+         if(CMain.BH_PersonalEnabled()) root.personal = CMain.BH_PersonalSnapshot(true);
+         var nativeState = CMain.BH_Project(root,context,"root",0);
+         var projectMs = getTimer() - projectStart;
+         var encodeMs = 0;
+         var hashStart = getTimer();
+         var fast = flash.external.ExternalInterface.call("boxheadDigestOriginalState",nativeState);
+         var nativeDigest;
+         var encodedBytes;
+         if(typeof fast.digest == "string" && fast.digest.length == 26 && fast.digest.substr(0,10) == "native-v2-" && CMain.BH_Integer(fast.bytes,0,8000000))
+         {
+            nativeDigest = fast.digest;
+            encodedBytes = fast.bytes;
+         }
+         else
+         {
+            throw new Error("canonical native digest accelerator unavailable");
+         }
+         var hashMs = getTimer() - hashStart - encodeMs;
+         var snapshot = {version:1,engine:"original-swf",state:b.state,tick:b.tick,scope:"full",digest:nativeDigest,digestSchema:"native-projection-v3",players:this.BH_Players(),rng:rng,native:nativeState,entities:nativeState.entities,snapshotBytes:encodedBytes,snapshotObjects:context.objects.length,snapshotFields:context.fields,profile:{projectMs:projectMs,encodeMs:encodeMs,hashMs:hashMs}};
+         if(forceFull != true || b.tick % 25 == 0)
+         {
+            b.snapshot = snapshot;
+            b.lastFullDigest = nativeDigest;
+         }
+         return snapshot;
+      }
+      catch(e)
+      {
+         return this.BH_Fail("native snapshot exception: " + String(e));
+      }
+      finally
+      {
+         for(var cleanup = 0; cleanup < context.objects.length; cleanup++)
+            delete context.objects[cleanup].__bhSnapshotRef;
+      }
+   }
+
+

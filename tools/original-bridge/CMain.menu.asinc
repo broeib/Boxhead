@@ -1,0 +1,795 @@
+   // Native menu additions live in the original SWF. Existing screens and
+   // their mouse/animation bytecode remain intact.
+   var mcBHMenu;
+
+   function BH_MenuEmit(event, payload)
+   {
+      var b = this.mBH;
+      b.menuSeq = (b.menuSeq == undefined ? 0 : b.menuSeq) + 1;
+      b.menuEvent = {version:1,seq:b.menuSeq,event:event,payload:payload == undefined ? {} : payload};
+   }
+
+   function BH_MenuPoll()
+   {
+      return this.mBH.menuEvent == undefined ? null : this.mBH.menuEvent;
+   }
+
+   function BH_RenderCheck()
+   {
+      var clip = this.createEmptyMovieClip("_BH_RenderCheck",this.getNextHighestDepth());
+      clip.beginFill(2407020,100);
+      clip.moveTo(0,0); clip.lineTo(16,0); clip.lineTo(16,16); clip.lineTo(0,16); clip.lineTo(0,0);
+      clip.endFill();
+      var bitmap = new flash.display.BitmapData(16,16,false,16711680);
+      var pixel = -1;
+      try { bitmap.draw(clip); pixel = bitmap.getPixel(8,8); }
+      catch(e) { pixel = -1; }
+      bitmap.dispose();
+      clip.removeMovieClip();
+      return {supported:pixel == 2407020,pixel:pixel,expected:2407020};
+   }
+
+   function BH_MenuText(parent, name, value, x, y, width, height, size, color, nativeFont)
+   {
+      parent.createTextField(name,parent.getNextHighestDepth(),x,y,width,height);
+      var field = parent[name];
+      field.selectable = false;
+      field.multiline = true;
+      field.wordWrap = true;
+      field.embedFonts = nativeFont == true;
+      var format = new TextFormat();
+      format.font = nativeFont ? "Arial Rounded MT Bold" : "Trebuchet MS";
+      // The layout-capable original Arial Rounded font is the regular face.
+      // The bold-face subset is static-text-only and has no advance metrics.
+      format.bold = false;
+      format.size = size;
+      format.color = color;
+      field.text = String(value);
+      field.setTextFormat(format);
+      field.setNewTextFormat(format);
+      return field;
+   }
+
+   function BH_MenuButton(parent, name, label, x, y, width, action, value, size)
+   {
+      var button = parent.createEmptyMovieClip(name,parent.getNextHighestDepth());
+      button._x = x; button._y = y;
+      button.beginFill(16777215,0);
+      button.moveTo(0,0); button.lineTo(width,0); button.lineTo(width,34); button.lineTo(0,34); button.lineTo(0,0); button.endFill();
+      button.createEmptyMovieClip("_Contents",button.getNextHighestDepth());
+      this.BH_MenuText(button._Contents,"label",label,0,0,width,38,size == undefined ? 25 : size,0,true);
+      button._Contents._alpha = 50;
+      button.action = action;
+      button.value = value;
+      button.useHandCursor = true;
+      button.onRollOver = function()
+      {
+         this.onEnterFrame = function()
+         {
+            this._Contents._alpha = 100;
+            this._Contents.filters = [new flash.filters.DropShadowFilter(Math.random() * 3,random(360)),new flash.filters.BlurFilter(Math.random() * 2,Math.random() * 2)];
+         };
+      };
+      button.onRollOut = function()
+      {
+         this._Contents._alpha = 50;
+         delete this.onEnterFrame;
+         this._Contents.filters = [];
+      };
+      button.onRelease = function()
+      {
+         if(!this.BH_silent)
+         {
+            if(this.action == "character") CSound.mSamples.Click2.PlaySound();
+            else CSound.mSamples.Click.PlaySound();
+         }
+         CMain._this.BH_MenuAction(this.action,this.value);
+      };
+      return button;
+   }
+
+   function BH_MenuCenterButton(button, height)
+   {
+      var field = button._Contents.label;
+      var format = field.getTextFormat();
+      format.align = "center";
+      field.setTextFormat(format);
+      field.setNewTextFormat(format);
+      if(height != undefined)
+      {
+         field._height = height;
+         // TextField dimensions truncate fractional pixels in AVM1. Keep
+         // the original button geometry and center the text inside it.
+         var width = button._width;
+         field._x = (width - field._width) / 2;
+         button.clear();
+         button.beginFill(16777215,0);
+         button.moveTo(0,0); button.lineTo(width,0); button.lineTo(width,height);
+         button.lineTo(0,height); button.lineTo(0,0); button.endFill();
+      }
+   }
+
+   function BH_MenuSetMainVisible(visible)
+   {
+      // Every overlay owns its BACK control. Hide the underlying original
+      // control synchronously with panel creation, and restore the same clip
+      // on removal even if the active original screen has since changed.
+      var b = this.mBH;
+      var originalBack = this.mcScreen._Icon_Back;
+      if(visible || b.menuHiddenBack != originalBack)
+      {
+         if(b.menuHiddenBack != undefined) b.menuHiddenBack._visible = b.menuHiddenBackVisible;
+         delete b.menuHiddenBack;
+         delete b.menuHiddenBackVisible;
+      }
+      if(!visible && originalBack != undefined)
+      {
+         if(b.menuHiddenBack == undefined)
+         {
+            b.menuHiddenBack = originalBack;
+            b.menuHiddenBackVisible = originalBack._visible;
+         }
+         originalBack._visible = false;
+      }
+      if(this.mcScreen.idScreen != "Screen_Main") return;
+      this.mcScreen.mcSinglePlay._visible = visible;
+      this.mcScreen.mcCoopPlay._visible = visible;
+      this.mcScreen.mcDeathPlay._visible = visible;
+      this.mcScreen.mcInstructions._visible = visible;
+      this.mcScreen.mcBHOnline._visible = visible;
+   }
+
+   function BH_MenuRemove()
+   {
+      this.BH_MenuStopKeyCapture();
+      if(this.mcBHMenu.profileBitmap != undefined) this.mcBHMenu.profileBitmap.dispose();
+      this.mcBHMenu.removeMovieClip();
+      delete this.mcBHMenu;
+      this.BH_MenuSetMainVisible(true);
+   }
+
+   function BH_MenuPanel(title, extended)
+   {
+      this.BH_MenuRemove();
+      this.BH_MenuSetMainVisible(false);
+      var panel = this.createEmptyMovieClip("_BH_Menu",this.getNextHighestDepth());
+      this.mcBHMenu = panel;
+      var top = 184;
+      panel.beginFill(16777215,97);
+      panel.moveTo(12,top); panel.lineTo(628,top); panel.lineTo(628,extended ? 472 : 404); panel.lineTo(12,extended ? 472 : 404); panel.lineTo(12,top); panel.endFill();
+      // Prevent clicks from reaching the underlying original level/menu.
+      panel.createEmptyMovieClip("block",panel.getNextHighestDepth());
+      panel.block.beginFill(16777215,0);
+      panel.block.moveTo(0,0); panel.block.lineTo(640,0); panel.block.lineTo(640,480); panel.block.lineTo(0,480); panel.block.lineTo(0,0); panel.block.endFill();
+      panel.block.useHandCursor = false;
+      panel.block.onPress = function() {};
+      this.BH_MenuText(panel,"title",title,32,190,590,43,30,16711680,true);
+      // Match the original _Icon_Back's Calibri label and white glow. The
+      // original sprite has no exported linkage, so keep the overlay's own
+      // hit target and existing online back action.
+      var back = this.BH_MenuButton(panel,"back","Back to menu",8,7,108,"back",null,16);
+      var backLabel = back._Contents.label;
+      var backFormat = new TextFormat();
+      backFormat.font = "Calibri";
+      backFormat.size = 16;
+      backFormat.color = 0;
+      backLabel.setTextFormat(backFormat);
+      backLabel.setNewTextFormat(backFormat);
+      back._Contents._alpha = 100;
+      back._Contents.filters = [new flash.filters.GlowFilter(16777215,1,7,7,10,3)];
+      delete back.onRollOver;
+      delete back.onRollOut;
+      return panel;
+   }
+
+   function BH_MenuHome()
+   {
+      var b = this.mBH;
+      b.menuMode = "online";
+      b.menuSelecting = false;
+      var panel = this.BH_MenuPanel("ONLINE MULTIPLAYER",true);
+      var profile = this.BH_OnlineProfile();
+      this.BH_MenuText(panel,"nameLabel","ROOM NAME",34,239,146,25,16,0,false);
+      var field = this.BH_MenuText(panel,"roomName",b.roomName == undefined ? "Boxhead room" : b.roomName,179,234,415,31,20,0,false);
+      field.type = "input";
+      field.selectable = true;
+      field.multiline = false;
+      field.wordWrap = false;
+      field.maxChars = 48;
+      field.background = true; field.backgroundColor = 15132390;
+      field.border = true; field.borderColor = 11184810;
+      this.BH_MenuButton(panel,"character","MY CHARACTER",34,275,278,"personalCharacter",null,19);
+      this.BH_MenuButton(panel,"controls","MY CONTROLS",340,275,250,"personalControls",null,19);
+      this.BH_MenuButton(panel,"coop","CREATE COOP ROOM",34,313,562,"select","Coop",26);
+      this.BH_MenuButton(panel,"deathmatch","CREATE DEATHMATCH ROOM",34,350,562,"select","DeathMatch",26);
+      this.BH_MenuButton(panel,"rooms","ROOM LIST",34,387,562,"list",null,26);
+      this.BH_MenuControlsHint(panel,443);
+   }
+
+   function BH_OnlineProfile()
+   {
+      var b = this.mBH;
+      if(b.onlineProfile != undefined) return b.onlineProfile;
+      var profile = {character:0,bindings:[87,83,65,68,32,69,81]};
+      try
+      {
+         var storage = SharedObject.getLocal("Boxhead2Play_OnlineProfile_v1");
+         var saved = storage.data.profile;
+         if(saved != undefined && CMain.BH_Integer(saved.character,0,3)) profile.character = saved.character;
+         if(saved != undefined && saved.bindings instanceof Array && saved.bindings.length == 7)
+         {
+            var valid = true;
+            var seen = {};
+            for(var i = 0; i < 7; i++)
+            {
+               var key = saved.bindings[i];
+               if(!this.BH_OnlineBindingKey(key) || seen["key" + key]) valid = false;
+               seen["key" + key] = true;
+            }
+            if(valid) profile.bindings = saved.bindings.slice();
+         }
+         b.profileStorage = storage;
+      }
+      catch(e) { b.profileStorage = undefined; }
+      b.onlineProfile = profile;
+      return profile;
+   }
+
+   function BH_OnlineBindingKey(key)
+   {
+      var valid = CInput.isValidKey(key);
+      return CMain.BH_Integer(key,1,255) && valid != undefined && valid.mValid == true;
+   }
+
+   function BH_MenuSaveProfile()
+   {
+      var profile = this.BH_OnlineProfile();
+      try
+      {
+         var storage = this.mBH.profileStorage;
+         if(storage == undefined) return false;
+         storage.data.profile = {character:profile.character,bindings:profile.bindings.slice()};
+         this.mBH.profileSaved = storage.flush() == true;
+         return this.mBH.profileSaved;
+      }
+      catch(e) { this.mBH.profileSaved = false; return false; }
+   }
+
+   function BH_MenuStopKeyCapture()
+   {
+      var listener = this.mBH.profileKeyListener;
+      if(listener != undefined) Key.removeListener(listener);
+      delete this.mBH.profileKeyListener;
+   }
+
+   function BH_MenuKeyName(key)
+   {
+      if(key == 32) return "SPACE";
+      var valid = CInput.isValidKey(key);
+      return valid == undefined ? String(key) : valid.mName;
+   }
+
+   function BH_MenuPersonalControls()
+   {
+      this.mBH.menuMode = "personalControls";
+      var profile = this.BH_OnlineProfile();
+      var panel = this.BH_MenuPanel("MY CONTROLS",true);
+      var labels = ["MOVE UP","MOVE DOWN","MOVE LEFT","MOVE RIGHT","FIRE","NEXT WEAPON","PREVIOUS WEAPON"];
+      for(var i = 0; i < 7; i++)
+      {
+         this.BH_MenuText(panel,"action" + i,labels[i],34,235 + i * 28,245,26,18,3355443,true);
+         var button = this.BH_MenuButton(panel,"key" + i,this.BH_MenuKeyName(profile.bindings[i]),290,235 + i * 28,290,"bind",i,18);
+         button.BH_silent = true;
+         this.BH_MenuCenterButton(button,25);
+      }
+      var reset = this.BH_MenuButton(panel,"resetControls","RESET MY KEYS",34,440,250,"resetControls",null,17);
+      this.BH_MenuCenterButton(reset,25);
+      this.BH_MenuText(panel,"keyHelp","1-0: WEAPON SELECT",310,443,295,23,14,3355443,false);
+   }
+
+   function BH_MenuWaitForKey(index)
+   {
+      if(!CMain.BH_Integer(index,0,6)) return;
+      this.BH_MenuStopKeyCapture();
+      var panel = this.mcBHMenu;
+      panel.title.text = "PRESS A KEY - ESC CANCELS";
+      var listener = {owner:this,index:index};
+      listener.onKeyDown = function()
+      {
+         var key = Key.getCode();
+         if(key == 27) { this.owner.BH_MenuPersonalControls(); return; }
+         var profile = this.owner.BH_OnlineProfile();
+         var conflict = false;
+         for(var i = 0; i < profile.bindings.length; i++)
+            if(i != this.index && profile.bindings[i] == key) conflict = true;
+         if(!this.owner.BH_OnlineBindingKey(key) || conflict)
+         {
+            this.owner.mcBHMenu.title.text = conflict ? "KEY ALREADY USED - TRY AGAIN" : "INVALID KEY - TRY AGAIN";
+            return;
+         }
+         profile.bindings[this.index] = key;
+         this.owner.BH_MenuSaveProfile();
+         CSound.mSamples.Click2.PlaySound();
+         this.owner.BH_MenuPersonalControls();
+      };
+      this.mBH.profileKeyListener = listener;
+      Key.addListener(listener);
+   }
+
+   function BH_MenuPersonalCharacter()
+   {
+      this.mBH.menuMode = "personalCharacter";
+      var panel = this.BH_MenuPanel("MY CHARACTER",true);
+      // Keep controls alive while the artwork changes so a mouse release
+      // cannot be delivered to a newly created button beneath the pointer.
+      this.BH_MenuButton(panel,"characterPrevious","PREV",70,304,130,"character",-1,24);
+      this.BH_MenuButton(panel,"characterNext","NEXT",440,304,130,"character",1,24);
+      var nickname = this.BH_MenuButton(panel,"nickname","NICKNAME",220,405,200,"nickname",null,19);
+      this.BH_MenuCenterButton(nickname,30);
+      this.BH_MenuText(panel,"personalHelp","This is your character on this browser.",95,444,470,24,16,3355443,false);
+      this.BH_MenuUpdateCharacterPreview();
+   }
+
+   function BH_MenuUpdateCharacterPreview()
+   {
+      var panel = this.mcBHMenu;
+      var profile = this.BH_OnlineProfile();
+      // Sample the original artwork only; remove the source immediately so
+      // its hidden timeline and original buttons cannot keep running.
+      var source = panel.attachMovie("SubScreen_Single","profileSource",panel.getNextHighestDepth());
+      source._visible = false;
+      var character = source.mcPlayer1_Character.mcCharacter;
+      Screen.CScreen_SelectWorld.mcGotoFrame(character,profile.character,true);
+      var bounds = character.getBounds(character);
+      var width = Math.max(1,Math.ceil(bounds.xMax - bounds.xMin));
+      var height = Math.max(1,Math.ceil(bounds.yMax - bounds.yMin));
+      var scale = 145 / height;
+      var bitmapWidth = Math.max(1,Math.ceil(width * scale));
+      var bitmap = new flash.display.BitmapData(bitmapWidth,145,true,0);
+      var matrix = new flash.geom.Matrix();
+      matrix.scale(scale,scale);
+      matrix.translate(-bounds.xMin * scale,-bounds.yMin * scale);
+      bitmap.draw(character,matrix);
+      source.removeMovieClip();
+      if(panel.profileBitmap != undefined) panel.profileBitmap.dispose();
+      panel.profilePreview.removeMovieClip();
+      panel.profileBitmap = bitmap;
+      var preview = panel.createEmptyMovieClip("profilePreview",panel.getNextHighestDepth());
+      preview.attachBitmap(bitmap,0,"auto",true);
+      preview._x = 320 - bitmapWidth / 2;
+      preview._y = 247;
+   }
+
+   function BH_MenuPersonalBack()
+   {
+      if(this.mBH.profileReturn == "select" && this.mcScreen.idScreen == "Screen_SelectWorld")
+      {
+         this.mBH.menuMode = "select";
+         this.BH_MenuRemove();
+      }
+      else this.BH_MenuHome();
+   }
+
+   function BH_MenuConfigurePersonalSelection(screen)
+   {
+      if(screen.BH_personalSelection) return;
+      screen.BH_personalSelection = true;
+      var own = screen.mcSubScreen.mcPlayer1_Character;
+      var peer = screen.mcSubScreen.mcPlayer2_Character;
+      // Online character selection belongs to My Character, not the map
+      // screen. Hide both original selectors and their independent buttons.
+      if(own != undefined)
+      {
+         own._visible = false;
+         own.enabled = false;
+         own.bLeft.enabled = false;
+         own.bRight.enabled = false;
+      }
+      if(peer != undefined)
+      {
+         peer._visible = false;
+         peer.enabled = false;
+         peer.bLeft.enabled = false;
+         peer.bRight.enabled = false;
+         // Original offline player numbers are independent timeline artwork.
+         screen.mcSubScreen.createEmptyMovieClip("_BH_OfflinePlayer1_Number",-16348);
+         screen.mcSubScreen.createEmptyMovieClip("_BH_OfflinePlayer2_Number",-16347);
+      }
+      // Personal controls are configured from online home, not map selection.
+      screen._Game_Controls._visible = false;
+      screen._Game_Controls.enabled = false;
+      screen._Game_Controls._Button.enabled = false;
+      screen.mcWindow_Controls._visible = false;
+   }
+
+   function BH_MenuControlsHint(panel, y)
+   {
+      var bindings = this.BH_OnlineProfile().bindings;
+      var movement = [];
+      for(var i = 0; i < 4; i++) movement.push(this.BH_MenuKeyName(bindings[i]));
+      var hint = movement.join("/") + " MOVE | " + this.BH_MenuKeyName(bindings[4]) + " FIRE | " + this.BH_MenuKeyName(bindings[6]) + "/" + this.BH_MenuKeyName(bindings[5]) + " PREV/NEXT";
+      this.BH_MenuText(panel,"controlsHint",hint,34,y,570,25,11,3355443,false);
+   }
+
+   function BH_MenuRememberName()
+   {
+      var value = this.mcBHMenu.roomName.text;
+      if(value == undefined) return;
+      while(value.length && value.charCodeAt(0) <= 32) value = value.substr(1);
+      while(value.length && value.charCodeAt(value.length - 1) <= 32) value = value.substr(0,value.length - 1);
+      this.mBH.roomName = value.length ? value.substr(0,48) : "Boxhead room";
+   }
+
+   function BH_MenuAction(action, value)
+   {
+      var b = this.mBH;
+      // Keep leave/reset pending until JavaScript acknowledges the teardown.
+      // Otherwise a second click can replace the last-polled menu event.
+      if(b.menuMode == "closing" || b.menuMode == "resetting") return;
+      if(action == "home")
+      {
+         b.menuSelecting = false;
+         if(this.mcScreen.idScreen != "Screen_Main") this.SetState("State_Main");
+         this.BH_MenuHome();
+         return;
+      }
+      if(action == "personalControls" || action == "personalCharacter")
+      {
+         this.BH_MenuRememberName();
+         b.profileReturn = "home";
+         if(action == "personalControls") this.BH_MenuPersonalControls();
+         else this.BH_MenuPersonalCharacter();
+         return;
+      }
+      if(action == "bind") { this.BH_MenuWaitForKey(value); return; }
+      if(action == "nickname") { this.BH_MenuEmit("nickname",{}); return; }
+      if(action == "resetControls")
+      {
+         this.BH_OnlineProfile().bindings = [87,83,65,68,32,69,81];
+         this.BH_MenuSaveProfile();
+         this.BH_MenuPersonalControls();
+         return;
+      }
+      if(action == "character")
+      {
+         var profile = this.BH_OnlineProfile();
+         profile.character = (profile.character + value + 4) % 4;
+         this.BH_MenuSaveProfile();
+         this.BH_MenuUpdateCharacterPreview();
+         return;
+      }
+      if(action == "select")
+      {
+         this.BH_MenuRememberName();
+         this.BH_MenuRemove();
+         b.menuMode = "select";
+         b.menuSelecting = true;
+         b.menuSelectionSeen = false;
+         this.SetState("State_SelectWorld_" + value);
+         return;
+      }
+      if(action == "list")
+      {
+         this.BH_MenuRememberName();
+         b.menuMode = "rooms";
+         b.roomPage = 0;
+         this.BH_MenuRooms({rooms:[],message:"Connecting..."});
+         this.BH_MenuEmit("list",{});
+         return;
+      }
+      if(action == "page")
+      {
+         b.roomPage += value;
+         this.BH_MenuRooms(b.roomList);
+         return;
+      }
+      if(action == "join")
+      {
+         b.menuMode = "joining";
+         this.BH_MenuNotice("JOINING ROOM","Connecting to the other player...");
+         this.BH_MenuEmit("join",{room:value,character:this.BH_OnlineProfile().character});
+         return;
+      }
+      if(action == "start")
+      {
+         this.mcBHMenu.start.enabled = false;
+         this.mcBHMenu.start._alpha = 30;
+         this.BH_MenuEmit("start",{});
+         return;
+      }
+      if(action == "reset") { this.BH_MenuClosing(true); return; }
+      if(action == "back")
+      {
+         if(b.menuMode == "personalControls" || b.menuMode == "personalCharacter") { this.BH_MenuPersonalBack(); return; }
+         if(b.active) { this.BH_MenuClosing(true); return; }
+         if(b.menuMode == "online")
+         {
+            b.menuMode = "main";
+            this.BH_MenuRemove();
+            this.SetState("State_Main");
+            return;
+         }
+         b.menuSelecting = false;
+         this.BH_MenuClosing(false);
+      }
+   }
+
+   function BH_MenuClosing(reload)
+   {
+      this.mBH.menuSelecting = false;
+      this.mBH.menuMode = reload ? "resetting" : "closing";
+      var panel = this.BH_MenuNotice("RETURNING TO MENU","Closing the connection...");
+      panel.back.removeMovieClip();
+      this.BH_MenuEmit(reload ? "reset" : "leave",{});
+   }
+
+   function BH_MenuMapName(link)
+   {
+      var names = ["BOXY","BUTTONS","MAZEY","GLADIATOR","STRIP","TIGHT","COLUMNS","CASTLE","BIG BOXY","RECTY","PATCHY","FOREST BOX","TIGHT 2","MASSIVE","THIN LINE","4 CASTLES","THE STRIPS","BIG ONE"];
+      var index = Number(String(link).substr(-4)) - 1;
+      return index >= 0 && index < names.length ? names[index] : String(link);
+   }
+
+   function BH_MenuRooms(data)
+   {
+      var b = this.mBH;
+      b.menuMode = "rooms";
+      b.roomList = data;
+      var rows = data.rooms instanceof Array ? data.rooms : [];
+      var pages = Math.max(1,Math.ceil(rows.length / 6));
+      b.roomPage = Math.max(0,Math.min(pages - 1,b.roomPage == undefined ? 0 : b.roomPage));
+      var panel = this.BH_MenuPanel("ROOM LIST",true);
+      this.BH_MenuText(panel,"help",data.message == undefined ? "Click a room to join. Open rooms update automatically." : String(data.message),34,231,570,28,15,3355443,false);
+      if(!rows.length) this.BH_MenuText(panel,"empty","No open rooms. Create a room and your friend will see it here.",34,274,570,76,22,6710886,false);
+      for(var i = 0; i < 6 && b.roomPage * 6 + i < rows.length; i++)
+      {
+         var row = rows[b.roomPage * 6 + i];
+         var button = this.BH_MenuButton(panel,"room" + i,"",32,264 + i * 26,576,"join",row.room,16);
+         // Room names may contain Cyrillic. Device font is intentional for
+         // names; original embedded fonts contain only the original glyphs.
+         this.BH_MenuText(button._Contents,"roomName",String(row.name).substr(0,48),0,0,340,28,19,0,false);
+         this.BH_MenuText(button._Contents,"details",row.mode + " / " + this.BH_MenuMapName(row.map) + "  1/2",348,2,220,25,14,3355443,false);
+      }
+      if(b.roomPage > 0) this.BH_MenuButton(panel,"previous","PREVIOUS",34,431,180,"page",-1,19);
+      if(b.roomPage + 1 < pages) this.BH_MenuButton(panel,"next","NEXT",236,431,180,"page",1,19);
+      var refresh = this.BH_MenuButton(panel,"refresh","REFRESH",444,431,164,"list",null,19);
+      refresh.BH_silent = true;
+   }
+
+   function BH_MenuNotice(title, message)
+   {
+      var panel = this.BH_MenuPanel(title,false);
+      this.BH_MenuText(panel,"message",String(message),34,250,570,115,22,3355443,false);
+      return panel;
+   }
+
+   function BH_MenuUpdate(state, data)
+   {
+      if(data == undefined) data = {};
+      var b = this.mBH;
+      // A queued directory/peer notification must not reopen an action while
+      // the leave event is waiting for its next JavaScript poll.
+      if(b.menuMode == "resetting" || b.menuMode == "closing" && state != "closed") return {ok:true};
+      if(state == "rooms") this.BH_MenuRooms(data);
+      else if(state == "lobby")
+      {
+         b.menuMode = "lobby";
+         var panel = this.BH_MenuPanel(data.slot == 1 ? "YOUR ROOM" : "ROOM JOINED",false);
+         this.BH_MenuText(panel,"roomName",data.name == undefined ? b.roomName == undefined ? "Boxhead room" : b.roomName : String(data.name),34,240,570,37,23,0,false);
+         if(data.mode != undefined) this.BH_MenuText(panel,"game",data.mode + " / " + this.BH_MenuMapName(data.map),34,277,570,31,18,6710886,false);
+         var message = data.slot == 1 ? data.peerConnected ? "Player 2 joined. Ready to start." : "Waiting for player 2. Join this room from ROOM LIST." : "Player 2 connected. Waiting for the host to start.";
+         this.BH_MenuText(panel,"message",message,34,311,570,29,18,3355443,false);
+         if(data.slot == 1 && data.peerConnected) this.BH_MenuButton(panel,"start","START GAME",34,345,550,"start",null,27);
+         this.BH_MenuControlsHint(panel,384);
+      }
+      else if(state == "loading")
+      {
+         b.menuMode = "loading";
+         // Let the actual original loading screen remain visible.
+         this.BH_MenuRemove();
+      }
+      else if(state == "playing") this.BH_MenuRemove();
+      else if(state == "completed")
+      {
+         b.menuMode = "completed";
+      }
+      else if(state == "error")
+      {
+         b.menuMode = "error";
+         var panel = this.BH_MenuNotice("CONNECTION STOPPED",data.message == undefined ? "Return to the menu and create a new room." : String(data.message));
+         this.BH_MenuButton(panel,"retry","BACK TO MENU",34,361,550,b.active ? "reset" : "back",null,25);
+      }
+      else if(state == "closed")
+      {
+         if(b.active) return {ok:false,error:"reload required"};
+         this.SetState("State_Main");
+         this.BH_MenuHome();
+      }
+      else return {ok:false,error:"unknown menu state"};
+      return {ok:true};
+   }
+
+   function BH_MenuCreate(screen, index)
+   {
+      var b = this.mBH;
+      if(!b.menuSelecting || b.active) return;
+      b.menuSelecting = false;
+      var save = CMain.mSaveData;
+      var character = this.BH_OnlineProfile().character;
+      var payload = {name:b.roomName,dropIn:true,character:character,mode:screen.mMode,map:"ROOM_Single_" + screen.Pad0_4(index + 1),characters:[character,0],settings:{difficulty:save.mDifficulty,speed:save.mGameSpeed,devils:Number(save.mDevilsActive),collisions:Number(save.mCollisionsActive),damage:Number(save.mDamageActive),gameAmount:save.mGameAmount}};
+      b.menuMode = "creating";
+      b.roomConfig = payload;
+      this.BH_MenuRemove();
+      this.BH_MenuEmit("create",payload);
+   }
+
+   function BH_MenuMainOnline(screen)
+   {
+      // Exact outlines from the pristine SWF's DefineFont3 #205:
+      // Arial Rounded MT Bold, bold=true, no dynamic-text layout table.
+      // Source SHA256 34ff145d96891ddea20278700c8b1fb6fd6273ca0e71b73d8bdf0df183fdbece.
+      // Keep paths in their original 20480-unit em; the two nested scales
+      // reproduce the original static-text transforms without rounding each
+      // curve control point to a new pixel grid or loading a substitute font.
+      var paths = {O:[["M",8090,-15020],["Q",10380,-15020,12040,-14080],["Q",13700,-13140,14540,-11420],["Q",15390,-9700,15390,-7400],["Q",15390,-5710,14930,-4310],["Q",14460,-2910,13530,-1880],["Q",12600,-840,11240,-300],["Q",9890,250,8150,250],["Q",6420,250,5050,-310],["Q",3680,-870,2760,-1890],["Q",1840,-2920,1370,-4340],["Q",900,-5770,900,-7420],["Q",900,-9120,1390,-10530],["Q",1870,-11950,2810,-12950],["Q",3740,-13960,5070,-14490],["Q",6410,-15020,8090,-15020],["L",8090,-15020],["M",12030,-7420],["Q",12030,-8960,11540,-10070],["Q",11050,-11180,10150,-11750],["Q",9250,-12310,8090,-12310],["Q",7260,-12310,6570,-12000],["Q",5870,-11690,5360,-11100],["Q",4860,-10500,4560,-9560],["Q",4260,-8610,4260,-7420],["Q",4260,-6220,4560,-5260],["Q",4860,-4300,5390,-3690],["Q",5930,-3070,6610,-2760],["Q",7300,-2460,8130,-2460],["Q",9200,-2460,10080,-2990],["Q",10970,-3520,11500,-4640],["Q",12030,-5760,12030,-7420],["L",12030,-7420]],N:[["M",5770,-13140],["L",10970,-4800],["L",10970,-13150],["Q",10970,-14060,11380,-14540],["Q",11790,-15020,12490,-15020],["Q",13210,-15020,13630,-14540],["Q",14050,-14050,14050,-13150],["L",14050,-1840],["Q",14050,250,12270,250],["Q",11840,250,11500,130],["Q",11150,0,10850,-270],["Q",10550,-540,10340,-840],["Q",10120,-1130,9860,-1520],["L",4750,-9840],["L",4750,-1620],["Q",4750,-720,4310,-230],["Q",3870,250,3180,250],["Q",2460,250,2040,-240],["Q",1610,-720,1610,-1620],["L",1610,-12710],["Q",1610,-13460,1770,-13840],["Q",1990,-14390,2480,-14710],["Q",2960,-15020,3520,-15020],["Q",3960,-15020,4270,-14880],["Q",4590,-14730,4820,-14490],["Q",5060,-14250,5300,-13750],["Q",5540,-13250,5770,-13140],["L",5770,-13140]],L:[["M",4830,-13050],["L",4830,-2790],["L",10520,-2790],["Q",11310,-2790,11750,-2390],["Q",12190,-1990,12190,-1390],["Q",12190,-770,11760,-380],["Q",11320,0,10520,0],["L",3490,0],["Q",2460,0,1980,-480],["Q",1510,-960,1510,-1980],["L",1510,-13050],["Q",1510,-14010,1960,-14520],["Q",2420,-15020,3150,-15020],["Q",3900,-15020,4360,-14520],["Q",4830,-14020,4830,-13050],["L",4830,-13050]],I:[["M",1690,-1730],["L",1690,-13050],["Q",1690,-14020,2150,-14520],["Q",2600,-15020,3330,-15020],["Q",4080,-15020,4540,-14520],["Q",5010,-14020,5010,-13050],["L",5010,-1730],["Q",5010,-760,4550,-250],["Q",4080,250,3330,250],["Q",2610,250,2150,-250],["Q",1690,-760,1690,-1730],["L",1690,-1730]],E:[["M",11240,-12130],["L",4890,-12130],["L",4890,-9000],["L",10720,-9000],["Q",11470,-9000,11860,-8640],["Q",12250,-8280,12250,-7710],["Q",12250,-7130,11870,-6770],["Q",11490,-6400,10720,-6400],["L",4890,-6400],["L",4890,-2710],["L",11460,-2710],["Q",12230,-2710,12650,-2330],["Q",13060,-1960,13060,-1350],["Q",13060,-750,12650,-370],["Q",12240,0,11460,0],["L",3550,0],["Q",2520,0,2040,-480],["Q",1570,-960,1570,-1980],["L",1570,-12790],["Q",1570,-13460,1780,-13910],["Q",1990,-14360,2440,-14560],["Q",2890,-14770,3550,-14770],["L",11240,-14770],["Q",12020,-14770,12420,-14400],["Q",12820,-14040,12820,-13450],["Q",12820,-12860,12420,-12490],["Q",12020,-12130,11240,-12130],["L",11240,-12130]]};
+      var original = screen.mcInstructions;
+      var column = screen.mcCoopPlay.getBounds(screen);
+      var hit = original.getBounds(original);
+      var button = screen.createEmptyMovieClip("mcBHOnline",screen.getNextHighestDepth());
+      button._x = (column.xMin + column.xMax) / 2;
+      button._y = original._y;
+      button._xscale = original._xscale;
+      button._yscale = original._yscale;
+      var halfWidth = (column.xMax - column.xMin) * 50 / original._xscale;
+      button.beginFill(16777215,0);
+      button.moveTo(-halfWidth,hit.yMin); button.lineTo(halfWidth,hit.yMin);
+      button.lineTo(halfWidth,hit.yMax); button.lineTo(-halfWidth,hit.yMax);
+      button.lineTo(-halfWidth,hit.yMin); button.endFill();
+      var contents = button.createEmptyMovieClip("_Contents",button.getNextHighestDepth());
+      contents._y = original._Contents._y;
+      var text = contents.createEmptyMovieClip("text",contents.getNextHighestDepth());
+      // DefineText #215 uses TextHeight=200 twips, baseline=180 twips,
+      // scale=4.1935577392578125, translateY=-24.2, RGB=(51,51,51).
+      text._xscale = text._yscale = 419.35577392578125;
+      text._y = -24.2;
+      var glyphs = text.createEmptyMovieClip("glyphs",text.getNextHighestDepth());
+      glyphs._xscale = glyphs._yscale = 0.048828125;
+      glyphs._y = 9;
+      // Original Instructions tracking: O154 N148 I59 twips. L117/E129
+      // are the same font's SINGLE PLAY/COOPERATIVE advances with that
+      // exact tracking adjustment. The visible outline is centered.
+      var advances = [154,148,117,59,148,129];
+      var word = "ONLINE";
+      var pen = 0;
+      var center = 39031.2;
+      glyphs.beginFill(3355443,100);
+      for(var i = 0; i < word.length; i++)
+      {
+         var shape = paths[word.charAt(i)];
+         for(var j = 0; j < shape.length; j++)
+         {
+            var command = shape[j];
+            if(command[0] == "M") glyphs.moveTo(command[1] + pen - center,command[2]);
+            else if(command[0] == "L") glyphs.lineTo(command[1] + pen - center,command[2]);
+            else glyphs.curveTo(command[1] + pen - center,command[2],command[3] + pen - center,command[4]);
+         }
+         pen += advances[i] * 102.4;
+      }
+      glyphs.endFill();
+      // Reuse original button alpha and animated rollover handlers verbatim.
+      screen.Register_Button(button);
+      button.useHandCursor = true;
+      button.onRelease = function()
+      {
+         CSound.mSamples.Click.PlaySound();
+         CMain._this.BH_MenuAction("home");
+      };
+      // Insert ONLINE into the former Instructions row. Preserve the exact
+      // original pitch rather than shrinking the original lettering to fit.
+      original._y += original._y - screen.mcDeathPlay._y;
+      return button;
+   }
+
+   function BH_MenuPump()
+   {
+      var b = this.mBH;
+      var screen = this.mcScreen;
+      // Install before the original transition captures its incoming bitmap.
+      if(screen.idScreen == "Screen_Main" && screen.mcBHOnline == undefined)
+      {
+         this.BH_MenuMainOnline(screen);
+         if(this.mcBHMenu != undefined) this.BH_MenuSetMainVisible(false);
+      }
+      if(b.menuSelecting && screen.idScreen == "Screen_SelectWorld")
+      {
+         this.BH_MenuConfigurePersonalSelection(screen);
+         b.menuSelectionSeen = true;
+         if(screen.BH_originalLoadLevel == undefined)
+         {
+            screen.BH_originalLoadLevel = screen.LoadLevel;
+            screen.LoadLevel = function(index)
+            {
+               if(CMain._this.mBH.menuSelecting) CMain._this.BH_MenuCreate(this,index);
+               else if(CMain._this.mBH.menuMode == "main" || CMain._this.mBH.menuMode == undefined) this.BH_originalLoadLevel(index);
+            };
+         }
+      }
+      if(b.menuSelecting && b.menuSelectionSeen && screen.idScreen == "Screen_Main") this.BH_MenuHome();
+   }
+
+   function BH_Controls()
+   {
+      var controls = {p1:[],p2:[]};
+      var names = ["KeyMoveUp","KeyMoveDown","KeyMoveLeft","KeyMoveRight","KeyShoot","KeyNextWeapon","KeyPrevWeapon"];
+      for(var i = 0; i < names.length; i++)
+      {
+         controls.p1.push(CMain.mSaveData["mPlayer1_" + names[i]]);
+         controls.p2.push(CMain.mSaveData["mPlayer2_" + names[i]]);
+      }
+      var profile = this.BH_OnlineProfile();
+      controls.online = {character:profile.character,bindings:profile.bindings.slice()};
+      return controls;
+   }
+
+   function BH_MenuBoundsItem(clip)
+   {
+      if(clip == undefined || !clip._visible) return null;
+      var box = clip.getBounds(this);
+      return {x:box.xMin,y:box.yMin,width:box.xMax - box.xMin,height:box.yMax - box.yMin};
+   }
+
+   function BH_MenuBounds()
+   {
+      var screen = this.mcScreen;
+      var panel = this.mcBHMenu;
+      var bounds = {};
+      if(screen.idScreen == "Screen_Main" && screen._visible && screen.mNormal && panel == undefined)
+      {
+         bounds.single = this.BH_MenuBoundsItem(screen.mcSinglePlay);
+         bounds.coop = this.BH_MenuBoundsItem(screen.mcCoopPlay);
+         bounds.deathmatch = this.BH_MenuBoundsItem(screen.mcDeathPlay);
+         bounds.instructions = this.BH_MenuBoundsItem(screen.mcInstructions);
+         bounds.online = this.BH_MenuBoundsItem(screen.mcBHOnline);
+      }
+      if(screen.idScreen == "Screen_SelectWorld" && screen._visible && screen.mNormal && panel == undefined)
+      {
+         bounds.level = this.BH_MenuBoundsItem(screen.mcSubScreen.mcLevel_Selection.mcLevelIcons);
+         bounds.mapNext = this.BH_MenuBoundsItem(screen.mcSubScreen.mcLevel_Selection.bRight);
+         bounds.mapPrevious = this.BH_MenuBoundsItem(screen.mcSubScreen.mcLevel_Selection.bLeft);
+         if(!screen.BH_personalSelection)
+         {
+            bounds.character1Next = this.BH_MenuBoundsItem(screen.mcSubScreen.mcPlayer1_Character.bRight);
+            bounds.character2Next = this.BH_MenuBoundsItem(screen.mcSubScreen.mcPlayer2_Character.bRight);
+         }
+         bounds.options = this.BH_MenuBoundsItem(screen._Game_Options);
+         if(!screen.BH_personalSelection) bounds.controls = this.BH_MenuBoundsItem(screen._Game_Controls);
+         if(screen.mcWindow_Options._visible)
+         {
+            bounds.optionsClose = this.BH_MenuBoundsItem(screen.mcWindow_Options._Button_Close);
+            bounds.difficultyIntermediate = this.BH_MenuBoundsItem(screen.mcWindow_Options._Level_Intermediate);
+            bounds.difficultyNightmare = this.BH_MenuBoundsItem(screen.mcWindow_Options._Level_Nightmare);
+            bounds.optionDamageOff = this.BH_MenuBoundsItem(screen.mcWindow_Options._Damage_Off);
+            bounds.optionDamageOn = this.BH_MenuBoundsItem(screen.mcWindow_Options._Damage_On);
+            bounds.optionDevilsOff = this.BH_MenuBoundsItem(screen.mcWindow_Options._Devils_Off);
+            bounds.optionDifficultyBeginner = this.BH_MenuBoundsItem(screen.mcWindow_Options._Level_Beginner);
+            bounds.optionDifficultyIntermediate = this.BH_MenuBoundsItem(screen.mcWindow_Options._Level_Intermediate);
+            bounds.optionSpeedNormal = this.BH_MenuBoundsItem(screen.mcWindow_Options._Speed_Normal);
+            bounds.optionSpeedFast = this.BH_MenuBoundsItem(screen.mcWindow_Options._Speed_Fast);
+         }
+         if(screen.mcWindow_Controls._visible) bounds.controlsClose = this.BH_MenuBoundsItem(screen.mcWindow_Controls._Button_Close);
+         bounds.back = this.BH_MenuBoundsItem(screen._Icon_Back);
+      }
+      if(panel != undefined)
+      {
+         bounds.originalBack = this.BH_MenuBoundsItem(screen._Icon_Back);
+         var names = ["back","coop","deathmatch","rooms","start","previous","next","refresh","retry","character","controls","characterPrevious","characterNext","nickname","resetControls","key0","key1","key2","key3","key4","key5","key6","room0","room1","room2","room3","room4","room5"];
+         for(var i = 0; i < names.length; i++)
+         {
+            var box = this.BH_MenuBoundsItem(panel[names[i]]);
+            if(box != null) bounds[names[i]] = box;
+         }
+         if(panel.roomName.type == "input") bounds.roomName = {x:panel.roomName._x,y:panel.roomName._y,width:panel.roomName._width,height:panel.roomName._height};
+         if(panel.controlsHint != undefined) bounds.controlsHint = {x:panel.controlsHint._x,y:panel.controlsHint._y,width:panel.controlsHint._width,height:panel.controlsHint._height};
+      }
+      return bounds;
+   }

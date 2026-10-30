@@ -1,0 +1,11 @@
+{
+  "sourceSwfSha256": "34ff145d96891ddea20278700c8b1fb6fd6273ca0e71b73d8bdf0df183fdbece",
+  "captureSwfSha256": "29622dd9b96658b1539e0a86abf4f460d48c4616ee7db4b65ee80cf238c2f9e1",
+  "capture": "tmp/fidelity/performance-baseline-oct25",
+  "purpose": "Reviewed immutable original menu lettering and co-op zero-score HUD regions only. ONLINE is outside the compared ROI.",
+  "files": {
+    "selection.png": "6328a655642dc946bbbc80e9eff8aee32f04da9d2bdbbea2301f24f6fe1cb3b7",
+    "game.png": "9437e64b2fb76048ea256307a4f0dcf238e99e4ec1addfbe8a4f920754ec0747",
+    "main.png": "334f29d673cd86701c7c6dca311ec2dd7a9c740bbd40446ae800b1640ea73569"
+  }
+}

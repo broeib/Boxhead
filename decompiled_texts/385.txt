@@ -1,5 +1,0 @@
-An unknown error occured whilst 
---- RECORDSEPARATOR ---
-trying to submit your highscore. 
---- RECORDSEPARATOR ---
-Try again and click 'Retry'!

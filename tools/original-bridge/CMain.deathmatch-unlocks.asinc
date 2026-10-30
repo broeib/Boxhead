@@ -1,0 +1,22 @@
+   // DeathMatch applies its original weapon unlocks once, after the initial
+   // players have initialized. A later guest missed those grants. Reapply the
+   // already active original unlocks to that player alone, then empty them as
+   // InitCleanUp does for the initial roster. No shared upgrade state changes.
+   static function BH_DeathmatchPlayerReady(player)
+   {
+      var b = CMain._this.mBH;
+      if(b.active != true || b.mode != "DeathMatch" || player.mPlayerIndex != 1
+         || b.tick == 0 || (b.initialPlayers == 2 && b.guestGeneration <= 1)) return;
+      var unlocks = player.mWorld.mUpgrades.mMultiplierList;
+      for(var i = 0; i < unlocks.length; i++)
+      {
+         var unlock = unlocks[i];
+         if(unlock.mActive == true && unlock.mClassID == "CThing_Creature_Player"
+            && typeof unlock.mValue == "string")
+         {
+            if(player.mWeapons[unlock.mValue] == undefined) throw new Error("invalid DeathMatch weapon unlock");
+            player.NewWeapon(unlock.mValue);
+         }
+      }
+      player.ResetWeapons();
+   }

@@ -1,0 +1,340 @@
+   // Ordinary live ticks may yield after the exact original Game block. The
+   // shared native fence retains ownership until the real frame receipt exits.
+   // Full ticks and the synchronous/replay implementations stay unchanged.
+   var mBHCompactStep;
+
+   function BH_CompactInstall()
+   {
+      var b = this.mBH;
+      var kernel = _global.boxheadNativeCompactFenceV1;
+      if(kernel === undefined) return;
+      try
+      {
+         if(b.stagedStepVersion !== 1 || typeof b.stagedFenceKernel != "function"
+            || _global.boxheadNativeStepFenceV1 !== b.stagedFenceKernel)
+            throw new Error("compact fence requires the installed shared full fence");
+         if(typeof kernel != "function") throw new Error("native compact fence is not callable");
+         var cap = kernel("capability");
+         if(typeof cap != "object" || cap === null || cap instanceof Array
+            || !Object.prototype.hasOwnProperty.call(cap,"version") || !Object.prototype.hasOwnProperty.call(cap,"contract")
+            || cap.version !== 1 || cap.contract !== "bh-compact-step-fence-v1")
+            throw new Error("native compact fence capability is invalid");
+         for(var key in cap)
+            if(key != "version" && key != "contract") throw new Error("unknown native compact fence capability field");
+         this.BH_CompactFrameBegin = this.BH_CompactFrameBegin;
+         this.BH_CompactFrameCommit = this.BH_CompactFrameCommit;
+         this.BH_CompactFrameAbort = this.BH_CompactFrameAbort;
+         this.BH_CompactStateReceipt = this.BH_CompactStateReceipt;
+         this.BH_CompactFencePoison = this.BH_CompactFencePoison;
+         ASSetPropFlags(this,"BH_CompactFrameBegin,BH_CompactFrameCommit,BH_CompactFrameAbort,BH_CompactStateReceipt,BH_CompactFencePoison",7);
+         if(kernel("install",this) !== true) throw new Error("native compact fence installation failed");
+         b.compactFenceKernel = kernel;
+         b.compactStepVersion = 1;
+      }
+      catch(e)
+      {
+         this.BH_CompactFencePoison("native compact fence installation: " + String(e));
+      }
+   }
+
+   function BH_CompactFencePoison(message)
+   {
+      var tx = this.mBHCompactStep;
+      var b = tx === undefined ? this.mBH : tx.bridge;
+      if(tx !== undefined)
+      {
+         if(tx.failure !== undefined) message = tx.failure;
+         delete tx.snapshot;
+         tx.phase = "poisoned";
+         tx.busy = false;
+      }
+      b.stepping = false;
+      b.state = "error";
+      b.snapshotReceiptPoisoned = true;
+      if(b.error == "") b.error = String(message);
+      delete b.snapshotReceiptRequest;
+      delete b.snapshotReceiptProof;
+      delete b.snapshotReceiptPending;
+      delete b.compactStepVersion;
+      delete b.stagedStepVersion;
+      if(this.mBH !== b)
+      {
+         this.mBH.stepping = false;
+         this.mBH.state = "error";
+         this.mBH.snapshotReceiptPoisoned = true;
+         this.mBH.error = b.error;
+         delete this.mBH.snapshotReceiptRequest;
+         delete this.mBH.snapshotReceiptProof;
+         delete this.mBH.snapshotReceiptPending;
+         delete this.mBH.compactStepVersion;
+         delete this.mBH.stagedStepVersion;
+      }
+      delete this.mBHCompactStep;
+      return true;
+   }
+
+   function BH_CompactError(message)
+   {
+      var b = this.mBH;
+      if(b.state != "error") this.BH_CompactFencePoison(message);
+      return {version:1,engine:"original-swf",state:"error",tick:b.tick,error:b.error,snapshotReceiptVersion:1};
+   }
+
+   function BH_CompactCheck(tx)
+   {
+      var b = tx.bridge;
+      if(this.mBHCompactStep !== tx || this.mBHStagedStep !== undefined || this.mBH !== b || this.mcWorld !== tx.world
+         || b.compactFenceKernel !== tx.kernel || _global.boxheadNativeCompactFenceV1 !== tx.kernel
+         || b.stagedFenceKernel !== tx.fullKernel || _global.boxheadNativeStepFenceV1 !== tx.fullKernel
+         || b.compactStepVersion !== 1 || b.stagedStepVersion !== 1
+         || !b.active || b.state != "playing" || b.replay === true
+         || b.stepping || b.snapshotReceiptBusy === true || b.snapshotReceiptPoisoned === true
+         || b.tick !== tx.tick || b.snapshotReceiptEpoch !== tx.epoch
+         || tx.world.mTick !== tx.worldTick || b.logicCalls !== 1 || b.drawCalls !== 1
+         || b.complete !== tx.complete || this.fState !== tx.worldState)
+         throw new Error("compact frame identity or completed world step changed");
+   }
+
+   function BH_CompactRequire(token, epoch, tick, phase, callbackName)
+   {
+      var tx = this.mBHCompactStep;
+      if(tx === undefined || tx.phase !== phase || tx.busy !== true || tx.callbackName !== callbackName
+         || token !== tx.token || epoch !== tx.epoch || tick !== tx.tick
+         || !CMain.BH_ValidLink(token) || !CMain.BH_Integer(epoch,1,2147483647)
+         || !CMain.BH_Integer(tick,1,2147483647) || tick % 25 == 0)
+         throw new Error("compact frame phase or identity mismatch");
+      this.BH_CompactCheck(tx);
+      var b = tx.bridge;
+      if(b.snapshotReceiptRequest !== undefined || b.snapshotReceiptProof !== undefined
+         || (phase != "committed" && b.snapshotReceiptPending !== undefined)
+         || (phase == "committed" && (b.snapshotReceiptPending === undefined || b.snapshot !== tx.snapshot)))
+         throw new Error("compact frame receipt lifecycle changed");
+      return tx;
+   }
+
+   function BH_CompactDispatch(name, callback, args)
+   {
+      var tx = this.mBHCompactStep;
+      if(tx === undefined || tx.busy === true) throw new Error("reentrant compact frame callback: " + name);
+      var phase = tx.phase;
+      var allowed = (name == "bhFrameCommit" && phase == "begun")
+         || (name == "bhInfo" && phase == "committed" && tx.infoRead !== true)
+         || (name == "bhStateReceipt" && phase == "committed" && tx.infoRead === true)
+         || (name == "bhPresent" && phase == "begun")
+         || name == "bhFrameAbort";
+      if(!allowed) throw new Error("callback outside compact frame phase: " + name);
+      if(name == "bhInfo")
+      {
+         if(args.length != 0) throw new Error("compact Info arguments changed");
+      }
+      else if(name == "bhPresent")
+      {
+         if(args.length != 1) throw new Error("compact Present arguments changed");
+      }
+      else if(args.length != 3 || args[0] !== tx.token || args[1] !== tx.epoch || args[2] !== tx.tick)
+         throw new Error("compact callback identity arguments changed");
+      tx.busy = true;
+      tx.callbackName = name;
+      try
+      {
+         // Keep the shared registration and full receipt body byte-exact. The
+         // compact native protocol authenticates this separate receipt callee.
+         var result = name == "bhStateReceipt"
+            ? this.BH_CompactStateReceipt.apply(this,args) : callback.apply(this,args);
+         if(name == "bhInfo")
+         {
+            this.BH_CompactCheck(tx);
+            if(result.version !== 1 || result.engine !== "original-swf" || result.state !== "playing"
+               || result.tick !== tx.tick || result.snapshotReceiptVersion !== 1
+               || result.stagedStepVersion !== 1 || result.compactStepVersion !== 1 || result.error !== undefined)
+               throw new Error("compact Info readback failed");
+            tx.infoRead = true;
+         }
+         return result;
+      }
+      finally
+      {
+         tx.busy = false;
+         delete tx.callbackName;
+      }
+   }
+
+   function BH_CompactFrameBegin(tick, p1Mask, p2Mask, join, receiptToken, leave)
+   {
+      var b = this.mBH;
+      var kernel = b.compactFenceKernel;
+      var tx;
+      try
+      {
+         if((arguments.length != 5 && arguments.length != 6) || b.compactStepVersion !== 1 || b.stagedStepVersion !== 1
+            || typeof kernel != "function" || _global.boxheadNativeCompactFenceV1 !== kernel
+            || typeof b.stagedFenceKernel != "function" || _global.boxheadNativeStepFenceV1 !== b.stagedFenceKernel
+            || b.replay === true || this.mBHCompactStep !== undefined || this.mBHStagedStep !== undefined
+            || tick % 25 == 0)
+            throw new Error("staged compact frame is unavailable");
+         if(!b.active || (b.state != "ready" && b.state != "playing"))
+            throw new Error("world is not ready for a frame");
+         if(b.stepping || b.complete != undefined || !CMain.BH_Integer(tick,1,2147483647) || tick != b.tick + 1 || !CMain.BH_Integer(p1Mask,0,131071) || !CMain.BH_Integer(p2Mask,0,131071))
+            throw new Error("invalid, duplicate, reentrant, or post-completion frame");
+         if(b.snapshotReceiptBusy === true || b.snapshotReceiptRequest !== undefined
+            || b.snapshotReceiptProof !== undefined || b.snapshotReceiptPending !== undefined
+            || !CMain.BH_ValidLink(receiptToken) || !CMain.BH_Integer(b.snapshotReceiptEpoch,0,2147483646))
+            throw new Error("invalid native snapshot receipt request or unconsumed readback");
+         if(this.fState != this.State_RunWorld || !this.mcWorld.mLoaded || this.mcWorld.mPaused)
+            throw new Error("original world cannot accept a frame");
+         if(leave !== undefined && !this.BH_ValidLeave(leave,join,p2Mask)) throw new Error("invalid player leave");
+         if(join != undefined)
+         {
+            if(typeof join != "object" || join == null || join instanceof Array || join.slot != 2 || !CMain.BH_Integer(join.character,0,3) || b.playerCount != 1)
+               throw new Error("invalid or duplicate player join");
+            for(var joinKey in join) if(joinKey != "slot" && joinKey != "character") throw new Error("unknown player join property");
+         }
+         else if(b.playerCount == 1 && p2Mask != 0) throw new Error("second player input before spawn");
+         b.snapshotReceiptEpoch++;
+         tx = {token:receiptToken,epoch:b.snapshotReceiptEpoch,tick:tick,phase:"begin",bridge:b,
+            world:this.mcWorld,kernel:kernel,fullKernel:b.stagedFenceKernel,busy:true,callbackName:"bhFrameBegin"};
+         this.mBHCompactStep = tx;
+         if(kernel("begin",this,receiptToken,tx.epoch,tick) !== true) throw new Error("native compact begin failed");
+         var before = this.mcWorld.mTick;
+         b.clock = tick * b.frameMs;
+         b.logicCalls = 0;
+         b.drawCalls = 0;
+         b.stepping = true;
+         try
+         {
+            if(leave !== undefined) this.BH_LeavePlayer();
+            if(join != undefined) this.BH_JoinPlayer(join.character);
+            this.BH_PresentationBegin();
+            CMain.mInput.BH_ApplyMasks(p1Mask,p2Mask);
+            this.State_RunWorld(true);
+            // Preserve original first-frame order: initialize players, draw, apply difficulty.
+            if(before == 0) this.mcWorld.BH_InitializeRules();
+            CSound.ProcessAll();
+            CMain.ProcessBGTasks();
+            this.BH_PresentationEnd(tick);
+         }
+         finally
+         {
+            b.stepping = false;
+         }
+         if(b.state == "error") throw new Error(b.error);
+         if(b.logicCalls != 1 || b.drawCalls != 1 || this.mcWorld.mTick != before + 1)
+            throw new Error("frame did not execute exactly one original logic and draw tick");
+         b.tick = tick;
+         b.state = "playing";
+         if(this.mcWorld.mCompleteState)
+         {
+            b.complete = this.mcWorld.mCompleteState;
+         }
+         tx.worldTick = this.mcWorld.mTick;
+         tx.complete = b.complete;
+         tx.worldState = this.fState;
+         this.BH_CompactCheck(tx);
+         if(kernel("leave",this,receiptToken,tx.epoch,tick,"begin") !== true) throw new Error("native compact begin completion failed");
+         tx.phase = "begun";
+         return {version:1,phase:"begun",token:receiptToken,epoch:tx.epoch,tick:tick};
+      }
+      catch(e)
+      {
+         var message = "compact frame begin: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHCompactStep !== undefined || b.state != "error") this.BH_CompactFencePoison(message);
+         return this.BH_CompactError(message);
+      }
+      finally
+      {
+         if(tx !== undefined) { tx.busy = false; delete tx.callbackName; }
+      }
+   }
+
+   function BH_CompactFrameCommit(token, epoch, tick)
+   {
+      var tx = this.mBHCompactStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      try
+      {
+         tx = this.BH_CompactRequire(token,epoch,tick,"begun","bhFrameCommit");
+         if(kernel("enter",this,token,epoch,tick,"commit") !== true) throw new Error("native compact commit entry failed");
+         tx.phase = "commit";
+         var b = this.mBH;
+         b.snapshotReceiptRequest = {token:token,epoch:epoch,tick:tick,used:false};
+         var state = this.BH_State(true);
+         if(state.error != undefined) throw new Error(state.error);
+         tx.snapshot = state;
+         this.BH_CompactCheck(tx);
+         this.BH_ReceiptPublish(state,token);
+         if(kernel("leave",this,token,epoch,tick,"commit") !== true) throw new Error("native compact commit completion failed");
+         tx.phase = "committed";
+         return {tick:b.tick,digest:state.digest,players:state.players,worldTick:this.mcWorld.mTick,rng:state.rng,complete:b.complete,profile:state.profile,snapshotBytes:state.snapshotBytes,snapshotObjects:state.snapshotObjects,snapshotFields:state.snapshotFields};
+      }
+      catch(e)
+      {
+         var message = "compact frame commit: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHCompactStep !== undefined || this.mBH.state != "error") this.BH_CompactFencePoison(message);
+         return this.BH_CompactError(message);
+      }
+   }
+
+   function BH_CompactStateReceipt(token, epoch, tick)
+   {
+      var tx = this.mBHCompactStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      try
+      {
+         tx = this.BH_CompactRequire(token,epoch,tick,"committed","bhStateReceipt");
+         if(tx.infoRead !== true) throw new Error("compact receipt preceded Info");
+         var result = this.BH_StateReceipt(token,epoch,tick);
+         this.BH_CompactCheck(tx);
+         if(result.version !== 1 || result.token !== token || result.epoch !== epoch || result.tick !== tick
+            || result.scope !== "frame" || result.header.tick !== tick || result.header.digest !== tx.snapshot.digest
+            || result.header.snapshotBytes !== tx.snapshot.snapshotBytes || result.error !== undefined
+            || this.mBH.snapshotReceiptPending !== undefined)
+            throw new Error("compact native receipt readback failed");
+         if(kernel("finish",this,token,epoch,tick) !== true) throw new Error("native compact receipt finish failed");
+         delete tx.snapshot;
+         tx.phase = "finished";
+         delete this.mBHCompactStep;
+         return result;
+      }
+      catch(e)
+      {
+         var message = "compact frame receipt: " + String(e);
+         if(tx !== undefined)
+         {
+            tx.failure = message;
+            try { kernel("abort",this,tx.token,tx.epoch,tx.tick); } catch(abortError) {}
+         }
+         if(this.mBHCompactStep !== undefined || this.mBH.state != "error") this.BH_CompactFencePoison(message);
+         return this.BH_CompactError(message);
+      }
+   }
+
+   function BH_CompactFrameAbort(token, epoch, tick)
+   {
+      var tx = this.mBHCompactStep;
+      var kernel = tx === undefined ? undefined : tx.kernel;
+      var message = "compact frame cancelled";
+      try
+      {
+         if(tx === undefined || arguments.length != 3 || tx.token !== token || tx.epoch !== epoch || tx.tick !== tick
+            || tx.busy !== true || tx.callbackName !== "bhFrameAbort")
+            throw new Error("compact cancellation identity mismatch");
+         tx.failure = message;
+         if(kernel("abort",this,token,epoch,tick) !== true) throw new Error("native compact abort failed");
+      }
+      catch(e)
+      {
+         message += ": " + String(e);
+      }
+      if(this.mBHCompactStep !== undefined || this.mBH.state != "error") this.BH_CompactFencePoison(message);
+      return this.BH_CompactError(message);
+   }

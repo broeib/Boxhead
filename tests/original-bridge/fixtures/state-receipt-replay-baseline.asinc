@@ -1,0 +1,277 @@
+   // Historical replay still executes every original Process/Draw and all
+   // argument expressions. The two transient presentation bitmaps receive
+   // instance-local wrappers. Canonical sprite copies preserve their exact
+   // clipped source readback through BitmapData.hitTest, then omit only the
+   // transient destination write. Draw always forwards. Canonical floor/cover
+   // presentation copies, fillRect and applyFilter can also be suppressed.
+   // Persistent floor/decal/cache/HUD writes and live/offline calls stay native.
+   // During history the initialized world MovieClip is also hidden from the
+   // stage renderer. Its timelines and every commanded Process/Draw continue.
+   // The exact original visibility is restored before the real guest spawn.
+   function BH_ReplayRegister()
+   {
+      if(flash.external.ExternalInterface.available && !flash.external.ExternalInterface.addCallback("bhReplayInfo",this,this.BH_ReplayInfo))
+         this.BH_Fail("replay diagnostic callback registration failed");
+   }
+
+   static function BH_ReplayCopyPixels()
+   {
+      return CMain._this.BH_ReplayWrite(this,"copyPixels",arguments);
+   }
+
+   static function BH_ReplayDraw()
+   {
+      return CMain._this.BH_ReplayWrite(this,"draw",arguments);
+   }
+
+   static function BH_ReplayFillRect()
+   {
+      return CMain._this.BH_ReplayWrite(this,"fillRect",arguments);
+   }
+
+   static function BH_ReplayApplyFilter()
+   {
+      return CMain._this.BH_ReplayWrite(this,"applyFilter",arguments);
+   }
+
+   function BH_ReplayInstall(world)
+   {
+      var b = this.mBH;
+      if(b.replay != true) return;
+      if(!b.active || b.state != "loading" || b.tick != 0 || b.stepping || b.initialPlayers != 1 || b.localSlot != 2 || b.personalProgression != true || world !== this.mcWorld || b.replayInstalled)
+         throw new Error("invalid historical presentation installation");
+      var targets = [world.bmDraw];
+      var labels = ["world"];
+      if(world.mSplitScreen != undefined)
+      {
+         targets.push(world.mSplitScreen.bmDraw);
+         labels.push("split");
+      }
+      var names = ["copyPixels","draw","fillRect","applyFilter"];
+      var wrappers = [CMain.BH_ReplayCopyPixels,CMain.BH_ReplayDraw,CMain.BH_ReplayFillRect,CMain.BH_ReplayApplyFilter];
+      var records = new Array();
+      for(var index = 0; index < targets.length; index++)
+      {
+         var target = targets[index];
+         if(!(target instanceof flash.display.BitmapData) || target === world.bmFloor || target === world.bmCover || target === world.bmDecalMask || (index > 0 && target === targets[0]))
+            throw new Error("historical presentation target is not an isolated transient bitmap");
+         var record = {target:target,world:world,kind:labels[index],methods:new Object(),sourceReads:0,
+            readSource:flash.display.BitmapData.prototype.hitTest,
+            sourceClip:{x:0,y:0,width:target.width,height:target.height}};
+         for(var method = 0; method < names.length; method++)
+         {
+            var name = names[method];
+            var original = target[name];
+            if(typeof original != "function") throw new Error("missing original bitmap method: " + name);
+            record.methods[name] = {original:original,wrapper:wrappers[method],own:target.hasOwnProperty(name),attempted:false,installed:false,skipped:0,forwarded:0};
+         }
+         records.push(record);
+      }
+      b.replayTargets = records;
+      var visibility = {world:world,saved:world._visible,attempted:false,installed:false,restored:false,focusUnchanged:false};
+      b.replayWorldVisibility = visibility;
+      try
+      {
+         if(typeof visibility.saved != "boolean" || typeof Selection.getFocus != "function")
+            throw new Error("historical world visibility is unavailable");
+         // Ruffle 0.6.0's native visibility setter drops focus synchronously.
+         // Refuse a focused native scene before any wrapper or visibility write.
+         var focus = Selection.getFocus();
+         if(focus !== null) throw new Error("historical world visibility requires no native focus");
+         for(index = 0; index < records.length; index++)
+         {
+            record = records[index];
+            for(method = 0; method < names.length; method++)
+            {
+               name = names[method];
+               var entry = record.methods[name];
+               // A native object may accept assignment yet fail the own-slot
+               // proof. Cleanup must include that partially installed method.
+               entry.attempted = true;
+               record.target[name] = entry.wrapper;
+               if(record.target[name] !== entry.wrapper || !record.target.hasOwnProperty(name))
+                  throw new Error("AVM1 bitmap method shadowing unavailable: " + name);
+               entry.installed = true;
+            }
+         }
+         if(world !== this.mcWorld || world._visible !== visibility.saved || Selection.getFocus() !== focus)
+            throw new Error("historical world changed before hiding");
+         // Mark attempted before assigning so a rejected or partial native
+         // setter is included in the same fail-closed installation cleanup.
+         visibility.attempted = true;
+         if(visibility.saved) world._visible = false;
+         if(world !== this.mcWorld || world._visible !== false || Selection.getFocus() !== focus)
+            throw new Error("historical world visibility installation failed");
+         visibility.installed = true;
+         visibility.focusUnchanged = true;
+         b.replayInstalled = true;
+      }
+      catch(error)
+      {
+         // InitCleanUp runs on the original world's onEnterFrame, outside
+         // BH_Pump's synchronous catch. An unsupported native method surface
+         // must not become normal replay on the next loading callback.
+         try { this.BH_ReplayRestore(); }
+         finally { this.BH_Fail("historical presentation installation: " + String(error)); }
+         throw error;
+      }
+   }
+
+   function BH_ReplayWrite(target, name, values)
+   {
+      var b = this.mBH;
+      var records = b.replayTargets;
+      var record;
+      for(var index = 0; index < records.length; index++)
+      {
+         if(records[index].target === target)
+         {
+            record = records[index];
+            break;
+         }
+      }
+      if(record == undefined || record.methods[name] == undefined)
+         throw new Error("historical bitmap wrapper received an unknown target or method");
+      var entry = record.methods[name];
+      var world = this.mcWorld;
+      var backgroundCopy = name == "copyPixels" && values.length == 6 && values[3] === undefined && values[4] === undefined
+         && ((values[0] === record.world.bmFloor && values[5] === false) || (values[0] === record.world.bmCover && values[5] === true));
+      if(b.active && b.replay == true && b.replayInstalled == true && b.stepping && !b.cache && record.world === world
+         && (target === world.bmDraw || (world.mSplitScreen != undefined && target === world.mSplitScreen.bmDraw)))
+      {
+         var spriteCopy = false;
+         if(name == "copyPixels" && !backgroundCopy && values.length == 6 && values[3] === undefined && values[4] === undefined && values[5] === true)
+         {
+            var source = values[0];
+            var rectangle = values[1];
+            var point = values[2];
+            if(source instanceof flash.display.BitmapData && source !== target && source !== world.bmFloor && source !== world.bmCover && source !== world.bmDecalMask
+               && source !== world.bmDraw && (world.mSplitScreen == undefined || source !== world.mSplitScreen.bmDraw)
+               && rectangle instanceof flash.geom.Rectangle && point instanceof flash.geom.Point
+               && typeof record.readSource == "function" && source.hitTest === record.readSource)
+            {
+               // Keep both native APIs on the same stored numeric fields.
+               // Their i32 conversions agree for this finite signed-safe range.
+               // All original sprite destinations are ordinary Point objects.
+               var x = point.x;
+               var y = point.y;
+               if(rectangle.x === 0 && rectangle.y === 0 && rectangle.width === source.width && rectangle.height === source.height
+                  && point.hasOwnProperty("x") && point.hasOwnProperty("y") && typeof x == "number" && typeof y == "number"
+                  && x > -1073741824 && x < 1073741824 && y > -1073741824 && y < 1073741824)
+               {
+                  // Ruffle 0.6.0 rectangle hitTest first calls read_area on the
+                  // source region clipped by the destination rectangle. With
+                  // threshold zero it returns at the first pixel. This matches
+                  // full-source copyPixels readback, including partial/offscreen
+                  // copies, without blending/writing the transient destination.
+                  // A corner getPixel32 cannot guarantee the same dirty-region
+                  // intersection. No source identity/shape/pixel cache is used.
+                  var read = source.hitTest(point,0,record.sourceClip);
+                  if(typeof read != "boolean") throw new Error("historical sprite source readback failed");
+                  record.sourceReads++;
+                  spriteCopy = true;
+               }
+            }
+         }
+         if(backgroundCopy || spriteCopy || name == "fillRect" || name == "applyFilter")
+         {
+            // The caller has already evaluated receiver and every argument, in
+            // original order. Never skip their RNG, allocation or side effects.
+            entry.skipped++;
+            b.replaySkipped++;
+            return undefined;
+         }
+      }
+      entry.forwarded++;
+      // Preserve the actual receiver, exact argument count, optional undefined
+      // arguments and native return value for every forwarded write.
+      return entry.original.apply(target,values);
+   }
+
+   function BH_ReplayRestore()
+   {
+      var b = this.mBH;
+      // Disable suppression before touching methods, including failure cleanup.
+      b.replay = false;
+      var visibility = b.replayWorldVisibility;
+      if(visibility != undefined && visibility.attempted)
+      {
+         // Restore stage presentation before removing any bitmap wrappers and
+         // before BH_ReplayFinish permits the commanded real guest spawn.
+         if(visibility.world !== this.mcWorld || typeof visibility.saved != "boolean")
+            throw new Error("historical world identity changed before restoration");
+         var current = visibility.world._visible;
+         if(current !== false)
+         {
+            // A rejected/no-op setter needs no write. An installed hide that
+            // was changed elsewhere must fail rather than overwrite it.
+            if(visibility.installed || current !== visibility.saved)
+               throw new Error("historical world visibility changed before restoration");
+         }
+         else if(visibility.saved !== false) visibility.world._visible = visibility.saved;
+         if(visibility.world !== this.mcWorld || visibility.world._visible !== visibility.saved)
+            throw new Error("original world visibility restoration failed");
+         visibility.attempted = false;
+         visibility.installed = false;
+         visibility.restored = true;
+      }
+      var records = b.replayTargets;
+      for(var index = 0; index < records.length; index++)
+      {
+         var record = records[index];
+         for(var name in record.methods)
+         {
+            var entry = record.methods[name];
+            if(!entry.attempted) continue;
+            if(record.target[name] !== entry.wrapper)
+            {
+               // A rejected/no-op native assignment needs no write. Never
+               // overwrite a third-party method while trying to clean up.
+               if(entry.installed || record.target[name] !== entry.original || record.target.hasOwnProperty(name) != entry.own)
+                  throw new Error("historical bitmap wrapper changed before restoration: " + name);
+               entry.attempted = false;
+               continue;
+            }
+            if(entry.own) record.target[name] = entry.original;
+            else delete record.target[name];
+            if(record.target[name] !== entry.original || record.target.hasOwnProperty(name) != entry.own)
+               throw new Error("original bitmap method restoration failed: " + name);
+            entry.installed = false;
+            entry.attempted = false;
+         }
+      }
+      b.replayInstalled = false;
+      b.replayRestored = true;
+   }
+
+   function BH_ReplayFinish()
+   {
+      var b = this.mBH;
+      if(b.replay != true) return;
+      if(!b.stepping || b.localSlot != 2 || b.initialPlayers != 1 || b.playerCount != 1 || !b.replayInstalled)
+         throw new Error("historical presentation ended outside the real guest spawn");
+      this.BH_ReplayRestore();
+   }
+
+   function BH_ReplayInfo()
+   {
+      var b = this.mBH;
+      var targets = new Array();
+      var records = b.replayTargets;
+      for(var index = 0; index < records.length; index++)
+      {
+         var record = records[index];
+         var methods = new Object();
+         for(var name in record.methods)
+         {
+            var entry = record.methods[name];
+            methods[name] = {installed:entry.installed,skipped:entry.skipped,forwarded:entry.forwarded,original:record.target[name] === entry.original,wrapped:record.target[name] === entry.wrapper};
+         }
+         targets.push({kind:record.kind,width:record.target.width,height:record.target.height,sourceReads:record.sourceReads,methods:methods});
+      }
+      var visibility = b.replayWorldVisibility;
+      var worldVisibility = visibility == undefined ? null : {saved:visibility.saved,current:visibility.world._visible,
+         worldMatches:visibility.world === this.mcWorld,installed:visibility.installed == true,restored:visibility.restored == true,focusUnchanged:visibility.focusUnchanged == true};
+      return {version:1,tick:b.tick,enabled:b.replay == true,installed:b.replayInstalled == true,restored:b.replayRestored == true,skipped:b.replaySkipped == undefined ? 0 : b.replaySkipped,targets:targets,worldVisibility:worldVisibility};
+   }
+

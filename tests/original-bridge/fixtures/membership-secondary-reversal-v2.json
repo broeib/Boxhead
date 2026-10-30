@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "entries": {
+    "tools/original-bridge/CMain.staged-step.asinc": {
+      "before": "d19931545b5cf850c21c579870a29335b31811543bd4e761340ebe02bda113d8",
+      "after": "43cf1d035377c5ef0905fa180734663fdd671ff4c625e57a484d90fb2090a297",
+      "hunks": [
+        {
+          "offset": 14865,
+          "after": "         if(b.initialPlayers == 1 || b.membershipVersion === 2) root.membership = {initial:b.initialPlayers,joined:b.playerCount};\n         if(b.membershipVersion === 1 || b.membershipVersion === 2) root.membership.generation = b.guestGeneration;\n",
+          "before": "         if(b.initialPlayers == 1) root.membership = {initial:1,joined:b.playerCount};\n         if(b.membershipVersion === 1) root.membership.generation = b.guestGeneration;\n"
+        }
+      ]
+    },
+    "tools/original-bridge/CMain.progression.asinc": {
+      "before": "aee7e0dda5e048874b68ccedf51961da573367ce61bc6ef83c390d39e8761625",
+      "after": "e3c9c5dd0b16afe3d86a6354869fb6731f287ec63df35ad190db4c2dff0630fd",
+      "hunks": [
+        {
+          "offset": 737,
+          "after": "            if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && CMain.BH_PersonalPlayer(playerSlot) !== cursor) return 0;\n",
+          "before": "            if(CMain._this.mBH.membershipVersion === 1 && CMain.BH_PersonalPlayer(playerSlot) !== cursor) return 0;\n"
+        },
+        {
+          "offset": 1007,
+          "after": "            if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && cursor.mBHCreditSlot == 2\n",
+          "before": "            if(CMain._this.mBH.membershipVersion === 1 && cursor.mBHCreditSlot == 2\n"
+        },
+        {
+          "offset": 3755,
+          "after": "      if(record.slot <= b.initialPlayers && !(record.slot == 2 && b.membershipVersion === 2 && b.guestGeneration > 1))\n",
+          "before": "      if(record.slot <= b.initialPlayers)\n"
+        },
+        {
+          "offset": 4652,
+          "after": "      var generation = slot == 2 && (CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) ? CMain._this.mBH.guestGeneration : undefined;\n",
+          "before": "      var generation = slot == 2 && CMain._this.mBH.membershipVersion === 1 ? CMain._this.mBH.guestGeneration : undefined;\n"
+        },
+        {
+          "offset": 6351,
+          "after": "      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2)\n",
+          "before": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2)\n"
+        },
+        {
+          "offset": 6994,
+          "after": "      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2)\n",
+          "before": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2)\n"
+        },
+        {
+          "offset": 7361,
+          "after": "         if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && child.mBHCreditSlot == 2)\n",
+          "before": "         if(CMain._this.mBH.membershipVersion === 1 && child.mBHCreditSlot == 2)\n"
+        },
+        {
+          "offset": 7963,
+          "after": "      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2\n",
+          "before": "      if(CMain._this.mBH.membershipVersion === 1 && slot == 2\n"
+        }
+      ]
+    },
+    "tools/original-bridge/CMain.replay.asinc": {
+      "before": "6e75332a47a3e61c988e601cefc6847ce62e9a6e172cfbe454d3c2f00d3cfa85",
+      "after": "2c105bc9dd1f712ce962bc1786963a4fa7a7fb7ae13b46f707ded209d1e1375c",
+      "hunks": [
+        {
+          "offset": 1375,
+          "after": "      if(arguments.length != 1 || (b.membershipVersion !== 1 && b.membershipVersion !== 2) || b.replay !== true || !b.replayInstalled\n",
+          "before": "      if(arguments.length != 1 || b.membershipVersion !== 1 || b.replay !== true || !b.replayInstalled\n"
+        },
+        {
+          "offset": 2603,
+          "after": "      if(!b.active || b.state != \"loading\" || b.tick != 0 || b.stepping || (b.initialPlayers != 1 && b.membershipVersion !== 2) || b.localSlot != 2 || b.personalProgression != true || world !== this.mcWorld || b.replayInstalled)\n",
+          "before": "      if(!b.active || b.state != \"loading\" || b.tick != 0 || b.stepping || b.initialPlayers != 1 || b.localSlot != 2 || b.personalProgression != true || world !== this.mcWorld || b.replayInstalled)\n"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "scope": "guest-membership-v1-to-anchor-metadata-bridge",
+  "after": {
+    "sha256": "9084a4431291bf124f9a46bf8ba77f294b17206453606f851dfccdecb099ffdc",
+    "bytes": 67801
+  },
+  "before": {
+    "sha256": "87bd63670a303cddc56a52de951b04560eea38d5fd5e1f7bc19b7817151fddec",
+    "bytes": 62619
+  },
+  "hunks": [
+    {
+      "offset": 19334,
+      "after": "      var membershipVersion = 0;\n",
+      "before": ""
+    },
+    {
+      "offset": 19737,
+      "after": "            if(option != \"initialPlayers\" && option != \"personalProgression\" && option != \"localSlot\" && option != \"replay\" && option != \"membershipVersion\") return {error:\"unknown online membership option\"};\n",
+      "before": "            if(option != \"initialPlayers\" && option != \"personalProgression\" && option != \"localSlot\" && option != \"replay\") return {error:\"unknown online membership option\"};\n"
+    },
+    {
+      "offset": 20274,
+      "after": "         if(network.membershipVersion != undefined && network.membershipVersion !== 1) return {error:\"invalid membership version\"};\n         membershipVersion = network.membershipVersion == 1 ? 1 : 0;\n         if(membershipVersion == 1 && (initialPlayers != 1 || !personalProgression || mode != \"Coop\"))\n            return {error:\"membership events require an initially solo personal Cooperative world\"};\n",
+      "before": ""
+    },
+    {
+      "offset": 21732,
+      "after": "      b.membershipVersion = membershipVersion;\n      b.guestGeneration = 0;\n",
+      "before": ""
+    },
+    {
+      "offset": 26142,
+      "after": "   function BH_Step(tick, p1Mask, p2Mask, join, receiptToken, leave)\n",
+      "before": "   function BH_Step(tick, p1Mask, p2Mask, join, receiptToken)\n"
+    },
+    {
+      "offset": 27350,
+      "after": "      if(leave !== undefined)\n      {\n         if(!this.BH_ValidLeave(leave,join,p2Mask)) return this.BH_Fail(\"invalid player leave\");\n      }\n",
+      "before": ""
+    },
+    {
+      "offset": 28365,
+      "after": "         if(leave !== undefined) this.BH_LeavePlayer();\n",
+      "before": ""
+    },
+    {
+      "offset": 30263,
+      "after": "      if(b.membershipVersion != 1) this.BH_ReplayFinish();\n      if(b.membershipVersion == 1)\n      {\n         if(!CMain.BH_Integer(b.guestGeneration,0,2147483646)) throw new Error(\"guest generation exhausted\");\n         b.guestGeneration++;\n      }\n",
+      "before": "      this.BH_ReplayFinish();\n"
+    },
+    {
+      "offset": 31225,
+      "after": "   }\n\n   function BH_ValidLeave(leave, join, p2Mask)\n   {\n      var b = this.mBH;\n      if(b.membershipVersion !== 1 || b.initialPlayers !== 1 || !b.personalProgression || b.mode != \"Coop\"\n         || b.playerCount !== 2 || join != undefined || p2Mask !== 0 || typeof leave != \"object\"\n         || leave == null || leave instanceof Array || leave.slot !== 2) return false;\n      var count = 0;\n      for(var key in leave) { if(key != \"slot\") return false; count++; }\n      return count == 1;\n   }\n\n   function BH_LeavePlayer()\n   {\n      var b = this.mBH;\n      var w = this.mcWorld;\n      var c = w.mThing_Collection;\n      if(!b.stepping || b.membershipVersion !== 1 || b.playerCount !== 2 || c == undefined\n         || c.mThings == undefined || c.mPlayerThings == undefined || c.mDeleteThings == undefined)\n         throw new Error(\"player leave outside membership frame\");\n      var guest;\n      var host;\n      var count = 0;\n      for(var key in c.mPlayerThings)\n      {\n         var player = c.mPlayerThings[key];\n         count++;\n         if(player.mPlayerIndex === 0 && host == undefined) host = player;\n         else if(player.mPlayerIndex === 1 && guest == undefined) guest = player;\n         else throw new Error(\"ambiguous player roster\");\n      }\n      if(count != 2 || host == undefined || guest == undefined || guest.sUniqueID == undefined\n         || host.sUniqueID == undefined || host._CLASSID_ != \"CThing_Creature_Player\" || guest._CLASSID_ != \"CThing_Creature_Player\"\n         || c.mThings[host.sUniqueID] !== host || c.mPlayerThings[host.sUniqueID] !== host\n         || c.mDeleteThings[host.sUniqueID] != undefined\n         || c.mThings[guest.sUniqueID] !== guest || c.mPlayerThings[guest.sUniqueID] !== guest\n         || c.mDeleteThings[guest.sUniqueID] != undefined || w.mUpgrades.mTotalPlayerCount != 2\n         || c.mThingCounters.CThing_Creature_Player != 2\n         || w.mBHPersonalProgress == undefined || w.mBHPersonalProgress[1] == undefined\n         || w.mBHPersonalProgress[1].upgrades.mWorld.mThing_Collection.mPlayerThings.owner !== guest)\n         throw new Error(\"unsafe guest removal state\");\n      if(typeof host.mStateID != \"string\" || typeof host[host.mStateID] != \"function\"\n         || typeof guest.mStateID != \"string\" || typeof guest[guest.mStateID] != \"function\"\n         || typeof host.mLife != \"number\" || !isFinite(host.mLife)\n         || typeof guest.mLife != \"number\" || !isFinite(guest.mLife))\n         throw new Error(\"unsafe player lifecycle state\");\n      // LogKill decrements the live count on entry to Dying, not on the\n      // preceding lethal hit. Dead and Respawn retain that decrement until\n      // the original respawn succeeds. Validate both players against it.\n      var guestCounted = guest.mStateID != \"State_Dying\" && guest.mStateID != \"State_Dead\" && guest.mStateID != \"State_Respawn\";\n      var hostCounted = host.mStateID != \"State_Dying\" && host.mStateID != \"State_Dead\" && host.mStateID != \"State_Respawn\";\n      if(w.mUpgrades.mPlayerCount !== (guestCounted ? 1 : 0) + (hostCounted ? 1 : 0))\n         throw new Error(\"unsafe player count\");\n      var cell = guest.mNewCell;\n      if(cell !== undefined && (cell == null || !CMain.BH_Integer(cell.mCollide,0,2147483647)\n         || guest.mNewCell_Flags !== World.Map.CMap_Cell.mCollide_Player || typeof guest.ClearCollideCell != \"function\"))\n         throw new Error(\"unsafe guest collision cell\");\n      // ClearCollideCell uses the original bit-mask operation even when a\n      // second player occupies the same cell; it is not a reference count.\n      // Queue disposal once; DeleteThing_Player would Dispose twice.\n      CMain.mInput.BH_ResetGuestKeys();\n      if(cell !== undefined) guest.ClearCollideCell();\n      delete guest.Process;\n      c.DeleteThing(guest);\n      delete c.mPlayerThings[guest.sUniqueID];\n      if(guestCounted) w.mUpgrades.mPlayerCount--;\n      w.mUpgrades.mTotalPlayerCount--;\n      w.mBHPersonalProgress[1] = undefined;\n      World.CWorld.m2Player = false;\n      b.playerCount = 1;\n",
+      "before": ""
+    },
+    {
+      "offset": 60908,
+      "after": "      if(b.membershipVersion === 1) native.membership.generation = b.guestGeneration;\n",
+      "before": ""
+    },
+    {
+      "offset": 65346,
+      "after": "      if(b.membershipVersion === 1) root.membership.generation = b.guestGeneration;\n",
+      "before": ""
+    }
+  ]
+}

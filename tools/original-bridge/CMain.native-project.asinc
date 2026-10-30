@@ -1,0 +1,73 @@
+   // Optional bulk projection kernel. Its absence retains the existing AS2
+   // implementation, including the independently qualified scan-only kernel.
+   function BH_NativeProjectInstall()
+   {
+      var kernel = _global.boxheadNativeProjectV1;
+      if(kernel === undefined) return;
+      try
+      {
+         CMain.BH_NativeProjectInfo(kernel);
+         this.mBH.nativeProjectOwner = CMain;
+         this.mBH.nativeProjectFunction = CMain.BH_Project;
+         if(typeof this.mBH.nativeProjectFunction != "function")
+            throw new Error("native project pinned function is unavailable");
+         ASSetPropFlags(this.mBH,"nativeProjectOwner,nativeProjectFunction",7,0);
+         this.mBH.nativeProjectKernel = kernel;
+      }
+      catch(e) { this.BH_ReceiptPoison("native project capability failed: " + String(e)); }
+   }
+
+   static function BH_NativeProjectInfo(kernel)
+   {
+      if(typeof kernel != "function" || _global.boxheadNativeProjectV1 !== kernel)
+         throw new Error("native project kernel identity changed");
+      var value = kernel("capability");
+      if(typeof value != "object" || value === null || value instanceof Array
+         || value.version !== 1 || value.contract !== "bh-native-project-v1")
+         throw new Error("invalid native project capability");
+      var count = 0;
+      for(var key in value)
+      {
+         if(!value.hasOwnProperty(key)) continue;
+         if(key != "version" && key != "contract" && key != "calls" && key != "completed"
+            && key != "unsupported" && key != "nodes" && key != "keys" && key != "ownReads")
+            throw new Error("unknown native project capability field");
+         count++;
+      }
+      if(count != 8 || !value.hasOwnProperty("version") || !value.hasOwnProperty("contract")
+         || !value.hasOwnProperty("calls") || !value.hasOwnProperty("completed")
+         || !value.hasOwnProperty("unsupported") || !value.hasOwnProperty("nodes")
+         || !value.hasOwnProperty("keys") || !value.hasOwnProperty("ownReads")
+         || !CMain.BH_Integer(value.calls,0,9007199254740991)
+         || !CMain.BH_Integer(value.completed,0,9007199254740991)
+         || !CMain.BH_Integer(value.unsupported,0,9007199254740991)
+         || !CMain.BH_Integer(value.nodes,0,9007199254740991)
+         || !CMain.BH_Integer(value.keys,0,9007199254740991)
+         || !CMain.BH_Integer(value.ownReads,0,9007199254740991)
+         || value.completed + value.unsupported > value.calls || value.ownReads > value.keys)
+         throw new Error("invalid native project counters");
+      return value;
+   }
+
+   static function BH_NativeProject(root, context)
+   {
+      var state = CMain._this.mBH;
+      var kernel = state.nativeProjectKernel;
+      if(kernel === undefined) return CMain.BH_Project(root,context,"root",0);
+      if(_global.boxheadNativeProjectV1 !== kernel)
+         throw new Error("native project kernel identity changed");
+      if(CMain !== state.nativeProjectOwner)
+         throw new Error("native project class identity changed");
+      // Transient plain data slots let the native guard inspect identities
+      // without invoking a replacement getter or prototype resolver.
+      context.nativeProjectOwner = state.nativeProjectOwner;
+      context.nativeProjectFunction = state.nativeProjectFunction;
+      var result = kernel("run",root,context,state.nativeProjectOwner);
+      // Only strict false is pre-read fallback. A throw or malformed result
+      // is fatal and the existing BH_State finally removes temporary marks.
+      if(result === false) return CMain.BH_Project(root,context,"root",0);
+      if(typeof result != "object" || result === null || result instanceof Array
+         || result.version !== 1 || !result.hasOwnProperty("value"))
+         throw new Error("invalid native project result");
+      return result.value;
+   }

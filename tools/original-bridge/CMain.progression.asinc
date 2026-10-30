@@ -1,0 +1,304 @@
+   // Online Cooperative keeps the original wave controller, while each player
+   // owns an original CUpgrades instance with an owner-only registration view.
+   // The view is never a second world: it cannot process/spawn enemies.
+   static function BH_PersonalEnabled()
+   {
+      var b = CMain._this.mBH;
+      return b.active == true && b.personalProgression == true && b.mode == "Coop";
+   }
+
+   static function BH_OwnerSlot(thing)
+   {
+      var cursor = thing;
+      for(var depth = 0; cursor != undefined && depth < 32; depth++)
+      {
+         if(cursor._CLASSID_ == "CThing_Creature_Player")
+         {
+            if(!CMain.BH_Integer(cursor.mPlayerIndex,0,1)) return 0;
+            var playerSlot = cursor.mPlayerIndex + 1;
+            if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && CMain.BH_PersonalPlayer(playerSlot) !== cursor) return 0;
+            return playerSlot;
+         }
+         if(CMain.BH_Integer(cursor.mBHCreditSlot,1,2))
+         {
+            if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && cursor.mBHCreditSlot == 2
+               && (cursor.mBHCreditGeneration !== CMain._this.mBH.guestGeneration || CMain.BH_PersonalPlayer(2) == undefined)) return 0;
+            return cursor.mBHCreditSlot;
+         }
+         if(cursor.mParent === cursor) return 0;
+         cursor = cursor.mParent;
+      }
+      return 0;
+   }
+
+   static function BH_PersonalPlayer(slot)
+   {
+      var players = CMain._this.mcWorld.mThing_Collection.mPlayerThings;
+      for(var id in players)
+         if(players[id].mPlayerIndex == slot - 1) return players[id];
+      return undefined;
+   }
+
+   static function BH_PersonalRecord(slot)
+   {
+      return CMain._this.mcWorld.mBHPersonalProgress[slot - 1];
+   }
+
+   static function BH_EnsurePersonalPlayer(player)
+   {
+      if(!CMain.BH_PersonalEnabled()) return undefined;
+      if(player._CLASSID_ != "CThing_Creature_Player" || !CMain.BH_Integer(player.mPlayerIndex,0,1))
+         throw new Error("invalid personal progression player");
+      var world = CMain._this.mcWorld;
+      var slot = player.mPlayerIndex + 1;
+      if(world.mBHPersonalProgress == undefined) world.mBHPersonalProgress = [undefined,undefined];
+      var record = world.mBHPersonalProgress[slot - 1];
+      if(record == undefined)
+      {
+         var view = {mThing_Collection:{mPlayerThings:{}},mHud:{mSilentMessages:true,mWorld:world,mSlot:slot}};
+         view.mHud.AddMessage_Level = function(text) {};
+         view.mHud.AddMessage_Upgrade = function(text)
+         {
+            if(!this.mSilentMessages) this.mWorld.mHud.AddMessage_Upgrade("P" + this.mSlot + ": " + text);
+         };
+         // InitLists runs against an EMPTY player view. Its wave definitions
+         // cannot touch an actual inventory or issue global difficulty grants.
+         var upgrades = new World.CUpgrades(view);
+         upgrades.mBHPersonal = true;
+         upgrades.mBHOwnerSlot = slot;
+         view.mUpgrades = upgrades;
+         view.mHud.mSilentMessages = false;
+         record = {slot:slot,score:0,kills:0,level:0,initialized:false,upgrades:upgrades};
+         world.mBHPersonalProgress[slot - 1] = record;
+      }
+      record.upgrades.mWorld.mThing_Collection.mPlayerThings.owner = player;
+      return record;
+   }
+
+   static function BH_PersonalPlayerReady(player)
+   {
+      if(!CMain.BH_PersonalEnabled()) return;
+      var record = CMain.BH_EnsurePersonalPlayer(player);
+      if(record.initialized) return;
+      record.initialized = true;
+      var b = CMain._this.mBH;
+      // Preserve the selected difficulty for the players present at tick zero.
+      // A late guest always starts with the untouched pistol-only inventory.
+      if(record.slot <= b.initialPlayers && !(record.slot == 2 && b.membershipVersion === 2 && b.guestGeneration > 1))
+      {
+         record.upgrades.SetDifficulty(b.settings.difficulty);
+         record.level = Math.max(record.level,record.upgrades.mMultiplier - 1);
+      }
+   }
+
+   static function BH_UpgradeContext(upgrades, thing, method)
+   {
+      if(!CMain.BH_PersonalEnabled() || upgrades.mBHPersonal == true) return upgrades;
+      var slot = CMain.BH_OwnerSlot(thing);
+      if(!slot) return upgrades;
+      var record = CMain.BH_PersonalRecord(slot);
+      if(record == undefined)
+      {
+         var player = thing._CLASSID_ == "CThing_Creature_Player" ? thing : CMain.BH_PersonalPlayer(slot);
+         if(player == undefined) throw new Error("personal upgrade owner is absent");
+         record = CMain.BH_EnsurePersonalPlayer(player);
+      }
+      var target = record.upgrades;
+      var generation = slot == 2 && (CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) ? CMain._this.mBH.guestGeneration : undefined;
+      if(thing.mBHUpgradeSlot != slot || (generation !== undefined && thing.mBHUpgradeGeneration !== generation))
+      {
+         thing.mBHUpgradeSlot = slot;
+         if(generation !== undefined) thing.mBHUpgradeGeneration = generation;
+         // An unowned level barrel can acquire damage credit when triggered.
+         // Register it in the new owner's context before applying properties;
+         // old global IDCount cannot suppress the first personal upgrade.
+         if(method == "ApplyUpgrade_Object") target.Register_Object(thing);
+         else if(method == "ApplyUpgrade_Weapon") target.Register_Weapon(thing);
+         else if(method == "ApplyUpgrade_Creature_Player") target.Register_Creature_Player(thing);
+      }
+      return target;
+   }
+
+   static function BH_BlockSharedUpgrade(upgrades, classID)
+   {
+      if(!CMain.BH_PersonalEnabled() || upgrades.mBHPersonal == true) return false;
+      return classID == "CThing_Creature_Player" || classID.substr(0,14) == "CThing_Weapon_"
+         || classID.substr(0,14) == "CThing_Object_";
+   }
+
+   static function BH_RecordLethalDamage(affect, thing, lifeBefore)
+   {
+      if(!CMain.BH_PersonalEnabled() || !(lifeBefore > 0 && thing.mLife <= 0)) return;
+      var slot = CMain.BH_OwnerSlot(affect.mOwner);
+      if(!slot) slot = CMain.BH_OwnerSlot(affect.mAffector);
+      // Record the first lethal transition, including zero for environmental
+      // or enemy damage. Later hits cannot transfer credit for an existing kill.
+      thing.mBHKillerSlot = slot;
+      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2)
+         thing.mBHKillerGeneration = CMain._this.mBH.guestGeneration;
+   }
+
+   static function BH_BarrelCredit(barrel, affect)
+   {
+      if(!CMain.BH_PersonalEnabled()) return;
+      // Placed explosives belong to their placer. Unowned map barrels inherit
+      // the triggering effect's owner; enemy-triggered chains remain unowned.
+      var slot = CMain.BH_OwnerSlot(barrel);
+      if(!slot) slot = CMain.BH_OwnerSlot(affect.mOwner);
+      if(!slot) slot = CMain.BH_OwnerSlot(affect.mAffector);
+      barrel.mBHCreditSlot = slot;
+      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2)
+         barrel.mBHCreditGeneration = CMain._this.mBH.guestGeneration;
+   }
+
+   static function BH_InheritCredit(source, child)
+   {
+      if(CMain.BH_PersonalEnabled() && child != undefined)
+      {
+         child.mBHCreditSlot = CMain.BH_OwnerSlot(source);
+         if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && child.mBHCreditSlot == 2)
+            child.mBHCreditGeneration = CMain._this.mBH.guestGeneration;
+      }
+      return child;
+   }
+
+   static function BH_PersonalKill(world, thing)
+   {
+      if(!CMain.BH_PersonalEnabled() || thing.mBHPersonalKillLogged == true
+         || (thing._CLASSID_ != "CThing_Creature_Zombie" && thing._CLASSID_ != "CThing_Creature_Devil")) return;
+      thing.mBHPersonalKillLogged = true;
+      var slot = thing.mBHKillerSlot;
+      if(!CMain.BH_Integer(slot,1,2)) return;
+      if((CMain._this.mBH.membershipVersion === 1 || CMain._this.mBH.membershipVersion === 2) && slot == 2
+         && (thing.mBHKillerGeneration !== CMain._this.mBH.guestGeneration || CMain.BH_PersonalPlayer(2) == undefined)) return;
+      var record = world.mBHPersonalProgress[slot - 1];
+      if(record == undefined) throw new Error("personal kill owner is absent");
+      record.kills++;
+      record.upgrades.LogKills(1);
+      record.level = Math.max(record.level,record.upgrades.mMultiplier - 1);
+      thing.mBHScoreAward = thing.mScore * record.upgrades.mMultiplier;
+      record.score += thing.mBHScoreAward;
+   }
+
+   static function BH_KillScore(world, thing)
+   {
+      if(!CMain.BH_PersonalEnabled()) return thing.mScore * world.mUpgrades.mMultiplier;
+      return thing.mBHScoreAward != undefined ? thing.mBHScoreAward : 0;
+   }
+
+   static function BH_ProcessPersonal(world)
+   {
+      if(!CMain.BH_PersonalEnabled()) return;
+      for(var index = 0; index < 2; index++)
+      {
+         var record = world.mBHPersonalProgress[index];
+         if(record != undefined)
+         {
+            var upgrades = record.upgrades;
+            // This is the multiplier-clock tail of original CUpgrades.Process.
+            // Its wave/spawn section runs only once, in world.mUpgrades.
+            upgrades.mTick++;
+            if(upgrades.mMultipleKillsTick-- < 0) upgrades.mMultipleKill = 0;
+            if(upgrades.mMultiplierTick-- < 0) --upgrades.mMultiplier;
+         }
+      }
+   }
+
+   static function BH_PersonalSnapshot(full, scalarKernel)
+   {
+      var records = CMain._this.mcWorld.mBHPersonalProgress;
+      var result = new Array();
+      for(var index = 0; index < 2; index++)
+      {
+         var record = records[index];
+         if(record == undefined)
+         {
+            result.push(null);
+            continue;
+         }
+         var upgrades = record.upgrades;
+         var owners = upgrades.mWorld.mThing_Collection.mPlayerThings;
+         var owner = owners.owner;
+         var ownerCount = 0;
+         for(var ownerKey in owners) ownerCount++;
+         // The registration view decides who receives future grants. Capture
+         // its actual identity and reject an ambiguous/wrong-slot association.
+         if(ownerCount != 1 || owner == undefined || owner._CLASSID_ != "CThing_Creature_Player"
+            || owner.mPlayerIndex != index || record.slot != index + 1
+            || upgrades.mBHOwnerSlot != record.slot
+            || !CMain.BH_Integer(owner.mUniqueID,1,2147483647))
+            throw new Error("invalid personal progression owner mapping");
+         var classes = new Object();
+         for(var key in upgrades)
+         {
+            if(key.substr(0,7) == "CThing_" && upgrades.hasOwnProperty(key))
+            {
+               var data = CMain.BH_ThingScalars(upgrades[key],scalarKernel);
+               if(full != false) data.original = CMain.BH_ThingScalars(upgrades[key].mOriginalStats,scalarKernel);
+               classes[key] = data;
+            }
+         }
+         var state = {slot:record.slot,ownerID:owner.mUniqueID,ownerSlot:owner.mPlayerIndex + 1,
+            score:record.score,kills:record.kills,level:record.level,
+            initialized:record.initialized,scalars:CMain.BH_ThingScalars(upgrades,scalarKernel),classes:classes};
+         if(full != false)
+         {
+            var active = new Array();
+            for(var tier = 0; tier < upgrades.mMultipliers.length; tier++)
+            {
+               var entries = upgrades.mMultipliers[tier];
+               for(var entry = 0; entry < entries.length; entry++)
+                  active.push([tier,entry,entries[entry].mActive == true]);
+            }
+            var multiple = new Object();
+            for(var combo in upgrades.mMultipleKills)
+            {
+               var values = new Array();
+               for(var item = 0; item < upgrades.mMultipleKills[combo].length; item++)
+                  values.push(CMain.BH_ThingScalars(upgrades.mMultipleKills[combo][item],scalarKernel));
+               multiple[combo] = values;
+            }
+            state.levelState = CMain.BH_ThingScalars(upgrades.Level,scalarKernel);
+            state.activated = active;
+            state.multipleKillEntries = multiple;
+         }
+         result.push(state);
+      }
+      return result;
+   }
+
+   static function BH_PersonalHUD(hud)
+   {
+      if(!CMain.BH_PersonalEnabled()) return;
+      var b = CMain._this.mBH;
+      var slot = CMain.BH_Integer(b.localSlot,1,2) ? b.localSlot : 1;
+      var record = CMain.BH_PersonalRecord(slot);
+      var clip = World.CHud.mcScoreTotal;
+      if(clip == undefined) return;
+      // Only display fields vary by local slot. mTotalScore/nTotalScore and all
+      // other shared/native state remain identical in both simulations.
+      clip.tfScore.text = hud.PadScore(String(record != undefined ? record.score : 0));
+      clip.tfMultiple.text = "x" + (record != undefined ? record.upgrades.mMultiplier : 1);
+      var ratio = record != undefined ? record.upgrades.mMultiplierTickRatio : 0;
+      clip.mcTimer.gotoAndStop(1 + Math.floor(ratio * clip.mcTimer._totalframes));
+      if(clip.mcPersonalProgress == undefined)
+      {
+         clip.createTextField("mcPersonalProgress",clip.getNextHighestDepth(),-120,29,240,22);
+         clip.mcPersonalProgress.selectable = false;
+         var format = clip.tfScore.getTextFormat();
+         format.size = 11;
+         format.align = "center";
+         format.letterSpacing = 0;
+         clip.mcPersonalProgress.setNewTextFormat(format);
+      }
+      clip.mcPersonalProgress.text = "P" + slot + " LVL " + (record != undefined ? record.level : 0);
+   }
+
+   static function BH_PersonalUpgradeList(world)
+   {
+      if(!CMain.BH_PersonalEnabled()) return world.mUpgrades.mMultiplierList;
+      var b = CMain._this.mBH;
+      var slot = CMain.BH_Integer(b.localSlot,1,2) ? b.localSlot : 1;
+      var record = CMain.BH_PersonalRecord(slot);
+      return record != undefined ? record.upgrades.mMultiplierList : new Array();
+   }
