@@ -1,0 +1,1465 @@
+{
+  "schema": "boxhead-public-ruffle-overlay-v1",
+  "upstream": {
+    "repository": "https://github.com/ruffle-rs/ruffle",
+    "commit": "cac5c99ce4a17e606f4ee3090389bb878f852055"
+  },
+  "overlayDirectory": "overlay",
+  "files": [
+    {
+      "path": "Cargo.lock",
+      "bytes": 188526,
+      "sha256": "5d699d18c0eb06d9bf5350321c754ae5d98cfd3662b4103566c73f25354f0555",
+      "source": "tools/ruffle-native-smooth/engine/Cargo.lock"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 6019,
+      "sha256": "50ae24b1bd4a0b45c1194f33ee8aac08e9b0b6cb8adac493b5f8ac44d051ed50",
+      "source": "tools/ruffle-native-smooth/engine/Cargo.toml"
+    },
+    {
+      "path": "core/common/src/avm_string.rs",
+      "bytes": 532,
+      "sha256": "038fda50d9b640c82bee57f086ff2331ae1554dbd725dcdcda905ef800427e08",
+      "source": "tools/ruffle-native-smooth/engine/core/common/src/avm_string.rs"
+    },
+    {
+      "path": "core/common/src/avm_string/avm_string.rs",
+      "bytes": 6267,
+      "sha256": "aaed4cd525c83b77aaeddb2ef17f18f602ba09afea8e04c9c7aa41948738f26a",
+      "source": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/avm_string.rs"
+    },
+    {
+      "path": "core/common/src/avm_string/property_hash.rs",
+      "bytes": 1709,
+      "sha256": "bf830b558ce4be4ac700c0f5f3e94385861872578a7622f603d2d54912246655",
+      "source": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/property_hash.rs"
+    },
+    {
+      "path": "core/common/src/avm_string/repr.rs",
+      "bytes": 9320,
+      "sha256": "383f46468df1eeb3340e261ceea3c8c9b5c7ec58f1984b14ddac9a571f2f2107",
+      "source": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/repr.rs"
+    },
+    {
+      "path": "core/src/avm1.rs",
+      "bytes": 3045,
+      "sha256": "92334b585db21f08a06a06df1b0ee4f9ad1867e5e44749f69ef6a1deb7ee1621",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1.rs"
+    },
+    {
+      "path": "core/src/avm1/activation.rs",
+      "bytes": 126960,
+      "sha256": "e769868fff9fc1137b96ee6b8fb349b5ffb2631c158bc3e5462ea3ae0df00123",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_short_dispatch.rs",
+      "bytes": 5268,
+      "sha256": "a218787fcad5896f179eaa05bfe3c26c5d64b8e14fbfc36a42cede8ddc72a59f",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_short_dispatch.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_short_dispatch_tests.rs",
+      "bytes": 35133,
+      "sha256": "a3931efcc1ac97f6c8a1dd536baf52a1a3ee258388b4db9c01c27dc1690d6f1d",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_short_dispatch_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push.rs",
+      "bytes": 2369,
+      "sha256": "a4ee213c351119cc61784ed50eef421cc14cf0cae77912cffab05961185b556f",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push_decode_tests.rs",
+      "bytes": 7614,
+      "sha256": "573d13da42a5eb8caec80d2527085b0697ecf0234d88cedd70c3693197616cae",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push_decode_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push_tests.rs",
+      "bytes": 18751,
+      "sha256": "3a6eefa7f07650ca371dba9577861f4d1e8f5bb3bcccc5a31384ee682078fa12",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/short_dispatch_frozen_v21.rs",
+      "bytes": 8525,
+      "sha256": "29d20fcbebed2d4dda988a1268eb51645f2ee51c2d9b16cc4272fa9b7c73fc7b",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/short_dispatch_frozen_v21.rs"
+    },
+    {
+      "path": "core/src/avm1/activation/single_push_frozen_v13.rs",
+      "bytes": 9444,
+      "sha256": "9ee82466bcd9b452fbacf8364a3ec4360ad3d166052d95a3c863d40e2f61fc39",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/single_push_frozen_v13.rs"
+    },
+    {
+      "path": "core/src/avm1/anchor_index.rs",
+      "bytes": 25824,
+      "sha256": "056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_index.rs"
+    },
+    {
+      "path": "core/src/avm1/anchor_metadata.rs",
+      "bytes": 15665,
+      "sha256": "3fc11c66f0f0b543302b90538f37dac62e57fbfe53ea4998e46a8a88a4d34c96",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_metadata.rs"
+    },
+    {
+      "path": "core/src/avm1/anchor_metadata_tests.rs",
+      "bytes": 12414,
+      "sha256": "c3344ccc95f605b1a4d6c7f69243a8d215870d4f6bf3fcefa25b85c2f712d9e8",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_metadata_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33728,
+      "sha256": "448d72aeb9aef16ac9e233f3cfaf5582f9c17f42c530ed149f062760d0d72b7d",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 55104,
+      "sha256": "047497a0849a042610209272b4017e342d033d4d4228f880ab50df1c6855476b",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs",
+      "bytes": 14161,
+      "sha256": "dfc8c5f77bfc47983041d4795901462a6a20247fb6e78ce1928526f7e42920bf",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs",
+      "bytes": 19682,
+      "sha256": "91f08a6ddc7465df725ccd72df44998a6eaafa5ef227a3a29847996c37f53718",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 29576,
+      "sha256": "ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs",
+      "bytes": 46115,
+      "sha256": "c8333982bd142a97ecff20a4a1e84c73fc3028ba704d28a40ea00f9c2083d47d",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v14.rs",
+      "bytes": 46385,
+      "sha256": "063eba0c3f6dd4aa00476fa26174b8b51b8ba3a0e5de12e7bcb3852dc3fe16f4",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v14.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v15.rs",
+      "bytes": 46472,
+      "sha256": "f169563d0b5f4cd817ae09e912ea54c8cbac84c9537296150e7afcf0e4eb917c",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v15.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs",
+      "bytes": 45533,
+      "sha256": "7c66dcc658cbab9fac3c1068807f835433429c19fe22cab838e5e4f9f8eed2a7",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/inline_tests.rs",
+      "bytes": 13839,
+      "sha256": "a0fdf96163794bf6a182e45e01e2c7dbe11e742f5235af8041cabb5839d14427",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/inline_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/metadata_tests.rs",
+      "bytes": 9487,
+      "sha256": "4897597c9ac4f7c7722865e340a6100dfbd3c56d5d53dd5538a71d4e25fb715f",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/metadata_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/path_tests.rs",
+      "bytes": 10780,
+      "sha256": "c764e40af3c79fad30ef9a79d03451e3b709f9fd750b2faa2555c097273709d7",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/path_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 84766,
+      "sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project.rs",
+      "bytes": 33798,
+      "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/activation_tests.rs",
+      "bytes": 7140,
+      "sha256": "58c42f21ab6cc83fcd4747797f859b58d6a93f040014827d2cfd9aeb369c5003",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/activation_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "bytes": 9025,
+      "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/tests.rs",
+      "bytes": 44837,
+      "sha256": "a502021d37bfb5982af63f480219d2abd25a7602a20435cdd82dcc74872f7fa5",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12779,
+      "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/activation_tests.rs",
+      "bytes": 12679,
+      "sha256": "37de1402d141d65bc7ca90cc700ee053c0725624872c79f1640d1a73b9548db8",
+      "source": "tools/ruffle-native-projector/engine/core/src/avm1/globals/boxhead_native_projection_scan/activation_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/tests.rs",
+      "bytes": 50555,
+      "sha256": "a72d480f00efaad664491bafddbd6d30aed2e700e403299d35b71ada70e2b532",
+      "source": "tools/ruffle-native-projector/engine/core/src/avm1/globals/boxhead_native_projection_scan/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars.rs",
+      "bytes": 10277,
+      "sha256": "2a33f7c2f76db6b02fd95e8e534c53610efc3f83aa7193970e875c5138320a9d",
+      "source": "tools/ruffle-native-graph/engine/core/src/avm1/globals/boxhead_native_scalars.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs",
+      "bytes": 3111,
+      "sha256": "420899c30a7f3f5582de9ae30cb77475d2cc217059a656241774aca389a2b396",
+      "source": "tools/ruffle-native-graph/engine/core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/tests.rs",
+      "bytes": 22935,
+      "sha256": "2a377f224648e03615441bcfd722127516dbd897472a5999cd3e4e013b3dbf9a",
+      "source": "tools/ruffle-native-graph/engine/core/src/avm1/globals/boxhead_native_scalars/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 38949,
+      "sha256": "77d8417a5164590bae4055339f5633a4dbb150af2bd55469f7f7922e05813929",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/compact_tests.rs",
+      "bytes": 38950,
+      "sha256": "ab013e4e154c99c184a8b3bc4a68df09ac41e4d8db6215a554ba754f62bfd39f",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence/compact_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/object.rs",
+      "bytes": 20703,
+      "sha256": "50a782424948d00be67a47a3ff93ce8288198bc6436e29000c8c0d1e0bdd8588",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object.rs"
+    },
+    {
+      "path": "core/src/avm1/object/anchor_metadata_tests.rs",
+      "bytes": 17011,
+      "sha256": "38d905743ceffcd20d96b6027c7a0b4b1de2cf3da3cf972dc19df629ffa1f13b",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object/anchor_metadata_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_display_lookup/frozen_v14.rs",
+      "bytes": 2595,
+      "sha256": "bf98717c0fd6789b49431f5f1844cbff8d905d843a18debdd11c28a81acd6e39",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object/boxhead_display_lookup/frozen_v14.rs"
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_display_lookup/tests.rs",
+      "bytes": 21921,
+      "sha256": "1a553be0231775bceb64031795fc5c5fa824772aeece2f3e0a584400e2875698",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object/boxhead_display_lookup/tests.rs"
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_property_tests.rs",
+      "bytes": 44883,
+      "sha256": "27a57506ebf1af2a9b1c76c43cb475334d0816891fa1772943a76945380ef659",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object/boxhead_property_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 51716,
+      "sha256": "60f76fa1eb90024510249662519e6dad7fbf4be74809b22f78178626bddcb0a8",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 12802,
+      "sha256": "dc36bac23782bd3d35795cbc3d113587c38f721d1be3980f6ae5690daf552bfc",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_equality_tests.rs",
+      "bytes": 17982,
+      "sha256": "193dc3ae52597f7efb92c8082cea1363e340d19e290ee464648454be32c770d2",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_equality_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_hash_tests.rs",
+      "bytes": 20165,
+      "sha256": "c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_hash_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_miss_filter_tests.rs",
+      "bytes": 21470,
+      "sha256": "14752d3e48aeaa17fd4bb372199cc7c8d0c9169b4c2f77883d90eeee08eb0a9e",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_miss_filter_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_slot_hint_tests.rs",
+      "bytes": 17489,
+      "sha256": "05c752cea2020acc15d2de267241e4e325b49aa6ec89e37483d16e74254eb80e",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_slot_hint_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/frozen_v8.rs"
+    },
+    {
+      "path": "core/src/avm1/runtime.rs",
+      "bytes": 26436,
+      "sha256": "6458b5ee92c7f7ec38d150e3dca03d5d381c40bad12073c44b2a8d9d8acf30e5",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/runtime.rs"
+    },
+    {
+      "path": "core/src/avm1/scope.rs",
+      "bytes": 10718,
+      "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/scope.rs"
+    },
+    {
+      "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "bytes": 34028,
+      "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs"
+    },
+    {
+      "path": "core/src/avm1/scope/frozen_v10.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d",
+      "source": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/frozen_v10.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations.rs",
+      "bytes": 68385,
+      "sha256": "4f1aac19f991f13c50054f136d129a0f8287419bb3658ece2180834fb1fd9917",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit.rs",
+      "bytes": 15451,
+      "sha256": "fcd8026f4f7c0bf98269eb908029b93e0279dce53dd7cbc5788c4a39eb7fa1ca",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+      "bytes": 3118,
+      "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/frozen_v10.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/packed.rs",
+      "bytes": 2645,
+      "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+      "bytes": 8783,
+      "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed_tests.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/simd_classify.rs",
+      "bytes": 2752,
+      "sha256": "2b7c927728633f311a4a093d07bc02a33803b889557b94ec8a8dee80fc2691ff",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/simd_classify.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_frozen.rs",
+      "bytes": 4039,
+      "sha256": "54fcda2178cfbcbdc5634bee2b25d2552407ff710239b9c4f0b2ba2a99dc9070",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_overwrite_frozen.rs"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_tests.rs",
+      "bytes": 24171,
+      "sha256": "5fa67313bfd4026f1cfef185d9f3de2e5a580aebbc0705cf1382e4f5526e1b36",
+      "source": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_overwrite_tests.rs"
+    },
+    {
+      "path": "core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c",
+      "source": "tools/ruffle-native-smooth/engine/core/src/external.rs"
+    },
+    {
+      "path": "core/src/player.rs",
+      "bytes": 131902,
+      "sha256": "be71219d896c52fd186a5d4c42aa49c9a2977c8d82d354df03be4307af26e3c9",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_gc.rs",
+      "bytes": 4180,
+      "sha256": "26e3958f73cbc57ff39e72d8971224c17cf372f153286e94291dcd55dc70bd4d",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_gc/tests.rs",
+      "bytes": 20830,
+      "sha256": "0a8c1be65ca74236f9032d5cbac959b42d604f524c4e4ad203aeb361808450a7",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc/tests.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "bytes": 7770,
+      "sha256": "c64354477249b2af6b5f7d228deeb75ef0e6a26ab0d805afd396b1f07a603a01",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/compact_tests.rs",
+      "bytes": 9524,
+      "sha256": "3cdbae716ad3130708a419649591648ff952a314ebd8c0271e35f65676352e93",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/compact_tests.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/gc_tests.rs",
+      "bytes": 39742,
+      "sha256": "197907ace98a212f0d3bc1cd1e47e13261912cad451e9b94868e495020e96a71",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/gc_tests.rs"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9",
+      "source": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/tests.rs"
+    },
+    {
+      "path": "render/wgpu/src/boxhead_readback.rs",
+      "bytes": 8719,
+      "sha256": "8b75864fd4597c0fb777cec72b1c71c53952f574da10ee3ffae46d62373e829e",
+      "source": "tools/ruffle-native-smooth/engine/render/wgpu/src/boxhead_readback.rs"
+    },
+    {
+      "path": "render/wgpu/src/lib.rs",
+      "bytes": 10243,
+      "sha256": "127b727cd28cbd691d0f930d8e1cb2a6a970e1d93d87be084da807e88a8356dc",
+      "source": "tools/ruffle-native-smooth/engine/render/wgpu/src/lib.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.cargo_vcs_info.json",
+      "bytes": 94,
+      "sha256": "4f58c43b655f0b03d1e0c16e41f6a4fc44225a63ec6a201cc5709fa3c077314a",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.cargo_vcs_info.json"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.circleci/config.yml",
+      "bytes": 1604,
+      "sha256": "5b78a664d012d99fceb75c0c4b7f7968321c59d8f9dc6b9a30a4fdece8921be9",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.circleci/config.yml"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.gitignore",
+      "bytes": 106,
+      "sha256": "f671c5401a1b46b1491f8d07f5e5ec5ca1625c8fbdb17b18f7516da4ea4726cb",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.gitignore"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/CHANGELOG.md",
+      "bytes": 11788,
+      "sha256": "471d0db3a20b1aff8cf80831869add428cd1edd9dde6d01a261a7edfdb343638",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/CHANGELOG.md"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.lock",
+      "bytes": 16008,
+      "sha256": "aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.lock"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.toml",
+      "bytes": 1761,
+      "sha256": "29ccdc825e6ac5622a87bcb670710858462793258947849b76a9478c4225fa5b",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.toml.orig",
+      "bytes": 1167,
+      "sha256": "13497ba2b10ea88c8c9f7a8dcedf290ba3525155f5c9c0260f14fa57e753605f",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml.orig"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/LICENSE-CC0",
+      "bytes": 7047,
+      "sha256": "6d489af6292662d9e36d34ce49423784984a5f6e41d7b58f49b01264df59fa03",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-CC0"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/LICENSE-MIT",
+      "bytes": 1024,
+      "sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-MIT"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/README.md",
+      "bytes": 5467,
+      "sha256": "dcf3b0489dc13796d8a825cf7411edae06d4963040e39e0a3a2013571eaa3676",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/README.md"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/examples/linked_list.rs",
+      "bytes": 6119,
+      "sha256": "fa4e5a1d8191f402fc4fb5609b087fe5ed6b14792d92f76705153109422fc944",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/examples/linked_list.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/arena.rs",
+      "bytes": 17808,
+      "sha256": "30baeedb410d2fd35c9df88815d4b68854282bc194b43b37c7e842a62df91a84",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/arena.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/barrier.rs",
+      "bytes": 9437,
+      "sha256": "dfb55d737905b4877ab253ca83d7562bfc482e2e38f9ba38994b659342a6a7f0",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/barrier.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/collect.rs",
+      "bytes": 7848,
+      "sha256": "6682ad4b4a550c5ad63bf764ea2c7a30eab7477a1bf49055ca8a2e5e089c4b47",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/collect_impl.rs",
+      "bytes": 8218,
+      "sha256": "719f742e35ac0e24e36c1ad4cefcd256e20ce519f48bdf75a6e1c5df05d97561",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect_impl.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/context.rs",
+      "bytes": 35311,
+      "sha256": "57414577ed6e866b482e11700bae8102bb2d5974b1d76e24ced1eb4c41175c5c",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/context.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/dynamic_roots.rs",
+      "bytes": 9861,
+      "sha256": "5c93c6e36303afcfc6e2f17b0deaf1be42c35aa37824b5db13e4b95aeeeb2af5",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/dynamic_roots.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/enum_map.rs",
+      "bytes": 689,
+      "sha256": "967023479767760cea61a77e0bf5ef2cfb15f97dd5869d89ab2a6a048d578b10",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/enum_map.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/gc.rs",
+      "bytes": 8803,
+      "sha256": "f5231deff95cee0b81e2baf9e582da613acc5eb4a95f7f403d9ef5a1e1139274",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/gc_weak.rs",
+      "bytes": 6033,
+      "sha256": "5e525a6982dd4bdf5743655c0c2a50a1fd5649c579a26f698bc6a0c759a6c4c8",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc_weak.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/hashbrown.rs",
+      "bytes": 1198,
+      "sha256": "64b93c1a5a3db7165da21b28e4e54052b1e5ce6f6d28e14bd035536b9e988f0d",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/hashbrown.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/indexmap.rs",
+      "bytes": 1440,
+      "sha256": "7e54c975c56ae42d118d8e156b25ba5c160e37b4394b7503f62a7f71225c692e",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/indexmap.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/lib.rs",
+      "bytes": 980,
+      "sha256": "f9fcf405fb8a322d5fa38334c27d3b581d853fe4230bc37101f22d8b68a1d139",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lib.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/lock.rs",
+      "bytes": 11393,
+      "sha256": "b49cbb6774f5a2259d1f346d0dda929554a7861ff631c7e371da9f3896e6b949",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lock.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/metrics.rs",
+      "bytes": 14310,
+      "sha256": "d5cee5e575230539ca99cd1e0dedddc569daa9d632a6611a2e67ece8c2bbf8a8",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/metrics.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/no_drop.rs",
+      "bytes": 294,
+      "sha256": "f7fbd46c73b8fc51f986fe62be151845aac02460a6d64ce43faf41c0dfc55cde",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/no_drop.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/slotmap.rs",
+      "bytes": 723,
+      "sha256": "fd24d7f52c65bb0695b119bbe550a292476eabb05513495496406371a2c4a3a0",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/slotmap.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/smallvec.rs",
+      "bytes": 760,
+      "sha256": "d61070e5646a59222fe49159cd98c1e513d2296e5e71303c014f5c57d8069f48",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/smallvec.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/static_wrapper.rs",
+      "bytes": 1363,
+      "sha256": "8e225e981b39750cef879cfbcd310ad865eebd2da270ecb226c0645122038c7e",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/static_wrapper.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/types.rs",
+      "bytes": 15942,
+      "sha256": "b399b4bbbe7ef684daeee9a8725246e54360e6f3dbb150cd62f29dd34d414507",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/types.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/unsize.rs",
+      "bytes": 3076,
+      "sha256": "57b5f2203009f4383cd96e6e204d92b1363b397886a4aeffbc385f36be384526",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/unsize.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/zst_cache.rs",
+      "bytes": 4288,
+      "sha256": "607396ce79ff7782538b5ea289b32a8fb6782ae6efbdf4f175d0db654cafccfc",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/zst_cache.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/tests.rs",
+      "bytes": 32667,
+      "sha256": "cef0036488485787110b3d2faa09e9666f5aca1fbd257e90a7443e9cfaff61c1",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/tests.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs",
+      "bytes": 139,
+      "sha256": "09f7d5e855a10518f8792a851eca23c612d6d2ab861effde0347bf318a9ad378",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr",
+      "bytes": 1700,
+      "sha256": "a36310d03015cb0d2d19e858b907b4ce4599f7fcd93bf4374f5c91254cbeb865",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs",
+      "bytes": 703,
+      "sha256": "17f74ad93604ff89fa82b13088bd507865e5a6c0ec6e762aa8924fc8417098b1",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr",
+      "bytes": 2809,
+      "sha256": "0387ca384670870896490897574c6642146a1b8f85d6917af3c7fa313cfe7e0d",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs",
+      "bytes": 135,
+      "sha256": "25dc4c50a27ac4a4a82fd03f66562ff3a8128ff1632f8de81383f9cf3f0dbd43",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr",
+      "bytes": 181,
+      "sha256": "b1b7c4681f443d2b24d34ca9488efc99017f7d2aed3cd0c3ac5e0ca12c3a9d89",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs",
+      "bytes": 175,
+      "sha256": "9b70c4bf6cb6bace1350a0ab853635701a240395aa0e065bd4d28483cd467ff6",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr",
+      "bytes": 181,
+      "sha256": "a06d930d9db1d34cb2c531f3fe8d0f7fd60eb9acf0efcc7910cf5fc4c85ed09a",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs",
+      "bytes": 141,
+      "sha256": "fd49ac93e7d5860062cf17f3874f8dc3a94c11fc2b73f36efe534d4023486493",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr",
+      "bytes": 456,
+      "sha256": "72f956f45e1df80638a91f5033a8c8a2180199182d2d7400715a3ceb5c68bf95",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs",
+      "bytes": 160,
+      "sha256": "98477ca85f39668345a22c837d150746608ba33b52ad3e4a1acbc81e32c9f045",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr",
+      "bytes": 156,
+      "sha256": "74816e068ef501859a8ae8170d8b60a9d57097f1794ce886d71ead333cce9da8",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs",
+      "bytes": 278,
+      "sha256": "e45ae2ade1817ee3edf3d549d3a733cb2157c8b88fce17c2908d49d6cd6f5902",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs"
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr",
+      "bytes": 333,
+      "sha256": "b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e",
+      "source": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr"
+    },
+    {
+      "path": "web/packages/core/tools/build_wasm.ts",
+      "bytes": 5580,
+      "sha256": "5a8bc1daad24204909c8081784a9e262571572f2081b81650ca4c753b60113c1",
+      "source": "tools/ruffle-native-smooth/engine/web/packages/core/tools/build_wasm.ts"
+    },
+    {
+      "path": "web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f",
+      "source": "tools/ruffle-native-smooth/engine/web/src/lib.rs"
+    }
+  ],
+  "fileCount": 127,
+  "totalBytes": 2300302,
+  "licenses": [
+    {
+      "path": "LICENSE_APACHE",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "source": "runtime/LICENSE_APACHE"
+    },
+    {
+      "path": "LICENSE_MIT",
+      "bytes": 1097,
+      "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c",
+      "source": "runtime/LICENSE_MIT"
+    }
+  ],
+  "rustUnitGroups": [
+    {
+      "label": "graph",
+      "filter": "native_graph",
+      "expectedExecuted": 82,
+      "expectedPassed": 82,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_numeric_payload_keeps_exact_object_paths_and_aliases",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_alias_keeps_exact_path_limit_rejection",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_filter_never_hides_unsupported_virtual_fields",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_match_frozen_v4_bytes_and_bfs_names",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_frozen_v4_error_precedence",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_raw_anchor_edges_match_complete_property_count_and_validation",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_exact_capacity_and_duplicate_rules",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_pruned_anchor_queue_keeps_raw_field_and_timeout_bounds",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_preserve_explicit_generated_collisions_and_segment_boundaries",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_compare_forced_hash_collisions_without_aliasing",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_retain_utf16_empty_segments_and_exact_2048_limit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_rebind_fresh_receiving_assets_and_keep_packet_bytes",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_keep_unemitted_geometry_paths_lazy_and_iterative",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_dense_schedule_preserves_first_deep_alias_across_words",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_fresh_calls_observe_replaced_edges_kinds_and_flags",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_keeps_utf16_path_and_timeout_errors_before_alias_pruning",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_packets_for_mixed_aliases_and_variants",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_rejection_precedence",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_reuses_buffer_without_retaining_prior_object_edges",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_capacity_preserves_duplicate_errors_without_reservation",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_classification_matches_frozen_v13_values_and_errors",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_entries_match_frozen_v13_resizes_aliases_and_collisions",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_packet_and_receiving_aliases_match_frozen_v13",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_rejection_and_timeout_order_match_frozen_v13",
+        "avm1::globals::boxhead_native_graph::inline_tests::native_graph_inline_repeated_observations_read_new_native_kinds",
+        "avm1::globals::boxhead_native_graph::path_tests::native_graph_lazy_paths_keep_descriptor_prototype_and_native_error_order",
+        "avm1::globals::boxhead_native_graph::path_tests::native_graph_lazy_paths_keep_fresh_values_string_limit_and_timeout",
+        "avm1::globals::boxhead_native_graph::path_tests::native_graph_lazy_paths_keep_mixed_packets_aliases_and_receiving_bitmaps",
+        "avm1::globals::boxhead_native_graph::path_tests::native_graph_lazy_paths_keep_utf8_error_text_and_exact_2048_reset",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_array_native_and_opaque_leaf_mutations_are_observed",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_entry_budget_never_publishes_partial_coverage",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_explicit_aliases_and_name_collisions_use_exact_fresh_fallback",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_partial_work_restarts_after_writes_and_call_cap_finishes_loading",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_path_and_field_caps_keep_alias_errors_and_fresh_limits",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_production_calls_match_fresh_packets_and_receiving_objects",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_publication_during_marking_keeps_only_live_asset_references",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_readonly_status_and_timeout_keep_existing_contracts",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_real_semantic_write_routes_invalidate_before_reuse",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_reentrant_write_invalidates_active_lookup_and_next_read_is_fresh",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_requires_complete_ordered_current_roots_and_no_extra_deep_rows",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_stage_super_and_virtual_inputs_fall_back_without_callbacks",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_weak_gc_does_not_retain_removed_children_or_roots",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_both_kinds_preserve_bfs_alias_winners",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_budget_and_alias_path_limits_are_fail_closed",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_explicit_variants_win_without_generated_aliases",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_import_rebinds_both_kinds_to_receiving_assets",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_loading_snapshot_reports_ready_and_rejection_without_work",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_owner_write_invalidates_and_uses_exact_fresh_fallback",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_preserves_ordinary_and_namespace_overlap_fallbacks",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_remove_recreate_uses_current_original_path_resolution",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_rename_keeps_original_reference_target_semantics",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_growth_math_rejects_overflow_and_unfunded_keys",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_large_catalog_rebinds_beyond_initial_map_capacity",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_map_replacement_charges_old_and_new_tables",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_root_and_call_limits_remain_fail_closed",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_storage_denial_uses_complete_fresh_fallback",
+        "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_tiny_tiers_preserve_aliases_and_collision_chains"
+      ]
+    },
+    {
+      "label": "scalar",
+      "filter": "native_scalar",
+      "expectedExecuted": 14,
+      "expectedPassed": 14,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_scalars::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_scalars::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_scalars::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_scalars::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_scalars::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_scalars::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_scalars::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_scalars::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::activation::native_scalar_boundary_tests::native_scalar_undefined_after_removal_ends_the_actual_caller_activation"
+      ]
+    },
+    {
+      "label": "projection",
+      "filter": "native_projection_scan",
+      "expectedExecuted": 30,
+      "expectedPassed": 30,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_projection_scan::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_projection_scan::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_projection_scan::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tags_null_and_primitive_only_records_do_not_allocate_deferred_arrays",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_keys_keep_enumeration_order_without_a_second_source_read_or_recursive_visit",
+        "avm1::globals::boxhead_native_projection_scan::tests::functions_are_read_once_but_omitted_before_field_policy_and_upgrade_handling",
+        "avm1::globals::boxhead_native_projection_scan::tests::upgrades_omit_levels_and_defer_multipliers_before_leaf_type_or_null_coercion",
+        "avm1::globals::boxhead_native_projection_scan::tests::sparse_array_own_fields_preserve_holes_and_leave_length_metadata_to_as2",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_policy_and_loose_null_leaf_comparisons_are_not_discriminant_tests",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_policy_cache_refresh_valueof_and_output_setter_have_original_order",
+        "avm1::globals::boxhead_native_projection_scan::tests::leaf_valueof_exceptions_propagate_without_defer_or_completed_result",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tag_uses_live_object_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_array_constructor_prototype_and_push_overrides_are_resolved_live",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_on_existing_keys_can_reconstruct_the_array_for_each_deferred_field",
+        "avm1::globals::boxhead_native_projection_scan::tests::unusual_native_constructor_return_values_keep_original_null_method_and_coercion_behavior",
+        "avm1::globals::boxhead_native_projection_scan::tests::constructor_and_push_exceptions_are_not_retried_or_reported_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_array_construction_or_push_stops_before_the_next_source_read",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_cache_replacement_with_primitive_uses_getmember_coercion_on_later_fields",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_undefined_after_removal_ends_the_actual_caller_activation",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_defer_matches_real_equality_newobject_and_callmethod_opcodes"
+      ]
+    },
+    {
+      "label": "project",
+      "filter": "boxhead_native_project::",
+      "expectedExecuted": 27,
+      "expectedPassed": 27,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_project::tests::capability_is_registered_fresh_hidden_and_readonly",
+        "avm1::globals::boxhead_native_project::tests::unsupported_roots_and_malformed_calls_do_not_touch_source",
+        "avm1::globals::boxhead_native_project::tests::recursive_sorted_graph_preserves_shared_references_cycles_and_field_count",
+        "avm1::globals::boxhead_native_project::tests::scalar_values_include_undefined_nonfinite_negative_zero_and_own_only_policy",
+        "avm1::globals::boxhead_native_project::tests::sparse_arrays_keep_original_length_and_scalar_metadata_overrides",
+        "avm1::globals::boxhead_native_project::tests::map_and_cell_specialcases_do_not_allocate_reference_ids",
+        "avm1::globals::boxhead_native_project::tests::upgrade_definitions_are_read_but_only_original_active_indices_are_projected",
+        "avm1::globals::boxhead_native_project::tests::deferred_getter_is_read_again_at_recursive_traversal_position",
+        "avm1::globals::boxhead_native_project::tests::enumeration_is_captured_once_and_does_not_admit_later_keys",
+        "avm1::globals::boxhead_native_project::tests::actual_array_sort_override_determines_recursive_reference_order",
+        "avm1::globals::boxhead_native_project::tests::collisions_budget_and_getter_failures_never_fall_back_after_partial_work",
+        "avm1::globals::boxhead_native_project::tests::recursion_budget_stops_before_marking_depth_65_and_keeps_cleanup_list",
+        "avm1::globals::boxhead_native_project::tests::execution_timeout_is_checked_before_source_reads",
+        "avm1::globals::boxhead_native_project::tests::no_world_values_or_shapes_survive_between_projections",
+        "avm1::globals::boxhead_native_project::tests::synthetic_metadata_preserves_live_reads_inherited_animation_names_and_reference_order",
+        "avm1::globals::boxhead_native_project::tests::scalar_metadata_shadows_output_but_animation_still_allocates_its_reference_ids",
+        "avm1::globals::boxhead_native_project::tests::virtual_or_replaced_code_identity_is_rejected_without_reading_the_getter_or_world",
+        "avm1::globals::boxhead_native_project::tests::code_mutation_after_source_reads_is_fatal_and_retains_the_outer_cleanup_list",
+        "avm1::globals::boxhead_native_project::tests::custom_or_virtual_scan_callbacks_fall_back_before_any_world_read",
+        "avm1::globals::boxhead_native_project::tests::scan_callback_mutation_during_projection_is_fatal_without_restarting_the_graph",
+        "avm1::globals::boxhead_native_project::tests::pinned_to_string_opcodes_do_not_resolve_the_replaceable_global_string_function",
+        "avm1::globals::boxhead_native_project::tests::active_frozen_scan_keeps_nonfinite_helper_validation_calls_and_actual_counter_deltas",
+        "avm1::globals::boxhead_native_project::tests::active_scan_envelope_fields_are_reread_after_has_own_property_mutates_them",
+        "avm1::globals::boxhead_native_project::tests::active_scan_helper_and_validation_errors_preserve_their_boundary_without_fallback",
+        "avm1::globals::boxhead_native_project::tests::active_scan_strict_false_reuses_the_captured_cache_and_runs_the_inline_scan_once",
+        "avm1::activation::boxhead_native_project::native_project_removal_returns_through_the_real_action_call_method_boundary",
+        "avm1::activation::boxhead_native_project::active_scan_nonfinite_helper_keeps_its_real_removal_boundary_before_result_validation"
+      ],
+      "exactIgnoredNames": []
+    },
+    {
+      "label": "bitmap",
+      "filter": "bitmap_blit_",
+      "expectedExecuted": 6,
+      "expectedPassed": 6,
+      "expectedFailed": 0,
+      "expectedIgnored": 1,
+      "exactNames": [
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_exhaustive_source_destination_alpha_pairs",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_transparent_black_preserves_rgb_and_forces_opaque_alpha",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_opaque_mixed_blocks_and_every_tail_boundary",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_alpha_zero_with_nonzero_rgb_is_not_a_noop",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_clipped_rows_and_destination_transparency",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_self_overlap_keeps_original_forward_order"
+      ],
+      "exactIgnoredNames": [
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_row_microbenchmark"
+      ]
+    },
+    {
+      "label": "hash",
+      "filter": "avm1::property_map::boxhead_hash_tests",
+      "expectedExecuted": 9,
+      "expectedPassed": 9,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_hash_tests::property_hash_exhaustive_utf16_units_match_original_fnv",
+        "avm1::property_map::boxhead_hash_tests::property_hash_narrow_and_wide_inputs_keep_original_stream",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cache_is_independent_for_slices_and_inline_concat",
+        "avm1::property_map::boxhead_hash_tests::property_hash_static_interned_and_owned_strings_share_exact_hash",
+        "avm1::property_map::boxhead_hash_tests::property_hash_mixed_case_queries_and_mutations_match_original_map",
+        "avm1::property_map::boxhead_hash_tests::property_hash_clone_borrowed_mutation_and_entry_removal_preserve_order",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_misses_observe_new_own_and_inherited_properties",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_preserve_swf_case_and_attribute_rules",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_still_run_getters_setters_and_watchers"
+      ]
+    },
+    {
+      "label": "property",
+      "filter": "avm1::object::boxhead_property_tests",
+      "expectedExecuted": 28,
+      "expectedPassed": 28,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::object::boxhead_property_tests::ordinary_data_and_inherited_depth_match_the_original_lookup",
+        "avm1::object::boxhead_property_tests::stored_undefined_shadows_parent_getters_and_resolvers",
+        "avm1::object::boxhead_property_tests::getter_returning_undefined_stops_at_its_original_depth_and_receiver",
+        "avm1::object::boxhead_property_tests::getter_throws_and_nonfatal_error_handling_match_original",
+        "avm1::object::boxhead_property_tests::recursive_getter_error_reads_the_descriptor_again_after_replacement",
+        "avm1::object::boxhead_property_tests::getter_deletion_and_prototype_mutation_preserve_live_continuation",
+        "avm1::object::boxhead_property_tests::version_hidden_stored_and_virtual_descriptors_follow_the_parent",
+        "avm1::object::boxhead_property_tests::mixed_case_stored_names_use_the_same_runtime_collision_choice",
+        "avm1::object::boxhead_property_tests::own_watchers_do_not_change_read_semantics",
+        "avm1::object::boxhead_property_tests::unresolved_lookup_retains_resolver_switch_receiver_and_arguments",
+        "avm1::object::boxhead_property_tests::special_native_and_super_objects_keep_the_original_lookup_path",
+        "avm1::object::boxhead_property_tests::prototype_cycle_reaches_the_original_recursion_limit",
+        "avm1::object::boxhead_property_tests::own_data_writes_preserve_flags_order_and_version_clearing",
+        "avm1::object::boxhead_property_tests::own_data_shadows_inherited_virtual_setters_even_when_initially_hidden",
+        "avm1::object::boxhead_property_tests::watchers_and_own_virtual_setters_still_receive_every_write",
+        "avm1::object::boxhead_property_tests::missing_write_falls_back_without_insertion_and_preserves_inherited_setter",
+        "avm1::object::boxhead_property_tests::native_arrays_display_super_and_functions_never_use_the_write_fast_path",
+        "avm1::object::boxhead_property_tests::empty_property_name_keeps_its_original_early_return",
+        "avm1::object::boxhead_property_tests::stored_proto_write_changes_subsequent_lookup_without_any_cached_shape",
+        "avm1::object::boxhead_property_tests::mixed_case_writes_retain_collision_selection_and_enumeration_order",
+        "avm1::object::boxhead_property_tests::missing_write_searches_past_inherited_stored_slots_for_a_deeper_setter",
+        "avm1::object::boxhead_property_tests::missing_write_keeps_visible_getter_only_and_hidden_virtual_stopping_rules",
+        "avm1::object::boxhead_property_tests::missing_write_preserves_inherited_setter_mutations_and_error_precedence",
+        "avm1::object::boxhead_property_tests::missing_write_watchers_keep_slot_creation_reparenting_and_thrown_value_rules",
+        "avm1::object::boxhead_property_tests::missing_write_reads_proto_data_with_original_case_and_attribute_rules",
+        "avm1::object::boxhead_property_tests::missing_ordinary_write_retains_native_and_super_prototype_setter_paths",
+        "avm1::object::boxhead_property_tests::missing_write_keeps_new_field_case_flags_order_and_raw_proto_insertion",
+        "avm1::object::boxhead_property_tests::missing_write_rechecks_prototypes_watchers_and_native_kind_between_writes"
+      ]
+    },
+    {
+      "label": "fence",
+      "filter": "step_fence_",
+      "expectedExecuted": 35,
+      "expectedPassed": 35,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_step_fence::tests::step_fence_argument_marshalling_cannot_begin_or_execute_game_after_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_begin_reentry_from_an_ambient_player_update_is_rejected",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_capability_has_only_the_two_declared_fields",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_cleanup_failure_keeps_terminal_native_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_committed_rng_is_the_original_record_not_a_scalar",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_abort_and_phase_catch_abort_never_resume",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_causal_action_drain_remains_inside_entered_original_phase",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_full_chain_keeps_game_once_and_releases_only_after_serialized_receipt",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_info_and_receipt_cannot_precede_complete_commit",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_invalid_begin_arguments_never_execute_original_game",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_malformed_receipt_after_finish_stays_poisoned",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_missing_duplicate_and_malformed_phase_returns_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_native_transition_requires_exact_phase_body_callee",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_nested_present_is_rejected_even_if_caught_by_phase_body",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_new_round_same_owner_accepts_reset_tick_with_fresh_epoch_and_world",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_pinned_registration_and_world_replacement_are_terminal",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_poisoned_player_disposal_does_not_flush_or_execute_queued_actions",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_present_is_not_admitted_after_commit_before_info_or_receipt",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_receipt_serialization_caught_reentry_prevents_release",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_stage_calls_cannot_skip_prepare",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_stale_token_epoch_and_tick_are_rejected_before_body",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_successful_receipt_does_not_reuse_prior_epoch",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_unknown_callback_is_rejected_and_cleanup_runs_once",
+        "player::boxhead_step_fence::tests::step_fence_clipboard_retains_each_payload_before_its_paste_and_counts_bytes",
+        "player::boxhead_step_fence::tests::step_fence_context_menu_suppresses_transient_popup_and_runs_original_select_once",
+        "player::boxhead_step_fence::tests::step_fence_fifo_limits_account_for_ime_bytes_time_and_each_exact_entry",
+        "player::boxhead_step_fence::tests::step_fence_player_ambient_fifo_matches_unfenced_entry_order_and_timer_time",
+        "player::boxhead_step_fence::tests::step_fence_player_event_capacity_overflow_poison_cleans_and_never_drains",
+        "player::boxhead_step_fence::tests::step_fence_player_explicit_run_state_and_resize_wait_in_original_order",
+        "player::boxhead_step_fence::tests::step_fence_player_next_ei_drains_earlier_ambient_work_before_new_body",
+        "player::boxhead_step_fence::tests::step_fence_player_opaque_async_mutation_fails_before_executing_closure",
+        "player::boxhead_step_fence::tests::step_fence_player_readonly_api_does_not_poison_or_dispatch_vm_work",
+        "player::boxhead_step_fence::tests::step_fence_player_render_keeps_pure_paint_and_defers_broadcast_actions",
+        "player::boxhead_step_fence::tests::step_fence_player_slow_original_handler_keeps_fifo_tail_before_next_body",
+        "player::boxhead_step_fence::tests::step_fence_player_uninstalled_local_game_keeps_ordinary_input_and_frame_order"
+      ]
+    },
+    {
+      "label": "equality",
+      "filter": "property_equality_",
+      "expectedExecuted": 8,
+      "expectedPassed": 8,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_case_collisions_and_readonly_flags_match_frozen_table",
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_interned_reads_keep_getter_setter_and_watcher_calls",
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_swf6_and_7_reads_reobserve_own_and_prototype_slots",
+        "avm1::property_map::boxhead_equality_tests::property_equality_interned_names_keep_sensitive_and_folded_collision_choices",
+        "avm1::property_map::boxhead_equality_tests::property_equality_interning_after_insertion_does_not_change_membership",
+        "avm1::property_map::boxhead_equality_tests::property_equality_mixed_mutations_clone_entries_and_order_match_frozen_map",
+        "avm1::property_map::boxhead_equality_tests::property_equality_owned_identity_and_equal_allocations_match_frozen_queries",
+        "avm1::property_map::boxhead_equality_tests::property_equality_utf16_widths_and_dependent_ranges_keep_exact_contents"
+      ]
+    },
+    {
+      "label": "overwrite",
+      "filter": "bitmap_overwrite_",
+      "expectedExecuted": 15,
+      "expectedPassed": 15,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_cancels_only_destination_and_reads_fresh_dirty_source",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clean_and_cpu_dirty_targets_keep_upload_bytes_and_dirty_union",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clipping_can_still_cover_the_whole_destination_from_an_offset_source",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_empty_public_copy_does_not_cancel_or_resolve_any_handle",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_existing_cpu_draw_caller_keeps_opaque_pixels_and_no_readback",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_destination_cancels_partial_gpu_dirty_region_with_padded_rows",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_nonblend_matches_frozen_pixels_for_all_transparency_pairs",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_transparent_blend_still_reads_destination",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_opaque_source_normalizes_requested_blend_before_guard",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_partial_and_source_clipped_destinations_keep_original_gpu_pixels",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_self_noop_and_overlap_keep_frozen_sync_and_forward_order",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_separate_alpha_mask_retains_original_three_handle_reads",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_source_read_area_does_not_resolve_unrelated_gpu_dirty_pixels",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_transparent_to_opaque_unmultiplied_branch_keeps_raw_alpha_edges",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_unsupported_filter_copy_uses_the_same_frozen_full_overwrite"
+      ]
+    },
+    {
+      "label": "compact",
+      "filter": "compact_fence_",
+      "expectedExecuted": 28,
+      "expectedPassed": 28,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_accepts_exact_join_record_without_changing_the_phase_contract",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_ambient_reentry_is_rejected_before_game_and_disposal_never_drains",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_argument_setter_cannot_begin_before_the_pinned_body_or_hide_poison",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_callback_world_and_raw_body_replacement_are_terminal",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_capability_is_exact_and_leaves_full_capability_unchanged",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_caught_receipt_serialization_reentry_stays_poisoned_after_finish",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_causal_action_drain_is_allowed_only_inside_entered_body",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_commit_rng_and_world_tick_keep_the_original_result_contract",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_cross_family_external_callbacks_never_switch_the_open_transaction",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_explicit_and_catch_abort_clean_both_abilities_once",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_full_and_compact_transactions_share_one_monotonic_epoch",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_info_receipt_and_present_obey_exact_phase_order",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_install_requires_full_owner_and_cannot_repeat",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_missing_duplicate_or_malformed_begin_never_releases_the_owner",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_native_callee_and_protocol_are_authenticated_independently",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_new_round_can_reset_tick_only_with_a_fresh_epoch",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_present_cannot_reenter_an_entered_phase_even_when_rejection_is_caught",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_receipt_scope_header_and_finish_must_all_match_the_commit",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_rejects_full_tick_numbers_and_malformed_begin_before_game",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_shared_callback_identity_cannot_be_replaced_at_install",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_stale_tuple_and_duplicate_commit_are_rejected_before_another_body",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_terminal_begin_can_paint_nothing_and_still_return_the_verified_receipt",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_two_phase_chain_keeps_game_once_and_releases_after_frame_receipt_serialization",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_fifo_matches_unfenced_input_timer_clipboard_and_frame_order",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_opaque_loader_mutation_fails_before_its_closure",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_paints_without_timeline_or_render_broadcast_during_the_split",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_queue_overload_cleans_once_and_never_resumes_partial_game",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_receipt_never_drains_and_next_external_entry_cannot_overtake_fifo"
+      ]
+    },
+    {
+      "label": "lookup",
+      "filter": "lookup_v2_",
+      "expectedExecuted": 23,
+      "expectedPassed": 23,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_keep_case_utf16_and_enumeration_contents",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_preserve_literals_and_lazy_identity",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_reobserve_values_getters_and_prototypes",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_actual_activation_resolves_fresh_values_and_special_this",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_arrays_and_functions_keep_ordinary_fields",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_case_collision_winners_match_frozen_after_mutations",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_deep_parent_chains_preserve_shadowing_and_receiver",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_empty_and_utf16_names_keep_exact_membership",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_fresh_reads_observe_reparenting_own_writes_and_watchers",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_getter_reentry_observes_new_slot_and_keeps_outer_result",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_stored_membership_keeps_original_get_path",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_virtual_slots_do_not_run_the_hidden_getter",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_inherited_getters_keep_original_receiver",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_missing_slots_follow_parent_without_resolver_calls",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_native_display_boxed_and_super_paths_match_frozen",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_positive_membership_keeps_get_prototype_recursion_error",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_raw_proto_keeps_case_visibility_and_virtual_data",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_recursive_getter_error_reobserves_mutated_descriptor",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_removed_clip_fallback_keeps_root_and_callable_undefined",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_resolver_requires_positive_raw_membership",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_getter_undefined_and_error_precedence_match_frozen",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_own_values_keep_callable_receiver_and_flags",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_with_local_global_calls_keep_exact_this_owner"
+      ]
+    },
+    {
+      "label": "packed",
+      "filter": "bitmap_packed_",
+      "expectedExecuted": 10,
+      "expectedPassed": 10,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_all_source_destination_alpha_pairs_match_frozen_v10",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_alpha_zero_nonzero_rgb_is_never_treated_as_black",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_both_word_orders_scale_the_same_rgba_bytes",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_div255_exhaustive_product_domain",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_homogeneous_v10_fastpaths_keep_raw_opaque_destination_alpha_rules",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_independent_lane_carries_and_floor_boundaries",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_partial_row_before_overflow_is_identical_to_frozen_v10",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_public_copy_pixels_clips_real_short_rows_and_preserves_dirty_output",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_raw_source_channels_keep_actual_checked_or_wrapping_semantics",
+        "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_short_rows_blocks_and_all_tail_boundaries_match_v10"
+      ]
+    },
+    {
+      "label": "gc_slice",
+      "filter": "gc_slice_",
+      "expectedExecuted": 17,
+      "expectedPassed": 17,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "player::boxhead_gc::tests::gc_slice_allocations_during_sweep_survive_until_the_next_mark_cycle",
+        "player::boxhead_gc::tests::gc_slice_atomic_full_cycle_retains_original_debt_reset",
+        "player::boxhead_gc::tests::gc_slice_backward_barrier_retraces_black_owner_and_keeps_fresh_child",
+        "player::boxhead_gc::tests::gc_slice_budget_expiring_inside_trace_never_splits_the_object_trace",
+        "player::boxhead_gc::tests::gc_slice_finite_work_cap_and_indivisible_time_overrun_remain_exhausted",
+        "player::boxhead_gc::tests::gc_slice_interrupted_sweep_preserves_carried_debt_after_empty_heap_and_new_allocation",
+        "player::boxhead_gc::tests::gc_slice_nested_entries_share_time_and_work_without_resetting_the_outer_allowance",
+        "player::boxhead_gc::tests::gc_slice_no_debt_does_not_call_budget_or_change_sleep_state",
+        "player::boxhead_gc::tests::gc_slice_non_collection_game_time_does_not_consume_the_collector_allowance",
+        "player::boxhead_gc::tests::gc_slice_panicking_budget_callback_leaves_a_resumable_collector",
+        "player::boxhead_gc::tests::gc_slice_panicking_trace_is_requeued_before_an_old_api_resumes_collection",
+        "player::boxhead_gc::tests::gc_slice_small_caps_eventually_match_original_roots_weak_liveness_and_drop_order",
+        "player::boxhead_gc::tests::gc_slice_sustained_allocation_and_barrier_churn_keeps_bounded_live_count_and_releases_all",
+        "player::boxhead_gc::tests::gc_slice_uninstalled_player_keeps_the_original_full_debt_collection",
+        "player::boxhead_gc::tests::gc_slice_unlimited_matches_original_public_api_from_each_collection_phase",
+        "player::boxhead_gc::tests::gc_slice_unwind_restores_nested_entry_depth_without_losing_the_next_budget",
+        "player::boxhead_gc::tests::gc_slice_zero_work_and_rejected_budget_leave_phase_debt_and_objects_untouched"
+      ]
+    },
+    {
+      "label": "gc_fence",
+      "filter": "gc_fence_",
+      "expectedExecuted": 7,
+      "expectedPassed": 7,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "player::boxhead_step_fence::gc_tests::gc_fence_abort_and_malformed_receipt_never_gain_a_valid_receipt_after_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_collections_do_not_release_or_reorder_the_actual_deferred_fifo",
+        "player::boxhead_step_fence::gc_tests::gc_fence_compact_frame_bitmap_and_receipt_survive_each_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_full_projected_graph_bitmap_and_receipt_survive_each_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_installed_owner_and_pinned_callbacks_survive_removed_public_registrations",
+        "player::boxhead_step_fence::gc_tests::gc_fence_serialization_reentry_stays_poisoned_after_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_transaction_world_is_rooted_after_owner_replacement_until_poison_cleanup"
+      ]
+    },
+    {
+      "label": "single_push",
+      "filter": "single_push_",
+      "expectedExecuted": 24,
+      "expectedPassed": 24,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::activation::boxhead_single_push::tests::single_push_accepted_decoding_leaves_following_actions_untouched",
+        "avm1::activation::boxhead_single_push::tests::single_push_all_fixed_tags_match_original_reader",
+        "avm1::activation::boxhead_single_push::tests::single_push_constant16_preserves_every_index",
+        "avm1::activation::boxhead_single_push::tests::single_push_debug_and_other_opcodes_leave_reader_untouched",
+        "avm1::activation::boxhead_single_push::tests::single_push_every_truncated_fixed_form_keeps_fallback_cursor",
+        "avm1::activation::boxhead_single_push::tests::single_push_fallback_preserves_parser_error_and_resynchronization",
+        "avm1::activation::boxhead_single_push::tests::single_push_ieee_bits_and_middle_endian_doubles_match_reader",
+        "avm1::activation::boxhead_single_push::tests::single_push_invalid_tags_and_multi_values_keep_original_lenience",
+        "avm1::activation::boxhead_single_push::tests::single_push_u8_payloads_match_all_bool_register_constant_values",
+        "avm1::activation::boxhead_single_push::tests::single_push_wrong_lengths_and_strings_are_immutable_fallbacks",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_action_count_and_timeout_precede_decoding",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_constant_pool_reads_are_fresh_and_keep_invalid_indices",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_debug_mode_keeps_parser_route",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_fixed_values_match_frozen_execution",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_function_end_precedes_opcode_but_does_not_bound_operand",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_local_and_global_register_rules_match_player_versions",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_malformed_lengths_keep_return_stack_and_cursor",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_mixed_program_keeps_stack_registers_pool_and_jumps",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_multi_push_parse_errors_do_not_partially_mutate_stack",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_plain_objects_are_not_coerced",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_register_and_pool_objects_keep_movieclip_wrapping",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_removed_clip_reference_path_is_unchanged",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_store_register_then_push_observes_instruction_order",
+        "avm1::activation::boxhead_single_push_tests::single_push_activation_strings_keep_original_swf_encoding_path"
+      ]
+    },
+    {
+      "label": "display_lookup",
+      "filter": "display_lookup_",
+      "expectedExecuted": 17,
+      "expectedPassed": 17,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::object::boxhead_display_lookup::display_lookup_case_collisions_and_utf16_names_keep_actual_property_selection",
+        "avm1::object::boxhead_display_lookup::display_lookup_child_precedence_and_hidden_own_shadowing_match_stage_order",
+        "avm1::object::boxhead_display_lookup::display_lookup_getter_deletion_and_reparenting_keep_live_prototype_walk",
+        "avm1::object::boxhead_display_lookup::display_lookup_magic_case_paths_and_missing_levels_match_frozen_versions",
+        "avm1::object::boxhead_display_lookup::display_lookup_native_data_values_flags_and_identity_match_frozen_reads",
+        "avm1::object::boxhead_display_lookup::display_lookup_native_getter_results_errors_receiver_and_depth_match",
+        "avm1::object::boxhead_display_lookup::display_lookup_noncallable_virtual_getter_still_shadows_native_value",
+        "avm1::object::boxhead_display_lookup::display_lookup_raw_code_identity_helper_remains_side_effect_free_and_native_excluding",
+        "avm1::object::boxhead_display_lookup::display_lookup_real_activation_get_member_keeps_scalar_bits_and_movieclip_wrapping",
+        "avm1::object::boxhead_display_lookup::display_lookup_real_text_field_uses_native_properties_and_own_precedence",
+        "avm1::object::boxhead_display_lookup::display_lookup_recursive_getter_replacement_is_read_fresh",
+        "avm1::object::boxhead_display_lookup::display_lookup_reentrant_virtual_getter_can_mutate_without_retained_borrow",
+        "avm1::object::boxhead_display_lookup::display_lookup_repeated_reads_observe_data_deletion_native_and_prototype_changes",
+        "avm1::object::boxhead_display_lookup::display_lookup_resolver_switch_receiver_arguments_and_missing_value_match",
+        "avm1::object::boxhead_display_lookup::display_lookup_stored_undefined_shadows_magic_properties_and_parent_getters",
+        "avm1::object::boxhead_display_lookup::display_lookup_super_forwarding_and_native_prototype_recursion_remain_slow",
+        "avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback"
+      ]
+    },
+    {
+      "label": "anchor_metadata_object",
+      "filter": "avm1::object::script_object::anchor_metadata_tests::",
+      "expectedExecuted": 10,
+      "expectedPassed": 10,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_array_length_indices_proto_and_native_construction_stay_fresh",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_checkpoint_misses_never_admit_gameplay_objects_or_retain_errors",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_fast_data_local_and_definition_writes_invalidate_before_reuse",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_flags_delete_and_readonly_writes_keep_original_descriptor_effects",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_gc_drops_deleted_child_and_refunds_invalidated_and_collected_entries",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_gc_mutation_and_publication_during_marking_keep_current_alias_only",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_large_object_falls_back_without_partial_cache_or_error_cache",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_positive_rows_keep_raw_order_hidden_keys_proto_count_and_clip_values",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_reentrant_property_callback_invalidates_warmed_descendant_only",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_virtual_watcher_and_interface_changes_reject_without_callbacks"
+      ]
+    },
+    {
+      "label": "anchor_metadata_loading",
+      "filter": "avm1::anchor_metadata::tests::",
+      "expectedExecuted": 7,
+      "expectedPassed": 7,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::anchor_metadata::tests::anchor_metadata_global_budget_covers_inactive_entries_and_reports_denied_admission",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_caps_call_object_and_property_work_without_weakening_fresh_reads",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_keeps_movieclip_references_opaque_until_original_resolution",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_rejects_virtual_or_inherited_namespace_without_coercion",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_uses_exact_six_raw_roots_and_deduplicates_cycles",
+        "avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work",
+        "avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive"
+      ]
+    },
+    {
+      "label": "slot_hint",
+      "filter": "slot_hint",
+      "expectedExecuted": 9,
+      "expectedPassed": 9,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_actual_avm_warm_slot_reobserves_virtual_descriptor_and_new_watcher",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_borrowed_wstr_operations_do_not_consume_or_rewrite_the_hint",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_case_insensitive_collisions_and_mutations_keep_frozen_selection",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_positive_queries_recheck_wrong_keys_and_out_of_bounds_indices",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_range_aliases_append_and_equal_widths_keep_range_local_hints",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_shared_query_revalidates_each_map_and_independently_mutated_clone",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_shift_remove_entry_remove_and_reinsert_preserve_order",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_warm_reads_observe_insert_get_mut_entry_and_iter_mut_values",
+        "avm1::property_map::boxhead_slot_hint_tests::slot_hint_zero_and_checked_u32_encoding_never_truncate_indices"
+      ]
+    },
+    {
+      "label": "readback_buffer",
+      "filter": "boxhead_readback::tests::",
+      "expectedExecuted": 12,
+      "expectedPassed": 12,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "boxhead_readback::tests::boxhead_readback_clipped_region_dimensions_do_not_include_its_texture_origin",
+        "boxhead_readback::tests::boxhead_readback_constructor_unwind_has_already_returned_the_pool_guard",
+        "boxhead_readback::tests::boxhead_readback_disabled_backend_retains_identical_guard",
+        "boxhead_readback::tests::boxhead_readback_eligible_backend_still_reuses_an_exact_fit",
+        "boxhead_readback::tests::boxhead_readback_exact_fit_and_small_excess_reuse",
+        "boxhead_readback::tests::boxhead_readback_pool_guard_returns_before_exact_creation",
+        "boxhead_readback::tests::boxhead_readback_ratio_and_absolute_boundaries_are_both_required",
+        "boxhead_readback::tests::boxhead_readback_ratio_uses_padded_allocation_not_unpadded_pixel_payload",
+        "boxhead_readback::tests::boxhead_readback_repeated_exact_calls_retain_no_temporary_allocations",
+        "boxhead_readback::tests::boxhead_readback_u64_arithmetic_never_wraps",
+        "boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels",
+        "boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path"
+      ]
+    },
+    {
+      "label": "property_miss_filter",
+      "filter": "avm1::property_map::boxhead_miss_filter_tests::",
+      "expectedExecuted": 10,
+      "expectedPassed": 10,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_abandoned_vacant_entries_never_create_membership",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_getters_setters_and_watchers_keep_callbacks",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_movieclip_fallback_and_own_shadowing_are_preserved",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_prototype_reads_observe_later_writes_and_reparenting",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_resolve_mutation_and_thrown_getter_stay_fresh",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_all_deletions_and_reinsertion_keep_live_keys_and_order",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_casefold_utf16_and_range_aliases_match_frozen_table",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_clone_take_swap_and_value_mutation_preserve_coverage",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_new_default_and_all_insert_paths_preserve_unhinted_hits",
+        "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_zero_hash_collisions_and_saturation_keep_exact_fallback"
+      ]
+    },
+    {
+      "label": "short_dispatch",
+      "filter": "avm1::activation::boxhead_short_dispatch_tests::",
+      "expectedExecuted": 12,
+      "expectedPassed": 12,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_all_82_routes_match_existing_decoder_and_frozen_handlers",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_long_call_unknown_and_malformed_forms_keep_parser_fallback",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_member_getters_setters_and_prototypes_observe_fresh_state",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_mixed_program_debug_pool_registers_and_control_flow_match",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_negative_jumps_and_cross_boundary_operands_keep_movie_cursor",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nested_calls_exceptions_and_removed_base_clip_keep_boundaries",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nonshort_unknown_and_debug_inputs_leave_state_untouched",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_numeric_boolean_and_bitwise_effects_match_frozen_execution",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_stack_return_and_thrown_identity_commit_exactly_one_byte",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_string_and_character_effects_match_frozen_versions",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_timeout_and_eof_precede_every_dispatch_route",
+        "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_variable_and_container_routes_match_frozen_effects"
+      ]
+    }
+  ],
+  "totalRequiredRustTests": 440
+}

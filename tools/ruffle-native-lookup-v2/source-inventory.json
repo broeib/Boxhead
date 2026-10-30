@@ -1,0 +1,137 @@
+{
+  "schema": "boxhead-native-lookup-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "baselineEngineManifest": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 44549,
+    "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "bytes": 9025,
+      "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project.rs",
+      "bytes": 33798,
+      "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778",
+      "baseline": {
+        "bytes": 32804,
+        "sha256": "73f9240d39fd9c179963acd201cfb2dea7019ae14b1d6f7d7c2ca31098b4efb3"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12779,
+      "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a",
+      "baseline": {
+        "bytes": 12637,
+        "sha256": "11451ab0d11b1617f9859164888a6077fb34173c11ec7e8cc85575ab0394bbc0"
+      }
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 43753,
+      "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399",
+      "baseline": {
+        "bytes": 42307,
+        "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f"
+      }
+    },
+    {
+      "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "bytes": 34028,
+      "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/scope/frozen_v10.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/scope.rs",
+      "bytes": 10718,
+      "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264",
+      "baseline": {
+        "bytes": 9350,
+        "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "lookup_v2_",
+    "executedExpected": 23,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "lookup_v2_fixed_names_keep_case_utf16_and_enumeration_contents",
+      "lookup_v2_fixed_names_preserve_literals_and_lazy_identity",
+      "lookup_v2_fixed_names_reobserve_values_getters_and_prototypes",
+      "lookup_v2_scope_actual_activation_resolves_fresh_values_and_special_this",
+      "lookup_v2_scope_arrays_and_functions_keep_ordinary_fields",
+      "lookup_v2_scope_case_collision_winners_match_frozen_after_mutations",
+      "lookup_v2_scope_deep_parent_chains_preserve_shadowing_and_receiver",
+      "lookup_v2_scope_empty_and_utf16_names_keep_exact_membership",
+      "lookup_v2_scope_fresh_reads_observe_reparenting_own_writes_and_watchers",
+      "lookup_v2_scope_getter_reentry_observes_new_slot_and_keeps_outer_result",
+      "lookup_v2_scope_hidden_stored_membership_keeps_original_get_path",
+      "lookup_v2_scope_hidden_virtual_slots_do_not_run_the_hidden_getter",
+      "lookup_v2_scope_inherited_getters_keep_original_receiver",
+      "lookup_v2_scope_missing_slots_follow_parent_without_resolver_calls",
+      "lookup_v2_scope_native_display_boxed_and_super_paths_match_frozen",
+      "lookup_v2_scope_positive_membership_keeps_get_prototype_recursion_error",
+      "lookup_v2_scope_raw_proto_keeps_case_visibility_and_virtual_data",
+      "lookup_v2_scope_recursive_getter_error_reobserves_mutated_descriptor",
+      "lookup_v2_scope_removed_clip_fallback_keeps_root_and_callable_undefined",
+      "lookup_v2_scope_resolver_requires_positive_raw_membership",
+      "lookup_v2_scope_visible_getter_undefined_and_error_precedence_match_frozen",
+      "lookup_v2_scope_visible_own_values_keep_callable_receiver_and_flags",
+      "lookup_v2_scope_with_local_global_calls_keep_exact_this_owner"
+    ]
+  },
+  "retainedRequiredRustTests": 237,
+  "totalRequiredRustTestsWithOnlyThisCandidate": 260,
+  "frozenScopeOracle": {
+    "path": "core/src/avm1/scope/frozen_v10.rs",
+    "bytes": 9350,
+    "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+  },
+  "fixedIdentifierCount": 88,
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-lookup-v2/source-integrity.test.mjs",
+    "executedExpected": 4
+  },
+  "rustCommand": "cargo test -p ruffle_core --lib lookup_v2_ -- --nocapture",
+  "integration": {
+    "newGlobalRegistrations": 0,
+    "activationOrRuntimeChanges": 0,
+    "scopeTestsDoNotOverlapOldProjectFilter": true
+  },
+  "supportFiles": [
+    {
+      "path": "LOOKUP_V2.md",
+      "bytes": 6865,
+      "sha256": "8bf4cbe29c89943eaad9c2c6f12d8c6049d7983a1eca81f312296e9ed322010d"
+    },
+    {
+      "path": "predecessor-identities.json",
+      "bytes": 777,
+      "sha256": "b706a37f815fb86445222e47ba46f5cdc901b6bf542e96eb386ebe42f7fcc290"
+    },
+    {
+      "path": "source-delta.json",
+      "bytes": 57099,
+      "sha256": "583dc5068641ae0d15999671180cf6ae5950c5022b4a8f547de080442abb14e6"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 6507,
+      "sha256": "07080f09392cbd2e974688f9cb05eb616eac7c271e1c2e3d5e1521bcdab27ae5"
+    }
+  ],
+  "testsExecutedLocally": false
+}

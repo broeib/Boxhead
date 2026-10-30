@@ -1,0 +1,253 @@
+{
+  "schema": "boxhead-v19-display-readback-source-inventory-v1",
+  "status": "source candidate; fresh CI Rust/WASM/web and native/gameplay/presentation qualification required",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 86545,
+    "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+  },
+  "parentBinder": {
+    "bytes": 80552,
+    "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+  },
+  "parentBuildDriver": {
+    "bytes": 16458,
+    "sha256": "e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d"
+  },
+  "engineManifest": {
+    "bytes": 91688,
+    "sha256": "0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921"
+  },
+  "binder": {
+    "bytes": 84138,
+    "sha256": "9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff"
+  },
+  "buildDriver": {
+    "bytes": 16708,
+    "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+  },
+  "oldOverlayInputs": 113,
+  "retainedUnchangedInputs": 108,
+  "currentOverlayInputs": 116,
+  "previousRequiredRustTests": 388,
+  "requiredRustTests": 412,
+  "previousRustGroups": 20,
+  "rustGroups": 21,
+  "addedNativeRustNames": [
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_both_kinds_preserve_bfs_alias_winners",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_budget_and_alias_path_limits_are_fail_closed",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_explicit_variants_win_without_generated_aliases",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_import_rebinds_both_kinds_to_receiving_assets",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_loading_snapshot_reports_ready_and_rejection_without_work",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_owner_write_invalidates_and_uses_exact_fresh_fallback",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_preserves_ordinary_and_namespace_overlap_fallbacks",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_remove_recreate_uses_current_original_path_resolution",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_rename_keeps_original_reference_target_semantics",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent"
+  ],
+  "addedRendererRustNames": [
+    "boxhead_readback::tests::boxhead_readback_clipped_region_dimensions_do_not_include_its_texture_origin",
+    "boxhead_readback::tests::boxhead_readback_constructor_unwind_has_already_returned_the_pool_guard",
+    "boxhead_readback::tests::boxhead_readback_disabled_backend_retains_identical_guard",
+    "boxhead_readback::tests::boxhead_readback_eligible_backend_still_reuses_an_exact_fit",
+    "boxhead_readback::tests::boxhead_readback_exact_fit_and_small_excess_reuse",
+    "boxhead_readback::tests::boxhead_readback_pool_guard_returns_before_exact_creation",
+    "boxhead_readback::tests::boxhead_readback_ratio_and_absolute_boundaries_are_both_required",
+    "boxhead_readback::tests::boxhead_readback_ratio_uses_padded_allocation_not_unpadded_pixel_payload",
+    "boxhead_readback::tests::boxhead_readback_repeated_exact_calls_retain_no_temporary_allocations",
+    "boxhead_readback::tests::boxhead_readback_u64_arithmetic_never_wraps",
+    "boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels",
+    "boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path"
+  ],
+  "rendererGroup": {
+    "label": "readback_buffer",
+    "filter": "boxhead_readback::tests::",
+    "expectedExecuted": 12,
+    "expectedPassed": 12,
+    "expectedFailed": 0,
+    "expectedIgnored": 0,
+    "exactNames": [
+      "boxhead_readback::tests::boxhead_readback_clipped_region_dimensions_do_not_include_its_texture_origin",
+      "boxhead_readback::tests::boxhead_readback_constructor_unwind_has_already_returned_the_pool_guard",
+      "boxhead_readback::tests::boxhead_readback_disabled_backend_retains_identical_guard",
+      "boxhead_readback::tests::boxhead_readback_eligible_backend_still_reuses_an_exact_fit",
+      "boxhead_readback::tests::boxhead_readback_exact_fit_and_small_excess_reuse",
+      "boxhead_readback::tests::boxhead_readback_pool_guard_returns_before_exact_creation",
+      "boxhead_readback::tests::boxhead_readback_ratio_and_absolute_boundaries_are_both_required",
+      "boxhead_readback::tests::boxhead_readback_ratio_uses_padded_allocation_not_unpadded_pixel_payload",
+      "boxhead_readback::tests::boxhead_readback_repeated_exact_calls_retain_no_temporary_allocations",
+      "boxhead_readback::tests::boxhead_readback_u64_arithmetic_never_wraps",
+      "boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels",
+      "boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path"
+    ]
+  },
+  "cargoPackages": {
+    "readback_buffer": "ruffle_render_wgpu",
+    "otherTwentyGroups": "ruffle_core"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/anchor_index.rs",
+      "bytes": 19253,
+      "sha256": "6dae428bd0ca60330d7e27a9d424320645718a7a64ee590b0aeead907421f570",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 16116,
+        "sha256": "e80c96f3c4cacc32eea996b44aed517f9bf8a4d8e5053e045307b287a441d380"
+      }
+    },
+    {
+      "path": "core/src/avm1/anchor_metadata.rs",
+      "bytes": 15665,
+      "sha256": "3fc11c66f0f0b543302b90538f37dac62e57fbfe53ea4998e46a8a88a4d34c96",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 14574,
+        "sha256": "8ceef1008899d4d48833384be5ab3b76a4638b4095c78ce461073a7c5c6065df"
+      }
+    },
+    {
+      "path": "core/src/avm1/anchor_metadata_tests.rs",
+      "bytes": 12414,
+      "sha256": "c3344ccc95f605b1a4d6c7f69243a8d215870d4f6bf3fcefa25b85c2f712d9e8",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 11319,
+        "sha256": "0bccd5b3b7273b8b163ed4500d2ddeb36eccb0e84e7054cf152db8639985b4ac"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 55104,
+      "sha256": "047497a0849a042610209272b4017e342d033d4d4228f880ab50df1c6855476b",
+      "installation": {
+        "baselineBytes": 33729,
+        "baselineSha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+      },
+      "reviewPredecessor": {
+        "bytes": 51705,
+        "sha256": "1c5ecda3fd37ebc9afbce367d07123f144a6b2c118c1044f9f9d81304bc5a091"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs",
+      "bytes": 19682,
+      "sha256": "91f08a6ddc7465df725ccd72df44998a6eaafa5ef227a3a29847996c37f53718",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 29128,
+      "sha256": "f02f64650b00d212ec6d1d584e5764c78505c9717d26d5dc47678bcfad1ff3de",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 28407,
+        "sha256": "957be44d213bf008aa672b08a9108534397bc3e21fdb5d4bdf923fdf447722af"
+      }
+    },
+    {
+      "path": "render/wgpu/src/boxhead_readback.rs",
+      "bytes": 8719,
+      "sha256": "8b75864fd4597c0fb777cec72b1c71c53952f574da10ee3ffae46d62373e829e",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    },
+    {
+      "path": "render/wgpu/src/lib.rs",
+      "bytes": 10243,
+      "sha256": "127b727cd28cbd691d0f930d8e1cb2a6a970e1d93d87be084da807e88a8356dc",
+      "installation": {
+        "baselineBytes": 8850,
+        "baselineSha256": "09e3d07d29cced6f3262f1c1549b2d057f41964424c20f859543e2c01fd7321c"
+      },
+      "reviewPredecessor": null
+    }
+  ],
+  "upstreamRenderer": {
+    "path": "tools/ruffle-native-v19/baselines/render-wgpu-lib.rs",
+    "bytes": 8850,
+    "sha256": "09e3d07d29cced6f3262f1c1549b2d057f41964424c20f859543e2c01fd7321c"
+  },
+  "freshBfsBody": {
+    "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+    "bytes": 2767,
+    "sha256": "fa49aabdd7d14d83d155f76824a55d516fb2220e342f0fcd8e0b6dfce44af7f1"
+  },
+  "scopes": {
+    "assetDisplayReplay": "Extends the prior six-root optional asset topology with bounded opaque display-edge replay. Preparation retains weak owners and immutable field names only. Each checkpoint rereads live values, replays original MovieClip reference resolution and exact alias/error order, and skips only freshly recognized explicit opaque constructors. Ordinary/namespace overlaps and unsupported states retain the unchanged fresh BFS. Read-only nested assetIndex status adds no traversal or native work.",
+    "webglReadbackAllocation": "Only wasm WebGL Rgba8Unorm NotCopied bitmap capture may replace a pooled MAP_READ buffer when its allocation exceeds twice the requested padded size and the excess is at least256KiB. Return the pooled guard before allocating an exact call-local COPY_DST|MAP_READ buffer; retain the original rectangle, row layout, submission, synchronous capture, unmap and copy-count sequence. Other backends, formats, AlreadyCopied and ordinary pool policy remain unchanged. No persistent cache is added."
+  },
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-v19/source-reversal.json",
+      "bytes": 96022,
+      "sha256": "9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v19-source.mjs",
+      "bytes": 2218,
+      "sha256": "259b3c2d873a76a711fd2f6852da94518d2cfe82389aabb688530fb1ad18285b"
+    }
+  ],
+  "unchangedHistoricalFiles": [
+    {
+      "path": "tools/ruffle-native-asset-index/source-inventory.json",
+      "bytes": 6287,
+      "sha256": "460a18f18abddde6bfaa51b159aeb788595aed658812bc861c30acdd24eaf837"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-reversal.json",
+      "bytes": 57010,
+      "sha256": "c55db22c3b58d5ae3c6c9d94683dd261d03389c438d214cf03bcc85506818ae6"
+    },
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-inventory.json",
+      "bytes": 5847,
+      "sha256": "f0ba1d11e7336c2d772ca7c0937297b595cdd72bbb1bfa7551ba9a0561f092df"
+    },
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-reversal.json",
+      "bytes": 52241,
+      "sha256": "8659cd04d5295eedfd6c68253adf66983d3c5bd05c1c7c1254c5810eb5c2f602"
+    }
+  ],
+  "unchangedHarnesses": [
+    {
+      "path": "scripts/original-coop-campaign-phased.mjs",
+      "bytes": 230427,
+      "sha256": "148d6aa3bc80e8daf731888f6996427c1c8ed535beca7a48fe2be30afc69c1a2"
+    },
+    {
+      "path": "scripts/original-network-performance-phased.mjs",
+      "bytes": 85414,
+      "sha256": "ccc530064eb1bea48b034b2ed6c28da2d13bb29a3bdb0c80e028be1d10add790"
+    },
+    {
+      "path": "scripts/original-checkpoint-profile-phased.mjs",
+      "bytes": 110862,
+      "sha256": "fa072702625e57cbf20fcf20fa34d9969bfa9177bbc89f14651fdbf0eceb5cb0"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-phased.py",
+      "bytes": 9667,
+      "sha256": "65248812f0d3e5a5d4f924dd33b22fc6305e1d3235bcdb7bdd49d4acf188b99b"
+    }
+  ],
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false
+}

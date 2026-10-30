@@ -1,0 +1,39 @@
+{
+  "schema": "boxhead-native-display-lookup-source-delta-v1",
+  "files": [
+    {
+      "path": "core/src/avm1/object.rs",
+      "predecessorBytes": 20276,
+      "predecessorSha256": "1929a336bd4b60cae4491b28542116f88027f823e36b2dd5b2936ffc4458b2bc",
+      "candidateBytes": 20703,
+      "candidateSha256": "50a782424948d00be67a47a3ff93ce8288198bc6436e29000c8c0d1e0bdd8588",
+      "hunks": [
+        {
+          "before": "    Stored(Value<'gc>),\n    Missing,\n    Special,\n}\n\n/// The result of one ordinary own-write observation. A missing slot carries\n",
+          "after": "    Stored(Value<'gc>),\n    Missing,\n    Special,\n}\n\n/// One fresh local read used only by prototype lookup. This is separate from\n/// the raw identity helper: a missing own slot may read a native display\n/// property through the original stage-object fallback.\n#[derive(Clone, Copy, Debug)]\npub(crate) enum BoxheadLookupProperty<'gc> {\n    Resolved(Value<'gc>),\n    Missing,\n    Slow,\n}\n\n/// The result of one ordinary own-write observation. A missing slot carries\n"
+        },
+        {
+          "before": "            return Err(Error::PrototypeRecursionLimit);\n        }\n\n        match p.boxhead_own_property(name, activation) {\n            BoxheadOwnProperty::Stored(value) => return Ok(Some((value, depth))),\n            BoxheadOwnProperty::Missing => {},\n            BoxheadOwnProperty::Special => {\n                // Virtual descriptors and nonordinary native objects retain\n                // the exact original getter/fallback sequence, including its\n                // error handling and a fresh lookup after a callback.\n                if let Some(result) = p.call_getter(name, this.into(), activation).transpose() {\n",
+          "after": "            return Err(Error::PrototypeRecursionLimit);\n        }\n\n        match p.boxhead_lookup_property(name, activation) {\n            BoxheadLookupProperty::Resolved(value) => return Ok(Some((value, depth))),\n            BoxheadLookupProperty::Missing => {},\n            BoxheadLookupProperty::Slow => {\n                // Virtual descriptors and Super objects retain\n                // the exact original getter/fallback sequence, including its\n                // error handling and a fresh lookup after a callback.\n                if let Some(result) = p.call_getter(name, this.into(), activation).transpose() {\n"
+        },
+        {
+          "before": "#[cfg(test)]\n#[path = \"object/boxhead_property_tests.rs\"]\nmod boxhead_property_tests;\n",
+          "after": "#[cfg(test)]\n#[path = \"object/boxhead_property_tests.rs\"]\nmod boxhead_property_tests;\n\n#[cfg(test)]\n#[path = \"object/boxhead_display_lookup/tests.rs\"]\nmod boxhead_display_lookup;\n"
+        }
+      ]
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "predecessorBytes": 43753,
+      "predecessorSha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399",
+      "candidateBytes": 45254,
+      "candidateSha256": "75d9478f35f3c8d97108fb35ff27c544926b3a483d4d925d30bcd78643621239",
+      "hunks": [
+        {
+          "before": "            super::BoxheadOwnProperty::Special\n        } else {\n            super::BoxheadOwnProperty::Stored(property.data())\n        }\n    }\n\n",
+          "after": "            super::BoxheadOwnProperty::Special\n        } else {\n            super::BoxheadOwnProperty::Stored(property.data())\n        }\n    }\n\n    /// Combines the callback-free local prefix of prototype lookup. A virtual\n    /// descriptor or Super keeps the original getter path. Otherwise the same\n    /// descriptor supplies the stored value, or the same native display\n    /// fallback used by get_local_stored runs after an absent/hidden slot.\n    /// Keep the read borrow through that fallback, just as get_local_stored\n    /// does; never carry a descriptor or native result across a callback.\n    pub(crate) fn boxhead_lookup_property(\n        self,\n        name: AvmString<'gc>,\n        activation: &mut Activation<'_, 'gc>,\n    ) -> super::BoxheadLookupProperty<'gc> {\n        let read = self.0.borrow();\n        if matches!(read.native, NativeObject::Super(_)) {\n            return super::BoxheadLookupProperty::Slow;\n        }\n        if let Some(property) = read.properties\n            .get_avm(name, activation.is_case_sensitive())\n            .filter(|property| property.allow_swf_version(activation.swf_version()))\n        {\n            return if property.is_virtual() {\n                super::BoxheadLookupProperty::Slow\n            } else {\n                super::BoxheadLookupProperty::Resolved(property.data())\n            };\n        }\n        match read.native.as_display_object()\n            .and_then(|dobj| stage_object::get_property(dobj, name, activation))\n        {\n            Some(value) => super::BoxheadLookupProperty::Resolved(value),\n            None => super::BoxheadLookupProperty::Missing,\n        }\n    }\n\n"
+        }
+      ]
+    }
+  ]
+}

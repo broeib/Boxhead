@@ -1,0 +1,897 @@
+--- a/core/src/avm1/globals.rs
++++ b/core/src/avm1/globals.rs
+@@ -28,6 +28,7 @@
+ mod bitmap_filter;
+ pub(crate) mod blur_filter;
+ pub(crate) mod boolean;
++pub(crate) mod boxhead_native_scalars;
+ pub(crate) mod button;
+ mod camera;
+ mod color;
+@@ -718,6 +719,9 @@
+         "MovieClipLoader" => value(movie_clip_loader.constr; DONT_ENUM);
+         "PrintJob" => value(print_job.constr; DONT_ENUM);
+         "TextSnapshot" => value(text_snapshot.constr; DONT_ENUM);
++
++        // Isolated, opt-in scalar-loop experiment. No prototype is extended.
++        "boxheadNativeScalarsV1" => method(boxhead_native_scalars::call; DONT_ENUM | DONT_DELETE | READ_ONLY);
+     };
+     context.define_properties_on(globals, decls);
+ 
+--- a/core/src/avm1/runtime.rs
++++ b/core/src/avm1/runtime.rs
+@@ -108,6 +108,10 @@
+     /// More examples of this are in the movieclip_invalid_get_bounds_X tests.
+     use_new_invalid_bounds_value: bool,
+ 
++    /// Optional scalar-kernel witnesses only; never retains game objects.
++    #[collect(require_static)]
++    pub(crate) native_scalar_stats: super::globals::boxhead_native_scalars::NativeScalarStats,
++
+     #[cfg(feature = "avm_debug")]
+     pub debug_output: bool,
+ }
+@@ -132,6 +136,7 @@
+             #[cfg(feature = "avm_debug")]
+             debug_output: false,
+             use_new_invalid_bounds_value: false,
++            native_scalar_stats: Default::default(),
+         }
+     }
+ 
+--- a/core/src/avm1/activation.rs
++++ b/core/src/avm1/activation.rs
+@@ -29,6 +29,10 @@
+ 
+ use super::object_reference::MovieClipReference;
+ 
++#[cfg(test)]
++#[path = "globals/boxhead_native_scalars/activation_tests.rs"]
++mod native_scalar_boundary_tests;
++
+ macro_rules! avm_debug {
+     ($avm: expr, $($arg:tt)*) => (
+         if $avm.show_debug_output() {
+--- /dev/null
++++ b/core/src/avm1/globals/boxhead_native_scalars.rs
+@@ -0,0 +1,255 @@
++//! Optional Boxhead scalar-loop experiment. No game objects survive a call.
++//!
++//! This is deliberately a loop fusion, not a raw-slot projection: enumerate
++//! once, call the current hasOwnProperty method for each listed key, read the
++//! current value once, then apply the existing AS2 field policy and normal
++//! property writes. Unsupported source kinds are rejected before enumeration.
++
++use crate::avm1::activation::Activation;
++use crate::avm1::error::Error;
++use crate::avm1::function::ExecutionReason;
++use crate::avm1::object::NativeObject;
++use crate::avm1::property::Attribute;
++use crate::avm1::{Object, Value};
++use crate::display_object::TDisplayObject;
++use crate::string::AvmString;
++use ruffle_macros::istr;
++
++const MAX_COUNTER: u64 = (1_u64 << 53) - 1;
++const TIMEOUT_KEY_INTERVAL: usize = 32;
++
++/// The only state retained by the experiment: exact integer witnesses, with
++/// no GC pointers, source/output/cache references or source-shape information.
++#[derive(Clone, Copy, Debug, Default)]
++pub(crate) struct NativeScalarStats {
++    calls: u64,
++    completed: u64,
++    unsupported: u64,
++    keys: u64,
++    own_reads: u64,
++}
++
++fn increment(counter: &mut u64) -> bool {
++    if *counter >= MAX_COUNTER {
++        false
++    } else {
++        *counter += 1;
++        true
++    }
++}
++
++fn rejected<'gc>(activation: &mut Activation<'_, 'gc>, message: &str) -> Error<'gc> {
++    Error::ThrownValue(Value::String(AvmString::new_utf8(activation.gc(), message)))
++}
++
++fn timeout<'gc>(activation: &Activation<'_, 'gc>) -> Result<(), Error<'gc>> {
++    if activation.context.update_start.elapsed() >= activation.context.max_execution_duration {
++        Err(Error::ExecutionTimeout)
++    } else {
++        Ok(())
++    }
++}
++
++/// Registered as a non-enumerable, read-only global. Native functions execute
++/// in their caller's Activation, preserving its SWF version, scope and clip.
++pub fn call<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let Some(Value::String(operation)) = args.first() else {
++        return Err(rejected(activation, "Native scalar operation must be a string"));
++    };
++    if operation.eq_with_case(b"capability", true) {
++        if args.len() != 1 {
++            return Err(rejected(activation, "Native scalar capability takes no arguments"));
++        }
++        return Ok(capability(activation).into());
++    }
++    if !operation.eq_with_case(b"run", true) || args.len() != 5 {
++        return Err(rejected(activation, "Invalid native scalar operation or argument count"));
++    }
++    run(activation, args[1], args[2], args[3], args[4])
++}
++
++fn capability<'gc>(activation: &mut Activation<'_, 'gc>) -> Object<'gc> {
++    // The witness is a fresh data-only envelope. Defining the metadata fields
++    // directly avoids invoking user setters during this diagnostic query.
++    let stats = activation.context.avm1.native_scalar_stats;
++    let object = Object::new(&activation.context.strings, Some(activation.prototypes().object));
++    for (name, value) in [
++        ("version", Value::Number(1.0)),
++        (
++            "contract",
++            Value::String(AvmString::new_utf8(activation.gc(), "bh-scalars-thing-v1")),
++        ),
++        ("calls", Value::Number(stats.calls as f64)),
++        ("completed", Value::Number(stats.completed as f64)),
++        ("unsupported", Value::Number(stats.unsupported as f64)),
++        ("keys", Value::Number(stats.keys as f64)),
++        ("ownReads", Value::Number(stats.own_reads as f64)),
++    ] {
++        object.define_value(
++            activation.gc(),
++            AvmString::new_utf8(activation.gc(), name),
++            value,
++            Attribute::empty(),
++        );
++    }
++    object
++}
++
++fn ordinary<'gc>(value: Value<'gc>) -> Option<Object<'gc>> {
++    match value {
++        Value::Object(object) if matches!(object.native(), NativeObject::None) => Some(object),
++        _ => None,
++    }
++}
++
++fn member<'gc>(
++    value: Value<'gc>,
++    key: AvmString<'gc>,
++    activation: &mut Activation<'_, 'gc>,
++) -> Result<Value<'gc>, Error<'gc>> {
++    // Match ActionGetMember even if a policy callback changed the cache's type.
++    value.coerce_to_object_or_bare(activation)?.get(key, activation)
++}
++
++fn run<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    source_value: Value<'gc>,
++    output_value: Value<'gc>,
++    mut field_cache: Value<'gc>,
++    owner_value: Value<'gc>,
++) -> Result<Value<'gc>, Error<'gc>> {
++    // No source key/property inspection belongs in this preflight. The AS2
++    // caller already created its ordinary output and initialized its local
++    // cache in the old order. A false result reuses those same objects.
++    let Some(output) = ordinary(output_value) else {
++        return Err(rejected(activation, "Native scalar output must be an ordinary object"));
++    };
++    let Value::Object(owner) = owner_value else {
++        return Err(rejected(activation, "Native scalar policy owner must be an object"));
++    };
++    if ordinary(field_cache).is_none() {
++        return Err(rejected(activation, "Native scalar initial cache must be an ordinary object"));
++    }
++    if Object::ptr_eq(output, owner)
++        || matches!(source_value, Value::Object(object) if Object::ptr_eq(output, object))
++        || matches!(field_cache, Value::Object(object) if Object::ptr_eq(output, object))
++    {
++        return Err(rejected(activation, "Native scalar output aliases an input"));
++    }
++    if !increment(&mut activation.context.avm1.native_scalar_stats.calls) {
++        return Err(rejected(activation, "Native scalar witness overflow"));
++    }
++    let Some(source) = ordinary(source_value) else {
++        if !increment(&mut activation.context.avm1.native_scalar_stats.unsupported) {
++            return Err(rejected(activation, "Native scalar witness overflow"));
++        }
++        return Ok(Value::Bool(false));
++    };
++
++    timeout(activation)?;
++    // ActionEnumerate2 pushes get_keys(false) in reverse and then consumes its
++    // stack. Iterating this Vec forwards therefore preserves the AS2 order.
++    // A later getter can change membership/values, but not the collected list.
++    let keys = source.get_keys(activation, false);
++    // The pinned CommonStrings has no hasOwnProperty entry. Reuse only its
++    // name; source.call_method still resolves the current method per key.
++    let has_own_property = AvmString::new_utf8(activation.gc(), "hasOwnProperty");
++    let mut own_reads: u64 = 0;
++    for (index, key) in keys.into_iter().enumerate() {
++        if index % TIMEOUT_KEY_INTERVAL == 0 {
++            timeout(activation)?;
++        }
++        if !increment(&mut activation.context.avm1.native_scalar_stats.keys) {
++            return Err(rejected(activation, "Native scalar witness overflow"));
++        }
++        let owns = source.call_method(
++            has_own_property,
++            &[key.into()],
++            activation,
++            ExecutionReason::FunctionCall,
++        )?;
++        // ActionCallMethod ends the caller activation after a removed base
++        // clip. Returning here lets the outer native call perform that same
++        // check without reading another source value or publishing a result.
++        if activation.base_clip().avm1_removed() {
++            return Ok(Value::Undefined);
++        }
++        if !owns.as_bool(activation.swf_version()) {
++            continue;
++        }
++
++        // This read stays before type/policy filtering, including fields that
++        // will be omitted. Never use get_local_stored or own_properties here.
++        let value = source.get(key, activation)?;
++        if !increment(&mut own_reads)
++            || !increment(&mut activation.context.avm1.native_scalar_stats.own_reads)
++        {
++            return Err(rejected(activation, "Native scalar witness overflow"));
++        }
++        if !matches!(value, Value::Number(_) | Value::Bool(_) | Value::String(_)) {
++            continue;
++        }
++
++        let mut skip = member(field_cache, key, activation)?;
++        // AVM1's loose comparison is intentional: bare objects are not safely
++        // comparable with Rust's undefined discriminant test.
++        if skip.abstract_eq(Value::Undefined, activation)? {
++            skip = owner.call_method(
++                AvmString::new_utf8(activation.gc(), "BH_SkipField"),
++                &[key.into()],
++                activation,
++                ExecutionReason::FunctionCall,
++            )?;
++            if activation.base_clip().avm1_removed() {
++                return Ok(Value::Undefined);
++            }
++            field_cache = owner.get(
++                AvmString::new_utf8(activation.gc(), "mBHFieldCache"),
++                activation,
++            )?;
++        }
++        if skip.as_bool(activation.swf_version()) {
++            continue;
++        }
++
++        let projected = match value {
++            Value::Number(number) if !number.is_finite() => {
++                // The AS2 helper retains the actual String(value) expression
++                // and its scope/overrides; the common finite path makes no
++                // additional script call. Build the tag exactly as InitObject.
++                let text = owner.call_method(
++                    AvmString::new_utf8(activation.gc(), "BH_NativeScalarString"),
++                    &[value],
++                    activation,
++                    ExecutionReason::FunctionCall,
++                )?;
++                if activation.base_clip().avm1_removed() {
++                    return Ok(Value::Undefined);
++                }
++                let proto = activation.resolve_prototype([istr!(activation, "Object")]);
++                let tag = Object::new(&activation.context.strings, proto);
++                tag.set(
++                    AvmString::new_utf8(activation.gc(), "$number"),
++                    text,
++                    activation,
++                )?;
++                Value::Object(tag)
++            }
++            // Keep the original finite number bits, especially negative zero.
++            value => value,
++        };
++        output.set(key, projected, activation)?;
++    }
++    timeout(activation)?;
++    if !increment(&mut activation.context.avm1.native_scalar_stats.completed) {
++        return Err(rejected(activation, "Native scalar witness overflow"));
++    }
++    Ok(Value::Number(own_reads as f64))
++}
++
++#[cfg(test)]
++mod tests;
+--- /dev/null
++++ b/core/src/avm1/globals/boxhead_native_scalars/tests.rs
+@@ -0,0 +1,506 @@
++//! Engine-level semantic fixtures. The companion AS2 probe separately compares
++//! the actual original scalar source with this builtin on the compiled SWF.
++
++use super::*;
++use crate::avm1::function::{FunctionObject, NativeFunction};
++use crate::avm1::test_utils::with_avm;
++use std::time::Duration;
++
++fn name<'gc>(activation: &Activation<'_, 'gc>, value: &str) -> AvmString<'gc> {
++    AvmString::new_utf8(activation.gc(), value)
++}
++
++fn object<'gc>(activation: &Activation<'_, 'gc>) -> Object<'gc> {
++    Object::new(&activation.context.strings, Some(activation.prototypes().object))
++}
++
++fn function<'gc>(activation: &Activation<'_, 'gc>, callback: NativeFunction) -> Object<'gc> {
++    FunctionObject::native(callback).build(&activation.context.strings, None, None)
++}
++
++fn define<'gc>(
++    activation: &Activation<'_, 'gc>,
++    object: Object<'gc>,
++    key: &str,
++    value: Value<'gc>,
++    attributes: Attribute,
++) {
++    object.define_value(activation.gc(), name(activation, key), value, attributes);
++}
++
++fn stored<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    object: Object<'gc>,
++    key: &str,
++) -> Value<'gc> {
++    object.get_data(name(activation, key), activation).unwrap_or(Value::Undefined)
++}
++
++fn add_count<'gc>(activation: &mut Activation<'_, 'gc>, owner: Object<'gc>, key: &str) -> u64 {
++    let count = match stored(activation, owner, key) {
++        Value::Number(value) => value as u64,
++        _ => 0,
++    } + 1;
++    define(activation, owner, key, Value::Number(count as f64), Attribute::DONT_ENUM);
++    count
++}
++
++fn string_value<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    owner: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    add_count(activation, owner, "stringCalls");
++    Ok(args[0].coerce_to_string(activation)?.into())
++}
++
++fn skip_false<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    owner: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    add_count(activation, owner, "policyCalls");
++    let Value::Object(cache) = stored(activation, owner, "mBHFieldCache") else {
++        panic!("fixture cache must be an object");
++    };
++    let key = args[0].coerce_to_string(activation)?;
++    cache.set(key, Value::Bool(false), activation)?;
++    Ok(Value::Bool(false))
++}
++
++fn owner_and_cache<'gc>(activation: &Activation<'_, 'gc>) -> (Object<'gc>, Object<'gc>) {
++    let owner = object(activation);
++    let cache = Object::new_without_proto(activation.gc());
++    define(activation, owner, "mBHFieldCache", cache.into(), Attribute::empty());
++    define(activation, owner, "BH_SkipField", function(activation, skip_false).into(), Attribute::DONT_ENUM);
++    define(activation, owner, "BH_NativeScalarString", function(activation, string_value).into(), Attribute::DONT_ENUM);
++    (owner, cache)
++}
++
++fn invoke<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    source: Value<'gc>,
++    output: Object<'gc>,
++    cache: Object<'gc>,
++    owner: Object<'gc>,
++) -> Result<Value<'gc>, Error<'gc>> {
++    let global = activation.global_object();
++    let operation = name(activation, "run");
++    call(activation, global, &[operation.into(), source, output.into(), cache.into(), owner.into()])
++}
++
++fn throws<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    Err(rejected(activation, "fixture getter throw"))
++}
++
++#[test]
++fn registered_capability_is_hidden_readonly_fresh_and_data_only() {
++    with_avm(8, |activation, _this| {
++        let global = activation.global_object();
++        let key = name(activation, "boxheadNativeScalarsV1");
++        let before = global.get(key, activation)?;
++        assert!(matches!(before, Value::Object(value) if value.as_function().is_some()));
++        assert!(!global.get_keys(activation, false).contains(&key));
++        global.set(key, Value::Undefined, activation)?;
++        assert_eq!(global.get(key, activation)?, before);
++
++        let operation = name(activation, "capability");
++        let first = global.call_method(key, &[operation.into()], activation, ExecutionReason::FunctionCall)?;
++        let second = global.call_method(key, &[operation.into()], activation, ExecutionReason::FunctionCall)?;
++        let (Value::Object(first), Value::Object(second)) = (first, second) else {
++            panic!("capability must return objects");
++        };
++        assert!(!Object::ptr_eq(first, second));
++        assert_eq!(first.get_keys(activation, false).len(), 7);
++        assert_eq!(stored(activation, first, "version"), Value::Number(1.0));
++        for key in ["calls", "completed", "unsupported", "keys", "ownReads"] {
++            assert_eq!(stored(activation, first, key), Value::Number(0.0));
++        }
++        assert_eq!(activation.context.avm1.native_scalar_stats.calls, 0);
++        Ok(())
++    });
++}
++
++#[test]
++fn unsupported_kinds_and_malformed_arguments_never_read_source_properties() {
++    with_avm(8, |activation, root| {
++        let array = Object::new_with_native(&activation.context.strings, Some(activation.prototypes().array), NativeObject::Array(()));
++        let getter = function(activation, throws);
++        array.add_property(activation.gc(), name(activation, "failIfRead"), getter, None, Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        for source in [array.into(), root.into(), Value::Undefined, Value::Number(7.0)] {
++            assert_eq!(invoke(activation, source, output, cache, owner)?, Value::Bool(false));
++        }
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.unsupported, stats.keys, stats.own_reads), (4, 0, 4, 0, 0));
++        assert!(output.get_keys(activation, false).is_empty());
++        let source = object(activation);
++        assert!(matches!(invoke(activation, source.into(), source, cache, owner), Err(Error::ThrownValue(_))));
++        let global = activation.global_object();
++        let operation = name(activation, "run");
++        assert!(matches!(call(activation, global, &[operation.into()]), Err(Error::ThrownValue(_))));
++        assert_eq!(activation.context.avm1.native_scalar_stats.keys, 0);
++        Ok(())
++    });
++}
++
++fn owns_true<'gc>(
++    _activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    Ok(Value::Bool(true))
++}
++
++fn owns_false<'gc>(
++    _activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    Ok(Value::Bool(false))
++}
++
++fn changing_own_method<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let count = add_count(activation, this, "lookupCount");
++    Ok(stored(activation, this, if count == 1 { "firstOwnMethod" } else { "laterOwnMethod" }))
++}
++
++#[test]
++fn own_method_is_resolved_live_for_every_collected_key() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "a", Value::Number(1.0), Attribute::empty());
++        define(activation, source, "b", Value::Number(2.0), Attribute::empty());
++        define(activation, source, "firstOwnMethod", function(activation, owns_true).into(), Attribute::DONT_ENUM);
++        define(activation, source, "laterOwnMethod", function(activation, owns_false).into(), Attribute::DONT_ENUM);
++        let getter = function(activation, changing_own_method);
++        source.add_property(activation.gc(), name(activation, "hasOwnProperty"), getter, None, Attribute::DONT_ENUM);
++        let keys = source.get_keys(activation, false);
++        assert_eq!(keys.len(), 2);
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Number(1.0));
++        assert_eq!(stored(activation, source, "lookupCount"), Value::Number(2.0));
++        assert!(output.has_own_property(activation, keys[0]));
++        assert!(!output.has_own_property(activation, keys[1]));
++        assert_eq!(activation.context.avm1.native_scalar_stats.keys, 2);
++        Ok(())
++    });
++}
++
++fn delete_later_key<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    add_count(activation, this, "getterCalls");
++    let Value::String(victim) = stored(activation, this, "victim") else {
++        panic!("fixture victim name");
++    };
++    this.delete(activation, victim);
++    this.set(name(activation, "addedAfterEnumeration"), Value::Number(99.0), activation)?;
++    Ok(Value::Number(17.0))
++}
++
++#[test]
++fn getter_mutation_uses_the_original_key_list_and_live_membership() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "a", Value::Number(1.0), Attribute::empty());
++        define(activation, source, "b", Value::Number(2.0), Attribute::empty());
++        let keys = source.get_keys(activation, false);
++        define(activation, source, "victim", keys[1].into(), Attribute::DONT_ENUM);
++        let getter = function(activation, delete_later_key);
++        source.add_property(activation.gc(), keys[0], getter, None, Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Number(1.0));
++        assert_eq!(output.get(keys[0], activation)?, Value::Number(17.0));
++        assert!(!output.has_own_property(activation, keys[1]));
++        let late = name(activation, "addedAfterEnumeration");
++        assert!(source.has_own_property(activation, late));
++        assert!(!output.has_own_property(activation, late));
++        assert_eq!(stored(activation, source, "getterCalls"), Value::Number(1.0));
++        assert_eq!(activation.context.avm1.native_scalar_stats.keys, 2);
++        Ok(())
++    });
++}
++
++fn replace_cache<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    this: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    add_count(activation, this, "policyCalls");
++    let next = Object::new_without_proto(activation.gc());
++    let current = args[0].coerce_to_string(activation)?;
++    next.set(current, Value::Bool(false), activation)?;
++    let Value::String(skip) = stored(activation, this, "skipNext") else {
++        panic!("fixture skip name");
++    };
++    next.set(skip, Value::Bool(true), activation)?;
++    this.set(name(activation, "mBHFieldCache"), next, activation)?;
++    Ok(Value::Bool(false))
++}
++
++#[test]
++fn policy_miss_refreshes_the_local_cache_before_the_next_key() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "a", Value::Number(1.0), Attribute::empty());
++        define(activation, source, "b", Value::Number(2.0), Attribute::empty());
++        let keys = source.get_keys(activation, false);
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        define(activation, owner, "skipNext", keys[1].into(), Attribute::DONT_ENUM);
++        define(activation, owner, "BH_SkipField", function(activation, replace_cache).into(), Attribute::DONT_ENUM);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Number(2.0));
++        assert!(output.has_own_property(activation, keys[0]));
++        assert!(!output.has_own_property(activation, keys[1]));
++        assert_eq!(stored(activation, owner, "policyCalls"), Value::Number(1.0));
++        assert!(cache.get_keys(activation, false).is_empty());
++        assert_ne!(stored(activation, owner, "mBHFieldCache"), Value::Object(cache));
++        Ok(())
++    });
++}
++
++#[test]
++fn finite_bits_and_nonfinite_tags_are_preserved_without_value_caching() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        for (key, number) in [
++            ("negativeZero", -0.0), ("maximum", f64::MAX), ("minimumNormal", f64::MIN_POSITIVE),
++            ("subnormal", f64::from_bits(1)), ("nan", f64::NAN),
++            ("positiveInfinity", f64::INFINITY), ("negativeInfinity", f64::NEG_INFINITY),
++        ] {
++            define(activation, source, key, Value::Number(number), Attribute::empty());
++        }
++        define(activation, source, "nullValue", Value::Null, Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Number(8.0));
++        for (key, expected) in [("negativeZero", -0.0_f64), ("maximum", f64::MAX),
++            ("minimumNormal", f64::MIN_POSITIVE), ("subnormal", f64::from_bits(1))] {
++            let Value::Number(actual) = output.get(name(activation, key), activation)? else {
++                panic!("finite result must remain a number");
++            };
++            assert_eq!(actual.to_bits(), expected.to_bits());
++        }
++        for (key, expected) in [("nan", "NaN"), ("positiveInfinity", "Infinity"), ("negativeInfinity", "-Infinity")] {
++            let Value::Object(tag) = output.get(name(activation, key), activation)? else {
++                panic!("nonfinite result must be a tag object");
++            };
++            let Value::String(text) = tag.get(name(activation, "$number"), activation)? else {
++                panic!("tag text");
++            };
++            assert_eq!(text.to_utf8_lossy(), expected);
++        }
++        let null_key = name(activation, "nullValue");
++        assert!(!output.has_own_property(activation, null_key));
++        assert_eq!(stored(activation, owner, "stringCalls"), Value::Number(3.0));
++        source.set(name(activation, "maximum"), Value::Number(123.0), activation)?;
++        let second = object(activation);
++        invoke(activation, source.into(), second, cache, owner)?;
++        assert_eq!(second.get(name(activation, "maximum"), activation)?, Value::Number(123.0));
++        assert_eq!(output.get(name(activation, "maximum"), activation)?, Value::Number(f64::MAX));
++        Ok(())
++    });
++}
++
++#[test]
++fn getter_exceptions_are_not_retried_or_published_as_completed() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        let getter = function(activation, throws);
++        source.add_property(activation.gc(), name(activation, "value"), getter, None, Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        let result = invoke(activation, source.into(), output, cache, owner);
++        assert!(matches!(result, Err(Error::ThrownValue(Value::String(text))) if text.eq_with_case(b"fixture getter throw", true)));
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 1, 0));
++        assert!(output.get_keys(activation, false).is_empty());
++        Ok(())
++    });
++}
++
++fn intercept_write<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    this: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    define(activation, this, "capturedWrite", args[0], Attribute::DONT_ENUM);
++    Ok(Value::Undefined)
++}
++
++#[test]
++fn output_writes_use_the_original_prototype_setter_semantics() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "value", Value::Number(42.0), Attribute::empty());
++        let prototype = object(activation);
++        let getter = function(activation, owns_false);
++        let setter = function(activation, intercept_write);
++        prototype.add_property(activation.gc(), name(activation, "value"), getter, Some(setter), Attribute::empty());
++        let output = Object::new(&activation.context.strings, Some(prototype));
++        let (owner, cache) = owner_and_cache(activation);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Number(1.0));
++        assert_eq!(stored(activation, output, "capturedWrite"), Value::Number(42.0));
++        let value_key = name(activation, "value");
++        assert!(!output.has_own_property(activation, value_key));
++        Ok(())
++    });
++}
++
++#[test]
++fn timeout_at_entry_precedes_enumeration_and_value_reads() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        let getter = function(activation, throws);
++        source.add_property(activation.gc(), name(activation, "value"), getter, None, Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        let previous = activation.context.max_execution_duration;
++        activation.context.max_execution_duration = Duration::ZERO;
++        let result = invoke(activation, source.into(), output, cache, owner);
++        activation.context.max_execution_duration = previous;
++        assert!(matches!(result, Err(Error::ExecutionTimeout)));
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 0, 0));
++        Ok(())
++    });
++}
++
++fn expire_budget<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    this: Object<'gc>,
++    args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    // A real context limit, made deterministic without sleeping or altering
++    // the engine's clock. This native callback adds no AVM1 opcodes.
++    activation.context.max_execution_duration = Duration::ZERO;
++    let key = args[0].coerce_to_string(activation)?;
++    Ok(this.has_own_property(activation, key).into())
++}
++
++#[test]
++fn timeout_is_checked_again_after_at_most_32_visited_keys() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        define(activation, source, "hasOwnProperty", function(activation, expire_budget).into(), Attribute::DONT_ENUM);
++        for index in 0..65 {
++            let key = name(activation, &format!("key{index}"));
++            source.define_value(activation.gc(), key, Value::Number(index as f64), Attribute::empty());
++            cache.define_value(activation.gc(), key, Value::Bool(false), Attribute::empty());
++        }
++        let previous = activation.context.max_execution_duration;
++        activation.context.max_execution_duration = Duration::from_secs(3600);
++        let result = invoke(activation, source.into(), output, cache, owner);
++        activation.context.max_execution_duration = previous;
++        assert!(matches!(result, Err(Error::ExecutionTimeout)));
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 32, 32));
++        assert_eq!(output.get_keys(activation, false).len(), 32);
++        Ok(())
++    });
++}
++
++fn unload_and_true<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let clip = activation.base_clip();
++    clip.avm1_unload(activation.context);
++    Ok(Value::Bool(true))
++}
++
++fn unload_and_false<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let clip = activation.base_clip();
++    clip.avm1_unload(activation.context);
++    Ok(Value::Bool(false))
++}
++
++fn unload_and_string<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let clip = activation.base_clip();
++    clip.avm1_unload(activation.context);
++    Ok(name(activation, "NaN").into())
++}
++
++#[test]
++fn removal_in_has_own_stops_before_the_source_getter() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        let getter = function(activation, throws);
++        source.add_property(activation.gc(), name(activation, "value"), getter, None, Attribute::empty());
++        define(activation, source, "hasOwnProperty", function(activation, unload_and_true).into(), Attribute::DONT_ENUM);
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Undefined);
++        assert!(activation.base_clip().avm1_removed());
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 1, 0));
++        assert!(output.get_keys(activation, false).is_empty());
++        Ok(())
++    });
++}
++
++#[test]
++fn removal_in_policy_stops_before_cache_refresh_and_output_write() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "value", Value::Number(7.0), Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        define(activation, owner, "BH_SkipField", function(activation, unload_and_false).into(), Attribute::DONT_ENUM);
++        let getter = function(activation, throws);
++        owner.add_property(activation.gc(), name(activation, "mBHFieldCache"), getter, None, Attribute::empty());
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Undefined);
++        assert!(activation.base_clip().avm1_removed());
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 1, 1));
++        assert!(output.get_keys(activation, false).is_empty());
++        Ok(())
++    });
++}
++
++#[test]
++fn removal_in_string_stops_before_constructing_the_number_tag() {
++    with_avm(8, |activation, _this| {
++        let source = object(activation);
++        define(activation, source, "value", Value::Number(f64::NAN), Attribute::empty());
++        let output = object(activation);
++        let (owner, cache) = owner_and_cache(activation);
++        define(activation, cache, "value", Value::Bool(false), Attribute::empty());
++        define(activation, owner, "BH_NativeScalarString", function(activation, unload_and_string).into(), Attribute::DONT_ENUM);
++        let prototype = activation.prototypes().object;
++        let getter = function(activation, owns_false);
++        let setter = function(activation, throws);
++        prototype.add_property(activation.gc(), name(activation, "$number"), getter, Some(setter), Attribute::DONT_ENUM);
++        assert_eq!(invoke(activation, source.into(), output, cache, owner)?, Value::Undefined);
++        assert!(activation.base_clip().avm1_removed());
++        let stats = activation.context.avm1.native_scalar_stats;
++        assert_eq!((stats.calls, stats.completed, stats.keys, stats.own_reads), (1, 0, 1, 1));
++        assert!(output.get_keys(activation, false).is_empty());
++        Ok(())
++    });
++}
+--- /dev/null
++++ b/core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs
+@@ -0,0 +1,73 @@
++//! This module is included only beneath activation.rs under cfg(test), so it
++//! can exercise the unchanged real ActionCallMethod completion boundary.
++
++use super::{Activation, FrameControl, ReturnType};
++use crate::avm1::error::Error;
++use crate::avm1::function::FunctionObject;
++use crate::avm1::property::Attribute;
++use crate::avm1::test_utils::with_avm;
++use crate::avm1::{Object, Value};
++use crate::display_object::TDisplayObject;
++use crate::string::AvmString;
++
++fn unload<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    let clip = activation.base_clip();
++    clip.avm1_unload(activation.context);
++    Ok(Value::Bool(true))
++}
++
++fn forbidden_read<'gc>(
++    activation: &mut Activation<'_, 'gc>,
++    _this: Object<'gc>,
++    _args: &[Value<'gc>],
++) -> Result<Value<'gc>, Error<'gc>> {
++    Err(Error::ThrownValue(AvmString::new_utf8(activation.gc(), "read after base-clip removal").into()))
++}
++
++#[test]
++fn native_scalar_undefined_after_removal_ends_the_actual_caller_activation() {
++    with_avm(8, |activation, _this| {
++        let prototype = activation.prototypes().object;
++        let source = Object::new(&activation.context.strings, Some(prototype));
++        let output = Object::new(&activation.context.strings, Some(prototype));
++        let owner = Object::new(&activation.context.strings, Some(prototype));
++        let cache = Object::new_without_proto(activation.gc());
++        let owns = FunctionObject::native(unload).build(&activation.context.strings, None, None);
++        source.define_value(
++            activation.gc(),
++            AvmString::new_utf8(activation.gc(), "hasOwnProperty"),
++            owns.into(),
++            Attribute::DONT_ENUM,
++        );
++        let getter = FunctionObject::native(forbidden_read).build(&activation.context.strings, None, None);
++        source.add_property(
++            activation.gc(),
++            AvmString::new_utf8(activation.gc(), "value"),
++            getter,
++            None,
++            Attribute::empty(),
++        );
++
++        // Real ActionCallMethod stack convention: arguments are popped in
++        // call order, followed by receiver and method-name dispatch.
++        let operation = AvmString::new_utf8(activation.gc(), "run");
++        let method = AvmString::new_utf8(activation.gc(), "boxheadNativeScalarsV1");
++        let global = activation.global_object();
++        for argument in [owner.into(), cache.into(), output.into(), source.into(), operation.into()] {
++            activation.context.avm1.push(argument);
++        }
++        activation.context.avm1.push(Value::Number(5.0));
++        activation.context.avm1.push(global.into());
++        activation.context.avm1.push(method.into());
++        let control = activation.action_call_method()?;
++        assert!(matches!(control, FrameControl::Return(ReturnType::Explicit(Value::Undefined))));
++        assert!(activation.base_clip().avm1_removed());
++        assert_eq!(activation.context.avm1.pop(), Value::Undefined);
++        assert!(output.get_keys(activation, false).is_empty());
++        Ok(())
++    });
++}

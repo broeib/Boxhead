@@ -1,0 +1,157 @@
+{
+  "schema": "boxhead-v23-property-read-source-inventory-v1",
+  "status": "prospective static candidate; not staged, compiled, executed or runtime-qualified",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 99309,
+    "sha256": "f1376dd1ed5245d3e97a69e1071624a7cbefff0a105b6f0332a8484a92ec7f25"
+  },
+  "parentBinder": {
+    "bytes": 88763,
+    "sha256": "39ef4f53a8f11fc6d0664476b4d3665a3c8ec717a6cad0962f6881a34cb870b6"
+  },
+  "engineManifest": {
+    "bytes": 100027,
+    "sha256": "86bb0f6b79ac97cc8041e68b413b1176e85c59a76192af52a6772a24c28bd198"
+  },
+  "binder": {
+    "bytes": 88763,
+    "sha256": "c27bfd51fa6bb67ed4989447ee1801d67732310d62ffb64e3b858229f67a4821"
+  },
+  "buildDriver": {
+    "bytes": 16708,
+    "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+  },
+  "oldOverlayInputs": 121,
+  "retainedUnchangedInputs": 120,
+  "currentOverlayInputs": 121,
+  "previousRequiredRustTests": 440,
+  "requiredRustTests": 440,
+  "previousRustGroups": 23,
+  "rustGroups": 23,
+  "addedNativeRustNames": [],
+  "addedNativeRustGroups": [],
+  "files": [
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 12802,
+      "sha256": "dc36bac23782bd3d35795cbc3d113587c38f721d1be3980f6ae5690daf552bfc",
+      "installation": {
+        "baselineBytes": 6702,
+        "baselineSha256": "dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b"
+      },
+      "reviewPredecessor": {
+        "bytes": 12091,
+        "sha256": "12465675660bdfadaf779fddba2b5760e6434f95bda5293c4863c2d0c4c145ae"
+      }
+    }
+  ],
+  "scope": "Read-only AVM1 PropertyMap::get_avm returns the current borrowed value from the same exact-key-validated positive hint slot. Index-based entry/get_mut/contains paths retain the original hint guard and share the byte-exact filter, original table lookup and positive-only hint update fallback. Case-insensitive lookup, borrowed-WStr lookup, fields, mutation paths, prototype/getter/watch/resolve/display semantics, all existing fixtures and resource bounds remain unchanged. No new state, GC edge, allocation, object/value/prototype cache or new opcode is introduced. Generated code size, inlining and performance effects require fresh measurement; no speedup or qualification is claimed.",
+  "memoryTradeoff": {
+    "persistentBytesAdded": 0,
+    "heapAllocationsAdded": 0,
+    "gcEdgesAdded": 0,
+    "objectLayoutChanged": false,
+    "compiledCodeSizeMeasured": false,
+    "limitation": "Inlining, generated code size and callback timing require fresh measurement. No speedup is established."
+  },
+  "retainedDirectFixtures": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_slot_hint_tests.rs",
+      "bytes": 17489,
+      "sha256": "05c752cea2020acc15d2de267241e4e325b49aa6ec89e37483d16e74254eb80e"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_miss_filter_tests.rs",
+      "bytes": 21470,
+      "sha256": "14752d3e48aeaa17fd4bb372199cc7c8d0c9169b4c2f77883d90eeee08eb0a9e"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_hash_tests.rs",
+      "bytes": 20165,
+      "sha256": "c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f"
+    }
+  ],
+  "endpointAuthorities": [
+    {
+      "path": "tools/ruffle-native-v22/source-reversal.json",
+      "bytes": 43867,
+      "sha256": "43aa0670400a06bdd00512a43165a56f591d43e0ada650c0871a81e2536e08d7"
+    },
+    {
+      "path": "tools/ruffle-native-v21/source-reversal.json",
+      "bytes": 46783,
+      "sha256": "360af60e3a8ddeb3c0de48af7d28cc408d9ada4ca49d6f1f4f054ae00e7ad2fe"
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-v23/source-reversal.json",
+      "bytes": 20121,
+      "sha256": "de0b6fd0eddb374cf93f56c1d4d31ced81387f7c47b92fd04b964c2f95450792"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v23-source.mjs",
+      "bytes": 2217,
+      "sha256": "ed4074cd445c3978d7292ea6b41d463cdf7c392601cc525455731366f292ad09"
+    }
+  ],
+  "unchangedSources": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 16708,
+      "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 75446,
+      "sha256": "35c3a2cef825682e3ccd07c5012fcf62345808ca42455f9e55fc748a3052c6ef"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v21-source.mjs",
+      "bytes": 2326,
+      "sha256": "ca944182335f8d77e4b7c95247c57e7a4d70418bd64d3a164283c8c0fa91de44"
+    },
+    {
+      "path": "tools/ruffle-native-v22/source-inventory.json",
+      "bytes": 16973,
+      "sha256": "186d07846dabe1e1bbc18f5075537a828719fda26cb012ecbf8046d0c9191cb5"
+    },
+    {
+      "path": "tools/ruffle-native-v22/source-reversal.json",
+      "bytes": 43867,
+      "sha256": "43aa0670400a06bdd00512a43165a56f591d43e0ada650c0871a81e2536e08d7"
+    },
+    {
+      "path": "tools/ruffle-native-v21/source-reversal.json",
+      "bytes": 46783,
+      "sha256": "360af60e3a8ddeb3c0de48af7d28cc408d9ada4ca49d6f1f4f054ae00e7ad2fe"
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v20.test.mjs",
+      "bytes": 14611,
+      "sha256": "1e3fb23689ae15ab5d076892808e346ac5001a1908d94e4a336033ae1467891b"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v20.mjs",
+      "bytes": 24882,
+      "sha256": "e654f37f0ffc2214dbf63cdfaaeb1772cc988c335eed651ce38f39fe935a6ae9"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer-v20.mjs",
+      "bytes": 9091,
+      "sha256": "d40efdd9dc0527a8438cb94c71f20cb97168e2c4e809bb8a53aa9c10129950e3"
+    }
+  ],
+  "historicalDiagnosticTest": {
+    "bytes": 14611,
+    "sha256": "1e3fb23689ae15ab5d076892808e346ac5001a1908d94e4a336033ae1467891b"
+  },
+  "historicalDiagnosticBinder": {
+    "bytes": 85125,
+    "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+  },
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false,
+  "stable60Claimed": false
+}

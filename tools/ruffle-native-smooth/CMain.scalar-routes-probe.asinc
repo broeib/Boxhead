@@ -1,0 +1,202 @@
+   // Diagnostic-only members. Real preceding/current snapshot functions run
+   // on fresh private records; no original world is prepared or stepped.
+   static function BH_ScalarRoutesRequire(report, name, pass)
+   {
+      report.checks.push({name:name,passed:pass === true});
+      if(pass !== true) throw new Error("scalar routes probe: " + name);
+   }
+
+   static function BH_ScalarRoutesGetter(state, label, key, value)
+   {
+      return function()
+      {
+         state.log.push("get:" + label + ":" + key);
+         if(state.kind == "personal-getter-throw" && label == "p1:classA" && key == "power")
+            throw state.sentinel;
+         return value;
+      };
+   }
+
+   static function BH_ScalarRoutesObject(state, label, fields)
+   {
+      var source = new Object();
+      var prototype = new Object();
+      prototype.addProperty("CThing_Inherited",function()
+      {
+         state.log.push("FORBIDDEN_INHERITED"); throw state.sentinel;
+      },null);
+      source.__proto__ = prototype;
+      source.hasOwnProperty = function(key)
+      {
+         state.log.push("own:" + label + ":" + key);
+         return Object.prototype.hasOwnProperty.call(this,key);
+      };
+      ASSetPropFlags(source,"hasOwnProperty",1,0);
+      for(var key in fields)
+         source.addProperty(key,CMain.BH_ScalarRoutesGetter(state,label,key,fields[key]),null);
+      return source;
+   }
+
+   static function BH_ScalarRoutesFixture(kind, kernel)
+   {
+      var state = {kind:kind,log:new Array(),sentinel:{privateScalarRouteSentinel:true},digests:0};
+      var records = new Array();
+      for(var slot = 1; slot <= 2; slot++)
+      {
+         var prefix = "p" + slot;
+         var owner = {_CLASSID_:"CThing_Creature_Player",mPlayerIndex:slot - 1,mUniqueID:100 * slot};
+         var owners = {owner:owner};
+         if(kind == "personal-invalid-owner" && slot == 1) owners.duplicate = owner;
+         var originalA = CMain.BH_ScalarRoutesObject(state,prefix + ":originalA",{power:5,negativeZero:-1 / Infinity});
+         var originalB = CMain.BH_ScalarRoutesObject(state,prefix + ":originalB",{power:7,enabled:false});
+         var classA = CMain.BH_ScalarRoutesObject(state,prefix + ":classA",
+            {power:10,nan:NaN,infinity:Infinity,mOriginalStats:originalA,absent:undefined,empty:null});
+         var classB = CMain.BH_ScalarRoutesObject(state,prefix + ":classB",
+            {power:14,negativeZero:-1 / Infinity,text:"private",mOriginalStats:originalB});
+         var level = CMain.BH_ScalarRoutesObject(state,prefix + ":level",{Zombie_Count:9,Devil_Count:0});
+         var first = CMain.BH_ScalarRoutesObject(state,prefix + ":comboA",{score:30,mActive:false});
+         var second = CMain.BH_ScalarRoutesObject(state,prefix + ":comboB",{score:50,mActive:true});
+         var upgrades = CMain.BH_ScalarRoutesObject(state,prefix + ":upgrades",
+            {mBHOwnerSlot:slot,mWorld:{mThing_Collection:{mPlayerThings:owners}},mMultiplierTick:40,
+             CThing_Weapon_Pistol:classA,CThing_Creature_Player:classB,Level:level,
+             mMultipliers:[[{mActive:false},{mActive:true}],[{mActive:1},{mActive:"1"}]],
+             mMultipleKills:{double:[first,second]}});
+         records.push({slot:slot,score:100 * slot,kills:slot,level:slot + 1,initialized:true,upgrades:upgrades});
+      }
+      var level = CMain.BH_ScalarRoutesObject(state,"level",{Zombie_Count:11,Devil_Count:1});
+      var upgrades = CMain.BH_ScalarRoutesObject(state,"upgrades",{Level:level,mLevelIndex:3,mMultiplierTick:39});
+      var hud = CMain.BH_ScalarRoutesObject(state,"hud",{mTotalScore:99,negativeZero:-1 / Infinity,nan:NaN});
+      if(kind == "frame-unsupported")
+      {
+         hud = new Array();
+         hud.addProperty("mTotalScore",CMain.BH_ScalarRoutesGetter(state,"arrayHud","mTotalScore",99),null);
+      }
+      var counters = CMain.BH_ScalarRoutesObject(state,"counters",{CThing_Creature_Zombie:2,CThing_Creature_Devil:0});
+      var collection = {mThings:{},mThingCounters:counters,mPlayerThings:{}};
+      var world = CMain.BH_ScalarRoutesObject(state,"world",
+         {mTick:25,mUpgrades:upgrades,mHud:hud,mThing_Collection:collection,mBHPersonalProgress:records});
+      var main = state.main = {mcWorld:world,mBH:{active:true,state:"playing",tick:1,initialPlayers:2,
+         personalProgression:kind == "frame-personal",mode:"Coop",nativeScalarKernel:kernel,
+         seed:17,rng:19,rngCalls:2,lastFullDigest:"private",snapshotReceiptRequest:{privateProbe:true}}};
+      main.BH_Players = function() { return new Array(); };
+      // This is an output observer on a private main object, not receipt
+      // evidence or a game ACK. It avoids contacting the browser digest path.
+      main.BH_ReceiptDigest = function(value)
+      {
+         state.digests++;
+         return {digest:"native-v2-0123456789abcdef",bytes:1};
+      };
+      return state;
+   }
+
+   static function BH_ScalarRoutesArm(kind, kernel, nativeRun, frame, originalFrame)
+   {
+      var state = CMain.BH_ScalarRoutesFixture(kind,kernel);
+      var main = CMain._this;
+      var policy = CMain.BH_SkipField;
+      var personal = CMain.BH_PersonalSnapshot;
+      CMain.mBHFieldCache = Object(); CMain.mBHFieldCacheCount = 0;
+      if(kind == "personal-cache-reset")
+         for(var primed = 0; primed < 1023; primed++) policy("scalarRoutePrimed" + primed);
+      var initialCache = CMain.mBHFieldCache;
+      var before = CMain.BH_NativeScalarInfo(kernel);
+      var threw = false;
+      var error = "";
+      var output;
+      CMain.BH_SkipField = function(key)
+      {
+         state.log.push("policy:" + key);
+         return policy(key);
+      };
+      try
+      {
+         CMain._this = state.main;
+         if(!nativeRun) CMain.BH_PersonalSnapshot = CMain.BH_ScalarRoutesOriginalPersonal;
+         if(kind.substr(0,5) == "frame")
+         {
+            var method = nativeRun ? frame : originalFrame;
+            output = method.call(state.main).native;
+         }
+         else
+         {
+            var full = kind != "personal-compact";
+            output = CMain.BH_PersonalSnapshot(full,nativeRun ? kernel : undefined);
+         }
+      }
+      catch(e) { threw = true; error = e === state.sentinel ? "private-scalar-route-sentinel" : String(e); }
+      finally
+      {
+         CMain._this = main;
+         CMain.BH_SkipField = policy;
+         CMain.BH_PersonalSnapshot = personal;
+      }
+      var log = state.log.slice();
+      var after = CMain.BH_NativeScalarInfo(kernel);
+      return {kind:kind,nativeRun:nativeRun,threw:threw,error:error,log:log,
+         shape:CMain.BH_NativeProjectProbeShape(output,0),digests:state.digests,
+         cacheCount:CMain.mBHFieldCacheCount,cacheReplaced:CMain.mBHFieldCache !== initialCache,
+         counterDelta:{calls:after.calls-before.calls,completed:after.completed-before.completed,
+            unsupported:after.unsupported-before.unsupported,keys:after.keys-before.keys,ownReads:after.ownReads-before.ownReads}};
+   }
+
+   static function BH_ScalarRoutesMenuState(main)
+   {
+      return {active:String(main.mBH.active),stepping:String(main.mBH.stepping),state:main.mBH.state,
+         tick:String(main.mBH.tick),worldPresent:main.mcWorld != undefined};
+   }
+
+   function BH_ScalarRoutesProbe()
+   {
+      var b = this.mBH;
+      var world = this.mcWorld;
+      var snapshot = b.snapshot;
+      var main = CMain._this;
+      var cache = CMain.mBHFieldCache;
+      var cacheCount = CMain.mBHFieldCacheCount;
+      var policy = CMain.BH_SkipField;
+      var personal = CMain.BH_PersonalSnapshot;
+      var scalar = CMain.BH_ThingScalars;
+      var kernel = _global.boxheadNativeScalarsV1;
+      var report = {schema:"original-native-scalar-routes-private-probe-v1",pass:false,checks:new Array(),pairs:new Array(),
+         gameplayPassClaimed:false,engineBoundaryFixturesRequired:true,before:CMain.BH_ScalarRoutesMenuState(this)};
+      try
+      {
+         CMain.BH_ScalarRoutesRequire(report,"menu_only",b.active !== true && b.stepping !== true && b.state == "menu"
+            && b.tick == 0 && world == undefined && main === this);
+         report.nativeBefore = CMain.BH_NativeScalarInfo(kernel);
+         CMain.BH_ScalarRoutesRequire(report,"native_capability",typeof kernel == "function");
+         var cases = ["frame","frame-personal","frame-unsupported","personal-compact","personal-full",
+            "personal-cache-reset","personal-getter-throw","personal-invalid-owner"];
+         for(var index = 0; index < cases.length; index++)
+         {
+            var name = cases[index];
+            var original = CMain.BH_ScalarRoutesArm(name,kernel,false,this.BH_FrameState,this.BH_ScalarRoutesOriginalFrame);
+            var native = CMain.BH_ScalarRoutesArm(name,kernel,true,this.BH_FrameState,this.BH_ScalarRoutesOriginalFrame);
+            report.pairs.push({name:name,original:original,native:native});
+            CMain.BH_ScalarRoutesRequire(report,"pair_output_" + name,native.shape === original.shape);
+            CMain.BH_ScalarRoutesRequire(report,"pair_log_" + name,
+               CMain.BH_NativeProjectProbeShape(native.log,0) === CMain.BH_NativeProjectProbeShape(original.log,0));
+            CMain.BH_ScalarRoutesRequire(report,"pair_error_" + name,native.threw === original.threw && native.error === original.error);
+            CMain.BH_ScalarRoutesRequire(report,"pair_cache_" + name,
+               native.cacheCount === original.cacheCount && native.cacheReplaced === original.cacheReplaced);
+            CMain.BH_ScalarRoutesRequire(report,"native_path_" + name,original.counterDelta.calls === 0
+               && (name == "personal-invalid-owner" ? native.counterDelta.calls === 0 : native.counterDelta.calls > 0));
+            CMain.BH_ScalarRoutesRequire(report,"pair_digest_" + name,native.digests === original.digests);
+         }
+         report.nativeAfter = CMain.BH_NativeScalarInfo(kernel);
+         report.pass = true;
+      }
+      catch(e) { report.error = String(e); }
+      finally
+      {
+         CMain._this = main;
+         CMain.mBHFieldCache = cache; CMain.mBHFieldCacheCount = cacheCount;
+         CMain.BH_SkipField = policy; CMain.BH_PersonalSnapshot = personal;
+      }
+      report.restored = {cacheIdentity:CMain.mBHFieldCache === cache,cacheCount:CMain.mBHFieldCacheCount === cacheCount,
+         policyIdentity:CMain.BH_SkipField === policy,personalIdentity:CMain.BH_PersonalSnapshot === personal,
+         scalarIdentity:CMain.BH_ThingScalars === scalar,mainIdentity:CMain._this === main,bridgeIdentity:this.mBH === b,
+         worldIdentity:this.mcWorld === world,snapshotIdentity:b.snapshot === snapshot,kernelIdentity:_global.boxheadNativeScalarsV1 === kernel};
+      report.after = CMain.BH_ScalarRoutesMenuState(this);
+      return report;
+   }

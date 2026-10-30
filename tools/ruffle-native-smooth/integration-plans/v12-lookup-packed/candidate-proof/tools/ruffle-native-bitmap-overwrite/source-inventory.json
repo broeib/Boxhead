@@ -1,0 +1,103 @@
+{
+  "schema": "boxhead-native-bitmap-overwrite-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "files": [
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_frozen.rs",
+      "bytes": 4039,
+      "sha256": "54fcda2178cfbcbdc5634bee2b25d2552407ff710239b9c4f0b2ba2a99dc9070",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_tests.rs",
+      "bytes": 24171,
+      "sha256": "5fa67313bfd4026f1cfef185d9f3de2e5a580aebbc0705cf1382e4f5526e1b36",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations.rs",
+      "bytes": 68385,
+      "sha256": "4f1aac19f991f13c50054f136d129a0f8287419bb3658ece2180834fb1fd9917",
+      "baseline": {
+        "bytes": 67942,
+        "sha256": "b66708da1d62b487f498ce87566fad004ebef995711aeb7821a1c7755534a954"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "bitmap_overwrite_",
+    "executedExpected": 15,
+    "ignoredExpected": 0,
+    "addedExpected": 15,
+    "exactNames": [
+      "bitmap_overwrite_cancels_only_destination_and_reads_fresh_dirty_source",
+      "bitmap_overwrite_clean_and_cpu_dirty_targets_keep_upload_bytes_and_dirty_union",
+      "bitmap_overwrite_clipping_can_still_cover_the_whole_destination_from_an_offset_source",
+      "bitmap_overwrite_empty_public_copy_does_not_cancel_or_resolve_any_handle",
+      "bitmap_overwrite_existing_cpu_draw_caller_keeps_opaque_pixels_and_no_readback",
+      "bitmap_overwrite_full_destination_cancels_partial_gpu_dirty_region_with_padded_rows",
+      "bitmap_overwrite_full_nonblend_matches_frozen_pixels_for_all_transparency_pairs",
+      "bitmap_overwrite_full_transparent_blend_still_reads_destination",
+      "bitmap_overwrite_opaque_source_normalizes_requested_blend_before_guard",
+      "bitmap_overwrite_partial_and_source_clipped_destinations_keep_original_gpu_pixels",
+      "bitmap_overwrite_self_noop_and_overlap_keep_frozen_sync_and_forward_order",
+      "bitmap_overwrite_separate_alpha_mask_retains_original_three_handle_reads",
+      "bitmap_overwrite_source_read_area_does_not_resolve_unrelated_gpu_dirty_pixels",
+      "bitmap_overwrite_transparent_to_opaque_unmultiplied_branch_keeps_raw_alpha_edges",
+      "bitmap_overwrite_unsupported_filter_copy_uses_the_same_frozen_full_overwrite"
+    ]
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+    "executedExpected": 3,
+    "normalizedV8OperationsSha256": "b66708da1d62b487f498ce87566fad004ebef995711aeb7821a1c7755534a954",
+    "frozenCopyFunctionSha256": "5dc0eab5886ed287d1aea9451b3dbf53360e5f38e67ee4fab87186dcd4696100",
+    "unchangedBlitKernelSha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8"
+  },
+  "readOnlyReferences": [
+    {
+      "path": "core/src/bitmap/bitmap_data.rs",
+      "bytes": 36903,
+      "sha256": "9f37995935693501091b3a08804d28dd43d1ed9fc4192570dc5ac6b62b965c8d"
+    },
+    {
+      "path": "render/src/backend.rs",
+      "bytes": 17783,
+      "sha256": "ba4b31efb6201683190b1b3eb50676fcdde4eae7b8c257f1684c957823ca20fc"
+    },
+    {
+      "path": "render/src/backend/null.rs",
+      "bytes": 3840,
+      "sha256": "f8c3b5b9fc095666fa4b1fa60e44a016ece20e45a1a62e4cb4ad894997cd6322"
+    },
+    {
+      "path": "render/src/filters.rs",
+      "bytes": 7330,
+      "sha256": "f6f4fd61a051c95f527e900a6b9ae05533fc498ebe3d7786b127bbf55d4a6a92"
+    },
+    {
+      "path": "render/src/transform.rs",
+      "bytes": 1374,
+      "sha256": "380639348d781fe2c7709c0b7af4bddadb1782e6da0c1290bfd8764feac03c56"
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "BITMAP_OVERWRITE.md",
+      "bytes": 6728,
+      "sha256": "f0b1798209ce78c51d9b019aaec841aa4b82cbcbd92e6e049c6c264146a0b270"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 4303,
+      "sha256": "9352a1580ae778145af9be1ff2f9517e6f61f2f67078f2e98181b9b11cae4379"
+    }
+  ],
+  "qualificationLimits": [
+    "No local execution or tests.",
+    "Scripted SyncHandle fixtures do not measure real GPU timing.",
+    "Fresh source readback remains required.",
+    "Actual dirty-destination hit-rate/profile and hardware native/pixel/FPS qualification remain required."
+  ]
+}

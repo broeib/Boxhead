@@ -1,0 +1,304 @@
+{
+  "schema": "boxhead-v18-exact-v17-source-reversal-v1",
+  "files": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "before": {
+        "bytes": 83585,
+        "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+      },
+      "after": {
+        "bytes": 86545,
+        "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+      },
+      "hunks": [
+        {
+          "before": "      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/anchor_metadata.rs\",\n      \"bytes\": 12960,\n      \"sha256\": \"791a1497490aef8516b77140c60deab561391af5110b6fd989ebd8dce6219030\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/anchor_index.rs\",\n      \"bytes\": 16116,\n      \"sha256\": \"e80c96f3c4cacc32eea996b44aed517f9bf8a4d8e5053e045307b287a441d380\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/anchor_metadata.rs\",\n      \"bytes\": 14574,\n      \"sha256\": \"8ceef1008899d4d48833384be5ab3b76a4638b4095c78ce461073a7c5c6065df\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph.rs\",\n      \"bytes\": 46307,\n      \"sha256\": \"ce6ac40b99ce2677cafbe34915966b33df913b2411b772e997e8c4b1936bdd86\",\n      \"baselineBytes\": 33729,\n      \"baselineSha256\": \"739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72\"\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs\",\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph.rs\",\n      \"bytes\": 51705,\n      \"sha256\": \"1c5ecda3fd37ebc9afbce367d07123f144a6b2c118c1044f9f9d81304bc5a091\",\n      \"baselineBytes\": 33729,\n      \"baselineSha256\": \"739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72\"\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs\",\n      \"bytes\": 28407,\n      \"sha256\": \"957be44d213bf008aa672b08a9108534397bc3e21fdb5d4bdf923fdf447722af\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs\",\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/object/script_object.rs\",\n      \"bytes\": 49392,\n      \"sha256\": \"4b200e17071d8bc822173ce288dce77530abb02a41415abb8bac7b9b7876fec9\",\n      \"baselineBytes\": 37891,\n      \"baselineSha256\": \"e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/object/script_object.rs\",\n      \"bytes\": 51716,\n      \"sha256\": \"60f76fa1eb90024510249662519e6dad7fbf4be74809b22f78178626bddcb0a8\",\n      \"baselineBytes\": 37891,\n      \"baselineSha256\": \"e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993\"\n    },\n"
+        },
+        {
+          "before": "    {\n      \"label\": \"graph\",\n      \"filter\": \"native_graph\",\n      \"expectedExecuted\": 51,\n      \"expectedPassed\": 51,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n",
+          "after": "    {\n      \"label\": \"graph\",\n      \"filter\": \"native_graph\",\n      \"expectedExecuted\": 64,\n      \"expectedPassed\": 64,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n"
+        },
+        {
+          "before": "        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps\"\n      ]\n    },\n    {\n",
+          "after": "        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence\",\n        \"avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_array_native_and_opaque_leaf_mutations_are_observed\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_entry_budget_never_publishes_partial_coverage\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_explicit_aliases_and_name_collisions_use_exact_fresh_fallback\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_partial_work_restarts_after_writes_and_call_cap_finishes_loading\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_path_and_field_caps_keep_alias_errors_and_fresh_limits\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_production_calls_match_fresh_packets_and_receiving_objects\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_publication_during_marking_keeps_only_live_asset_references\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_readonly_status_and_timeout_keep_existing_contracts\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_real_semantic_write_routes_invalidate_before_reuse\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_reentrant_write_invalidates_active_lookup_and_next_read_is_fresh\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_requires_complete_ordered_current_roots_and_no_extra_deep_rows\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_stage_super_and_virtual_inputs_fall_back_without_callbacks\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_weak_gc_does_not_retain_removed_children_or_roots\"\n      ]\n    },\n    {\n"
+        },
+        {
+          "before": "      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 375,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n",
+          "after": "      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 388,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n"
+        },
+        {
+          "before": "    \"displayLookup\": \"Fresh own data lookup within search_prototype using the separately reviewed native/display descriptor helper; original virtual, hidden, native and prototype fallbacks retain their order. No value, miss or chain cache.\",\n    \"anchorMetadata\": \"Optional six-root loading prewarm only; weak queue, bounded work and 6 MiB live cache cap; no getters, prototypes, native properties or MovieClip resolution while warming; all checkpoint limits and original mutation semantics retained.\",\n    \"propertySlotHint\": \"Range-local positive property index hint only; checked u32 encoding; every case-sensitive hit rechecks the current indexed key and reads the current descriptor/value. Misses and case-insensitive access keep the original lookup; no object/value roots, negative result or membership cache.\",\n    \"webCompiler\": \"Both existing web-wasm profiles use thin LTO and one codegen unit; the existing wasm-opt calls use -O3 with their debug/feature arguments unchanged. Combined slot-hint/compiler candidate; separate attribution and gameplay/presentation qualification are not claimed by this source package.\"\n  }\n}\n",
+          "after": "    \"displayLookup\": \"Fresh own data lookup within search_prototype using the separately reviewed native/display descriptor helper; original virtual, hidden, native and prototype fallbacks retain their order. No value, miss or chain cache.\",\n    \"anchorMetadata\": \"Optional six-root loading prewarm only; weak queue, bounded work and 6 MiB live cache cap; no getters, prototypes, native properties or MovieClip resolution while warming; all checkpoint limits and original mutation semantics retained.\",\n    \"propertySlotHint\": \"Range-local positive property index hint only; checked u32 encoding; every case-sensitive hit rechecks the current indexed key and reads the current descriptor/value. Misses and case-insensitive access keep the original lookup; no object/value roots, negative result or membership cache.\",\n    \"webCompiler\": \"Both existing web-wasm profiles use thin LTO and one codegen unit; the existing wasm-opt calls use -O3 with their debug/feature arguments unchanged. Combined slot-hint/compiler candidate; separate attribution and gameplay/presentation qualification are not claimed by this source package.\",\n    \"assetIndex\": \"Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.\"\n  }\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "before": {
+        "bytes": 78565,
+        "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+      },
+      "after": {
+        "bytes": 80552,
+        "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+      },
+      "hunks": [
+        {
+          "before": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: 'dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57',\n  buildDriver: 'e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n",
+          "after": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: 'dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f',\n  buildDriver: 'e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n"
+        },
+        {
+          "before": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/property_map/boxhead_slot_hint_tests.rs',\n  'web/packages/core/tools/build_wasm.ts',\n  'core/src/avm1.rs',\n",
+          "after": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/anchor_index.rs',\n  'core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs',\n  'core/src/avm1/property_map/boxhead_slot_hint_tests.rs',\n  'web/packages/core/tools/build_wasm.ts',\n  'core/src/avm1.rs',\n"
+        },
+        {
+          "before": "  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 51, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n  { label: 'projection', filter: 'native_projection_scan', passed: 30, ignored: 0 },\n  { label: 'project', filter: 'boxhead_native_project::', passed: 27, ignored: 0 },\n",
+          "after": "  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 64, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n  { label: 'projection', filter: 'native_projection_scan', passed: 30, ignored: 0 },\n  { label: 'project', filter: 'boxhead_native_project::', passed: 27, ignored: 0 },\n"
+        },
+        {
+          "before": "    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits',\n    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence',\n    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps',\n  ]);\n  for (const index of [1, 2]) assert.deepEqual(engine.rustUnitGroups[index], parent.rustUnitGroups[index],\n    'Original scalar/scanner exact fixture sets changed');\n",
+          "after": "    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits',\n    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence',\n    'avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_array_native_and_opaque_leaf_mutations_are_observed',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_entry_budget_never_publishes_partial_coverage',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_explicit_aliases_and_name_collisions_use_exact_fresh_fallback',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_partial_work_restarts_after_writes_and_call_cap_finishes_loading',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_path_and_field_caps_keep_alias_errors_and_fresh_limits',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_production_calls_match_fresh_packets_and_receiving_objects',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_publication_during_marking_keeps_only_live_asset_references',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_readonly_status_and_timeout_keep_existing_contracts',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_real_semantic_write_routes_invalidate_before_reuse',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_reentrant_write_invalidates_active_lookup_and_next_read_is_fresh',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_requires_complete_ordered_current_roots_and_no_extra_deep_rows',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_stage_super_and_virtual_inputs_fall_back_without_callbacks',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_weak_gc_does_not_retain_removed_children_or_roots',\n  ]);\n  for (const index of [1, 2]) assert.deepEqual(engine.rustUnitGroups[index], parent.rustUnitGroups[index],\n    'Original scalar/scanner exact fixture sets changed');\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_metadata.rs",
+      "before": {
+        "bytes": 12960,
+        "sha256": "791a1497490aef8516b77140c60deab561391af5110b6fd989ebd8dce6219030"
+      },
+      "after": {
+        "bytes": 14574,
+        "sha256": "8ceef1008899d4d48833384be5ab3b76a4638b4095c78ce461073a7c5c6065df"
+      },
+      "hunks": [
+        {
+          "before": "//! Optional raw-own metadata for the six original XSI asset roots.\n//!\n//! This is not an Anchors/world cache. Only explicit loading preparation may\n//! admit an entry. Every semantic ObjectData write eagerly removes it. The\n//! graph reader still performs fresh names, kinds, clip resolution and limits.\n\nuse super::object::ObjectWeak;\nuse super::property::Attribute;\n",
+          "after": "//! Optional raw-own metadata for the six original XSI asset roots.\n//!\n//! Only explicit loading preparation may admit an entry. Every semantic\n//! ObjectData write eagerly removes it. The separate optional asset-name\n//! index is certified by all-object invalidation witnesses; world state and\n//! clip resolution are never retained by either preparation pass.\n\nuse super::object::ObjectWeak;\nuse super::property::Attribute;\n"
+        },
+        {
+          "before": "use std::mem::size_of;\nuse std::rc::Rc;\nuse web_time::Instant;\n\n// Six MiB of charged positive entries, including entries on inactive objects.\n// The bounded weak queue, pointer set and scratch reserve at most another two\n",
+          "after": "use std::mem::size_of;\nuse std::rc::Rc;\nuse web_time::Instant;\n\n#[path = \"anchor_index.rs\"]\npub(crate) mod asset_index;\n\n// Six MiB of charged positive entries, including entries on inactive objects.\n// The bounded weak queue, pointer set and scratch reserve at most another two\n"
+        },
+        {
+          "before": "pub(crate) struct MetadataState<'gc> {\n    #[collect(require_static)]\n    pub(crate) budget: Rc<MetadataBudget>,\n    roots: Vec<ObjectWeak<'gc>>,\n    pending: VecDeque<ObjectWeak<'gc>>,\n    #[collect(require_static)]\n",
+          "after": "pub(crate) struct MetadataState<'gc> {\n    #[collect(require_static)]\n    pub(crate) budget: Rc<MetadataBudget>,\n    pub(crate) index: asset_index::State<'gc>,\n    roots: Vec<ObjectWeak<'gc>>,\n    pending: VecDeque<ObjectWeak<'gc>>,\n    #[collect(require_static)]\n"
+        },
+        {
+          "before": "    object.into()\n}\n\npub(crate) fn call<'gc>(activation: &mut Activation<'_, 'gc>, _this: Object<'gc>, args: &[Value<'gc>])\n    -> Result<Value<'gc>, Error<'gc>> {\n    let Some(Value::String(operation)) = args.first() else { return Ok(Value::Bool(true)); };\n    if args.len() == 1 && operation.eq_with_case(b\"status\", true) { return Ok(status(activation)); }\n    if args.len() != 1 || !operation.eq_with_case(b\"prewarm\", true)\n        || activation.context.external_interface.step_fence.frozen() { return Ok(Value::Bool(true)); }\n    let Some(roots) = original_roots(activation) else { return Ok(Value::Bool(true)); };\n    // No AVM callback or arena collection can run while this weak work state\n    // is moved out. Its duplicate raw references remain in actual properties.\n    let mut state = std::mem::take(&mut activation.context.avm1.anchor_metadata);\n    let ready = state.warm(activation, roots);\n    activation.context.avm1.anchor_metadata = state;\n    Ok(Value::Bool(ready))\n}\n\n#[cfg(test)]\n",
+          "after": "    object.into()\n}\n\nfn index_status<'gc>(activation: &Activation<'_, 'gc>) -> Value<'gc> {\n    let report = activation.context.avm1.anchor_metadata.index.report();\n    let object = Object::new_without_proto(activation.gc());\n    let flags = Attribute::READ_ONLY | Attribute::DONT_DELETE;\n    for (name, value) in [(\"version\", 1), (\"calls\", report.calls), (\"entries\", report.entries),\n        (\"fields\", report.fields), (\"bytes\", report.bytes), (\"hits\", report.hits),\n        (\"fallbacks\", report.fallbacks), (\"maxEntries\", asset_index::MAX_ENTRIES),\n        (\"maxBytes\", asset_index::MAX_STORAGE_BYTES), (\"maxCalls\", asset_index::MAX_CALLS),\n        (\"sliceMicros\", asset_index::SLICE_MICROS as usize)] {\n        object.define_value(activation.gc(), AvmString::new_utf8(activation.gc(), name),\n            (value as f64).into(), flags);\n    }\n    for (name, value) in [(\"completed\", report.completed), (\"unavailable\", report.unavailable),\n        (\"valid\", report.valid)] {\n        object.define_value(activation.gc(), AvmString::new_utf8(activation.gc(), name), value.into(), flags);\n    }\n    object.into()\n}\n\npub(crate) fn call<'gc>(activation: &mut Activation<'_, 'gc>, _this: Object<'gc>, args: &[Value<'gc>])\n    -> Result<Value<'gc>, Error<'gc>> {\n    let Some(Value::String(operation)) = args.first() else { return Ok(Value::Bool(true)); };\n    if args.len() == 1 && operation.eq_with_case(b\"status\", true) { return Ok(status(activation)); }\n    if args.len() == 1 && operation.eq_with_case(b\"indexStatus\", true) { return Ok(index_status(activation)); }\n    if args.len() != 1 || !operation.eq_with_case(b\"prewarm\", true)\n        || activation.context.external_interface.step_fence.frozen() { return Ok(Value::Bool(true)); }\n    let Some(roots) = original_roots(activation) else { return Ok(Value::Bool(true)); };\n    // No AVM callback or arena collection can run while this weak work state\n    // is moved out. Its duplicate raw references remain in actual properties.\n    let mut state = std::mem::take(&mut activation.context.avm1.anchor_metadata);\n    let metadata_ready = state.warm(activation, roots);\n    // Both bounded preparation passes share loading callbacks. Building the\n    // index is not postponed to another sequence of 25 Hz loading frames.\n    let index_ready = state.index.warm(activation.gc(), roots);\n    activation.context.avm1.anchor_metadata = state;\n    Ok(Value::Bool(metadata_ready && index_ready))\n}\n\n#[cfg(test)]\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs",
+      "before": {
+        "bytes": 49392,
+        "sha256": "4b200e17071d8bc822173ce288dce77530abb02a41415abb8bac7b9b7876fec9"
+      },
+      "after": {
+        "bytes": 51716,
+        "sha256": "60f76fa1eb90024510249662519e6dad7fbf4be74809b22f78178626bddcb0a8"
+      },
+      "hunks": [
+        {
+          "before": "use ruffle_macros::istr;\nuse std::cell::{Ref, RefMut};\nuse crate::avm1::anchor_metadata::{CachedEdges, MetadataBudget};\nuse std::rc::Rc;\n\nuse super::super_object::SuperObject;\n",
+          "after": "use ruffle_macros::istr;\nuse std::cell::{Ref, RefMut};\nuse crate::avm1::anchor_metadata::{CachedEdges, MetadataBudget};\nuse crate::avm1::anchor_metadata::asset_index::{Validity, Witness};\nuse std::rc::Rc;\n\nuse super::super_object::SuperObject;\n"
+        },
+        {
+          "before": "    watchers: PropertyMap<'gc, Watcher<'gc>>,\n    // Positive raw-own metadata only. All semantic writes clear it first.\n    anchor_metadata: Option<Box<CachedEdges<'gc>>>,\n}\n\nimpl fmt::Debug for Object<'_> {\n",
+          "after": "    watchers: PropertyMap<'gc, Watcher<'gc>>,\n    // Positive raw-own metadata only. All semantic writes clear it first.\n    anchor_metadata: Option<Box<CachedEdges<'gc>>>,\n    // One optional shared certificate, never a pointer back to the index.\n    // Opaque asset leaves need this too: set_native can make them traversable.\n    #[collect(require_static)]\n    anchor_index_witness: Option<Witness>,\n}\n\nimpl fmt::Debug for Object<'_> {\n"
+        },
+        {
+          "before": "    #[inline]\n    fn metadata_write(self, gc: &Mutation<'gc>) -> RefMut<'gc, ObjectData<'gc>> {\n        let mut write = self.0.borrow_mut(gc);\n        write.anchor_metadata = None;\n        write\n    }\n",
+          "after": "    #[inline]\n    fn metadata_write(self, gc: &Mutation<'gc>) -> RefMut<'gc, ObjectData<'gc>> {\n        let mut write = self.0.borrow_mut(gc);\n        write.anchor_index_witness = None;\n        write.anchor_metadata = None;\n        write\n    }\n"
+        },
+        {
+          "before": "                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n            }),\n        ));\n        if let Some(proto) = proto {\n",
+          "after": "                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n                anchor_index_witness: None,\n            }),\n        ));\n        if let Some(proto) = proto {\n"
+        },
+        {
+          "before": "                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n            }),\n        ))\n    }\n",
+          "after": "                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n                anchor_index_witness: None,\n            }),\n        ))\n    }\n"
+        },
+        {
+          "before": "        // Only the explicit preparation walk admits cache entries. A normal\n        // checkpoint never begins caching mutable gameplay objects.\n        self.boxhead_graph_anchor_edges_into(edges)\n    }\n\n    fn publish_anchor_metadata(self, gc: &Mutation<'gc>, budget: &Rc<MetadataBudget>,\n",
+          "after": "        // Only the explicit preparation walk admits cache entries. A normal\n        // checkpoint never begins caching mutable gameplay objects.\n        self.boxhead_graph_anchor_edges_into(edges)\n    }\n\n    /// Install only an invalidation witness. This changes no semantic field\n    /// and does not keep the index or any other object alive. A second visit\n    /// with the same certificate must not drop (and invalidate) that witness.\n    pub(crate) fn boxhead_anchor_index_witness(self, gc: &Mutation<'gc>, token: &Rc<Validity>) {\n        let mut write = self.0.borrow_mut(gc);\n        if !write.anchor_index_witness.as_ref().is_some_and(|witness| witness.matches(token)) {\n            write.anchor_index_witness = Some(Witness::new(token));\n        }\n    }\n\n    /// Bounded raw inspection for optional index preparation. It neither\n    /// admits metadata nor reads a getter/prototype/native property. A miss\n    /// disables the optional index; the checkpoint's fresh reader is intact.\n    pub(crate) fn boxhead_anchor_index_edges_into(self, limit: usize,\n        edges: &mut Vec<(AvmString<'gc>, Value<'gc>)>) -> Option<usize> {\n        edges.clear();\n        let read = self.0.borrow();\n        if !matches!(read.native, NativeObject::None | NativeObject::Array(_))\n            || read.watchers.iter().next().is_some() || read.interfaces.is_some() { return None; }\n        if let Some(cached) = &read.anchor_metadata {\n            if cached.raw_count > limit { return None; }\n            edges.extend_from_slice(&cached.edges);\n            return Some(cached.raw_count);\n        }\n        let mut count = 0;\n        for (key, property) in read.properties.iter() {\n            if count == limit || property.getter().is_some() || property.setter().is_some() {\n                edges.clear();\n                return None;\n            }\n            count += 1;\n            let value = property.data();\n            if !key.eq_with_case(b\"__proto__\", true)\n                && matches!(value, Value::Object(_) | Value::MovieClip(_)) { edges.push((key, value)); }\n        }\n        Some(count)\n    }\n\n    fn publish_anchor_metadata(self, gc: &Mutation<'gc>, budget: &Rc<MetadataBudget>,\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "before": {
+        "bytes": 46307,
+        "sha256": "ce6ac40b99ce2677cafbe34915966b33df913b2411b772e997e8c4b1936bdd86"
+      },
+      "after": {
+        "bytes": 51705,
+        "sha256": "1c5ecda3fd37ebc9afbce367d07123f144a6b2c118c1044f9f9d81304bc5a091"
+      },
+      "hunks": [
+        {
+          "before": "//! or export fails. Native assets and functions are explicit local anchors.\n\nuse crate::avm1::activation::Activation;\nuse crate::avm1::error::Error;\nuse crate::avm1::object::NativeObject;\nuse crate::avm1::object_reference::MovieClipReference;\n",
+          "after": "//! or export fails. Native assets and functions are explicit local anchors.\n\nuse crate::avm1::activation::Activation;\nuse crate::avm1::anchor_metadata::asset_index;\nuse crate::avm1::error::Error;\nuse crate::avm1::object::NativeObject;\nuse crate::avm1::object_reference::MovieClipReference;\n"
+        },
+        {
+          "before": "use crate::string::{AvmString, WStr};\nuse flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};\nuse fnv::FnvHashMap;\nuse std::collections::{HashMap, HashSet, VecDeque};\nuse std::io::{Read, Write};\nuse std::rc::Rc;\n",
+          "after": "use crate::string::{AvmString, WStr};\nuse flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};\nuse fnv::FnvHashMap;\nuse gc_arena::Gc;\nuse std::collections::{HashMap, HashSet, VecDeque};\nuse std::io::{Read, Write};\nuse std::rc::Rc;\n"
+        },
+        {
+          "before": "    // values. They can denote the same native clip without being the same\n    // Value kind. Preserve that kind in the wire and at the receiving VM.\n    stage_variants: FnvHashMap<(AnchorNameId, u8), Value<'gc>>,\n    // Force collisions in differential tests without replacing comparison,\n    // traversal, insertion, packet encoding or resolution implementations.\n    #[cfg(test)]\n    name_bucket_mask: u64,\n}\n\nimpl<'gc> Anchors<'gc> {\n    fn empty() -> Self {\n        Self { values: Vec::new(), name_buckets: FnvHashMap::default(), names: FnvHashMap::default(),\n            stage_variants: FnvHashMap::default(), #[cfg(test)] name_bucket_mask: u64::MAX }\n    }\n\n    fn bucket(&self, hash: u64) -> u64 {\n",
+          "after": "    // values. They can denote the same native clip without being the same\n    // Value kind. Preserve that kind in the wire and at the receiving VM.\n    stage_variants: FnvHashMap<(AnchorNameId, u8), Value<'gc>>,\n    assets: Option<ActiveAssets<'gc>>,\n    // Force collisions in differential tests without replacing comparison,\n    // traversal, insertion, packet encoding or resolution implementations.\n    #[cfg(test)]\n    name_bucket_mask: u64,\n}\n\n// Persistent preparation contains weak references only. This call-local list\n// comes from a complete fresh weak/native-kind preflight. As with values above,\n// no AVM callback or arena collection runs before this native call returns.\nstruct ActiveAssets<'gc> {\n    index: Gc<'gc, asset_index::Index<'gc>>,\n    objects: Vec<Object<'gc>>,\n}\n\nimpl<'gc> Anchors<'gc> {\n    fn empty() -> Self {\n        Self { values: Vec::new(), name_buckets: FnvHashMap::default(), names: FnvHashMap::default(),\n            stage_variants: FnvHashMap::default(), assets: None, #[cfg(test)] name_bucket_mask: u64::MAX }\n    }\n\n    fn prepared_assets(&self, index: Gc<'gc, asset_index::Index<'gc>>,\n        roots: &[(AnchorNameId, Object<'gc>)], activation: &Activation<'_, 'gc>) -> ResultG<Option<ActiveAssets<'gc>>> {\n        if !index.valid() || roots.len() != asset_index::ROOT_IDS.len()\n            || index.entries.len() < asset_index::ROOT_IDS.len()\n            || self.values.len() + index.entries.len() - asset_index::ROOT_IDS.len() > MAX_ANCHORS\n            || index.raw_fields > MAX_FIELDS * 4 { return Ok(None); }\n        for (position, (id, object)) in roots.iter().enumerate() {\n            let AnchorName::Explicit(name) = &self.values[id.0 as usize].name else { return Ok(None); };\n            if name.as_ref() != asset_index::ROOT_IDS[position]\n                || !index.root_matches(position, *object, activation.gc()) { return Ok(None); }\n        }\n        // Every explicit identity takes precedence in the fresh reader. An\n        // additional alias into this asset graph could change its canonical\n        // BFS paths. Generated-name namespace overlaps can also change exact\n        // collision/error order. Both conservatively take the fresh path.\n        for entry in &self.values {\n            let AnchorName::Explicit(name) = &entry.name else { return Ok(None); };\n            if let Some(position) = asset_index::ROOT_IDS.iter().position(|root| *root == name.as_ref()) {\n                let Value::Object(object) = entry.value else { return Ok(None); };\n                if !index.root_matches(position, object, activation.gc()) { return Ok(None); }\n            } else {\n                if asset_index::ROOT_IDS.iter().any(|root| name.strip_prefix(*root)\n                    .is_some_and(|suffix| suffix.starts_with('/'))) { return Ok(None); }\n                if let Value::Object(object) = entry.value {\n                    if index.contains(object) { return Ok(None); }\n                }\n            }\n        }\n        let mut objects = Vec::with_capacity(index.entries.len());\n        for (position, entry) in index.entries.iter().enumerate() {\n            if position % 128 == 0 { check_time(activation)?; }\n            let Some(object) = entry.object.upgrade(activation.gc()) else { return Ok(None); };\n            let Ok(kind) = anchor_kind(object.into()) else { return Ok(None); };\n            if kind == 3 || (kind == 0 || kind == 1) != entry.traversable { return Ok(None); }\n            objects.push(object);\n        }\n        if !index.valid() { return Ok(None); }\n        check_time(activation)?;\n        Ok(Some(ActiveAssets { index, objects }))\n    }\n\n    fn bucket(&self, hash: u64) -> u64 {\n"
+        },
+        {
+          "before": "\n    fn read_into(value: Value<'gc>, activation: &mut Activation<'_, 'gc>, mut result: Self) -> ResultG<Self> {\n        use std::collections::hash_map::Entry;\n        let Value::Object(array) = value else { return Err(\"anchors must be an Array\".into()); };\n        if !matches!(array.boxhead_graph_native(), NativeObject::Array(_)) {\n            return Err(\"anchors must be a native Array\".into());\n",
+          "after": "\n    fn read_into(value: Value<'gc>, activation: &mut Activation<'_, 'gc>, mut result: Self) -> ResultG<Self> {\n        use std::collections::hash_map::Entry;\n        result.assets = None;\n        let Value::Object(array) = value else { return Err(\"anchors must be an Array\".into()); };\n        if !matches!(array.boxhead_graph_native(), NativeObject::Array(_)) {\n            return Err(\"anchors must be a native Array\".into());\n"
+        },
+        {
+          "before": "        }\n        let mut deep = VecDeque::new();\n        let mut scheduled = Vec::new();\n        // No AVM code runs inside this reader. Keeping the identity map local\n        // lets a single Entry probe coexist with name-table construction.\n        // Restore it before the completed Anchors object can be observed.\n",
+          "after": "        }\n        let mut deep = VecDeque::new();\n        let mut scheduled = Vec::new();\n        activation.context.avm1.anchor_metadata.index.retire_invalid();\n        let prepared = activation.context.avm1.anchor_metadata.index.current();\n        let mut prepared_roots = prepared.map(|_| Vec::with_capacity(asset_index::ROOT_IDS.len()));\n        // No AVM code runs inside this reader. Keeping the identity map local\n        // lets a single Entry probe coexist with name-table construction.\n        // Restore it before the completed Anchors object can be observed.\n"
+        },
+        {
+          "before": "            let (id, _) = result.insert_name(AnchorName::Explicit(id), value, &key, kind)?;\n            let canonical = *names.entry(key).or_insert(id);\n            result.insert_stage_variants(id, value, kind, &mut names, activation)?;\n            if deep_flag { Self::queue_deep(id, canonical, value, kind, &mut deep, &mut scheduled); }\n        }\n        // Explicit names always win over generated immutable-asset paths.\n        // Anchor expansion never calls AVM code. Native kinds, descriptors\n        // and edges therefore cannot mutate between scheduling and reading.\n",
+          "after": "            let (id, _) = result.insert_name(AnchorName::Explicit(id), value, &key, kind)?;\n            let canonical = *names.entry(key).or_insert(id);\n            result.insert_stage_variants(id, value, kind, &mut names, activation)?;\n            if deep_flag {\n                if let Some(roots) = &mut prepared_roots {\n                    if roots.len() == asset_index::ROOT_IDS.len() || (kind != 0 && kind != 1) {\n                        prepared_roots = None;\n                    } else if let Value::Object(object) = value { roots.push((id, object)); }\n                    else { prepared_roots = None; }\n                }\n                Self::queue_deep(id, canonical, value, kind, &mut deep, &mut scheduled);\n            }\n        }\n        if let (Some(prepared), Some(roots)) = (prepared, prepared_roots) {\n            if let Some(assets) = result.prepared_assets(prepared, &roots, activation)? {\n                result.assets = Some(assets);\n                result.names = names;\n                activation.context.avm1.anchor_metadata.index.record_use(true);\n                return Ok(result);\n            }\n        }\n        activation.context.avm1.anchor_metadata.index.record_use(false);\n        // Explicit names always win over generated immutable-asset paths.\n        // Anchor expansion never calls AVM code. Native kinds, descriptors\n        // and edges therefore cannot mutate between scheduling and reading.\n"
+        },
+        {
+          "before": "\n    fn atom(&self, value: Value<'gc>, activation: &mut Activation<'_, 'gc>) -> ResultG<Option<Atom>> {\n        let Some(key) = identity(value) else { return Ok(None); };\n        let Some(id) = self.names.get(&key) else { return Ok(None); };\n        if let Value::MovieClip(reference) = value {\n            let object = reference.coerce_to_object(activation)\n                .ok_or_else(|| format!(\"checkpoint MovieClip anchor no longer resolves: {}\", self.materialize(*id)))?;\n",
+          "after": "\n    fn atom(&self, value: Value<'gc>, activation: &mut Activation<'_, 'gc>) -> ResultG<Option<Atom>> {\n        let Some(key) = identity(value) else { return Ok(None); };\n        let Some(id) = self.names.get(&key) else {\n            if let (Some(assets), Value::Object(object)) = (&self.assets, value) {\n                if !assets.index.valid() { return Err(\"asset anchor index changed during native graph call\".into()); }\n                if let Some(id) = assets.index.object_id(object) {\n                    if !Object::ptr_eq(assets.objects[id], object) {\n                        return Err(\"asset anchor index identity changed during native graph call\".into());\n                    }\n                    return Ok(Some(Atom::Anchor(assets.index.materialize(id), anchor_kind(value)?)));\n                }\n            }\n            return Ok(None);\n        };\n        if let Value::MovieClip(reference) = value {\n            let object = reference.coerce_to_object(activation)\n                .ok_or_else(|| format!(\"checkpoint MovieClip anchor no longer resolves: {}\", self.materialize(*id)))?;\n"
+        },
+        {
+          "before": "    }\n\n    fn resolve(&self, name: &str, kind: u8) -> ResultG<Value<'gc>> {\n        let id = self.find_name(name).ok_or_else(|| format!(\"missing checkpoint anchor: {name}\"))?;\n        let value = self.values[id.0 as usize].value;\n        if anchor_kind(value)? == kind { return Ok(value); }\n        self.stage_variants.get(&(id,kind)).copied()\n",
+          "after": "    }\n\n    fn resolve(&self, name: &str, kind: u8) -> ResultG<Value<'gc>> {\n        let Some(id) = self.find_name(name) else {\n            if let Some(assets) = &self.assets {\n                if !assets.index.valid() { return Err(\"asset anchor index changed during native graph call\".into()); }\n                if let Some(id) = assets.index.find_name(name) {\n                    let value = Value::Object(assets.objects[id]);\n                    if anchor_kind(value)? == kind { return Ok(value); }\n                    return Err(format!(\"checkpoint anchor kind mismatch: {name}\"));\n                }\n            }\n            return Err(format!(\"missing checkpoint anchor: {name}\"));\n        };\n        let value = self.values[id.0 as usize].value;\n        if anchor_kind(value)? == kind { return Ok(value); }\n        self.stage_variants.get(&(id,kind)).copied()\n"
+        },
+        {
+          "before": "#[cfg(test)]\n#[path = \"boxhead_native_graph/metadata_tests.rs\"]\nmod metadata_tests;\n",
+          "after": "#[cfg(test)]\n#[path = \"boxhead_native_graph/metadata_tests.rs\"]\nmod metadata_tests;\n\n#[cfg(test)]\n#[path = \"boxhead_native_graph/asset_index_tests.rs\"]\nmod asset_index_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "before": {
+        "bytes": 61238,
+        "sha256": "e9ff2866cf7d00f440ef9c17f9284cc5f7bdbd45ad694efa6d23877de3e8ac1b"
+      },
+      "after": {
+        "bytes": 61231,
+        "sha256": "ad9b3eece33148396381d1d5f580e98e19a7488212079469a38b81f741bbf516"
+      },
+      "hunks": [
+        {
+          "before": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 375;\nconst EXPECTED_GROUPS = 20;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'wasm', 'selfhosted'];\n",
+          "after": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 388;\nconst EXPECTED_GROUPS = 20;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'wasm', 'selfhosted'];\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 18);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 20);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit slot-hint/compiler candidate pin, 111 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 111);\n  assert.equal(engine.files.length, 111);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n",
+          "after": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit asset-index candidate pin, 113 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 113);\n  assert.equal(engine.files.length, 113);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n"
+        },
+        {
+          "before": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly90 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 90);\n  assert.equal(proof.length, value.parentSource.files.length + 90);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n",
+          "after": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly92 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 92);\n  assert.equal(proof.length, value.parentSource.files.length + 92);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 12);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 14);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v17-slot-hint-compiler-integration.test.mjs",
+      "before": {
+        "bytes": 14752,
+        "sha256": "76e43672c82cfced46dc30ac61e2f42f297adce4562140c6620bcf515e04f4f7"
+      },
+      "after": {
+        "bytes": 15867,
+        "sha256": "c2307208c9efb59e7c0ece4bfaadf803628b40799c3a32c4e39443a024f8debf"
+      },
+      "hunks": [
+        {
+          "before": "import { reviewedV17Paths, restoreV16Source, v17HistoricalSource } from './fixtures/native-v17-source.mjs';\nimport { reviewedV16Paths, restoreV15Source, v16HistoricalSource } from './fixtures/native-v16-source.mjs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\nimport { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE }\n  from '../../scripts/lib/native-smooth-runtime-binding.mjs';\n\n// Source-authentication and rejection fixtures only. CI must execute all Rust,\n// both WASM variants, web and fresh native/gameplay/presentation qualification.\n",
+          "after": "import { reviewedV17Paths, restoreV16Source, v17HistoricalSource } from './fixtures/native-v17-source.mjs';\nimport { reviewedV16Paths, restoreV15Source, v16HistoricalSource } from './fixtures/native-v16-source.mjs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\n\n// Source-authentication and rejection fixtures only. CI must execute all Rust,\n// both WASM variants, web and fresh native/gameplay/presentation qualification.\n"
+        },
+        {
+          "before": "const packageRoot = 'tools/ruffle-native-slot-hint-compiler/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\"bytes\": 5847, \"sha256\": \"f0ba1d11e7336c2d772ca7c0937297b595cdd72bbb1bfa7551ba9a0561f092df\"});\nconst inventory = JSON.parse(inventoryText);\n",
+          "after": "const packageRoot = 'tools/ruffle-native-slot-hint-compiler/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\n\n// Exercise the exact restored v17 validator with its original 375-case and\n// 111-input contract. Only its three relative import URLs are made absolute\n// for a test-only data module; production uses the actual current validator.\nconst historicalBinderSource = read(binderPath);\nassert.deepEqual(identity(historicalBinderSource), { bytes: 78565,\n  sha256: '5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092' });\nconst binderURL = new URL('../../' + binderPath, import.meta.url);\nconst siblingImports = ['./native-runtime-bundle.mjs', './native-graph-runtime-binding.mjs', './native-projection-runtime-binding.mjs'];\nassert.deepEqual([...historicalBinderSource.matchAll(/from '(\\.\\/[^']+)'/g)].map(match => match[1]), siblingImports);\nlet historicalBinderModule = historicalBinderSource;\nfor (const specifier of siblingImports) {\n  const from = \"from '\" + specifier + \"'\";\n  assert.equal(historicalBinderModule.split(from).length, 2);\n  historicalBinderModule = historicalBinderModule.replace(from, \"from '\" + new URL(specifier, binderURL).href + \"'\");\n}\nconst { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE } =\n  await import('data:text/javascript;base64,' + Buffer.from(historicalBinderModule).toString('base64'));\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\"bytes\": 5847, \"sha256\": \"f0ba1d11e7336c2d772ca7c0937297b595cdd72bbb1bfa7551ba9a0561f092df\"});\nconst inventory = JSON.parse(inventoryText);\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/fixtures/campaign-continuation-reader-source.mjs",
+      "before": {
+        "bytes": 9783,
+        "sha256": "c98379838790303b6eb9141b824312910a099bd6d8a967489bb0e4c8a58f9f49"
+      },
+      "after": {
+        "bytes": 9892,
+        "sha256": "f98002b8b38a32f16ef003f1b456764682a6d114b6f8cdc35910c082debd4ee6"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\n\n// Historical source authentication only. This outer layer records the exact\n// continuation audit reader and passive-pilot fixture initialization; it does\n",
+          "after": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { v18HistoricalSource } from './native-v18-source.mjs';\n\n// Historical source authentication only. This outer layer records the exact\n// continuation audit reader and passive-pilot fixture initialization; it does\n"
+        },
+        {
+          "before": "}\nexport function campaignContinuationReaderHistoricalSource(file, source) {\n  assert.equal(typeof file, 'string'); assert.equal(typeof source, 'string');\n  const row = DELTAS.find(value => value.file === file);\n  if (!row) return source;\n  const current = identity(source);\n",
+          "after": "}\nexport function campaignContinuationReaderHistoricalSource(file, source) {\n  assert.equal(typeof file, 'string'); assert.equal(typeof source, 'string');\n  source = v18HistoricalSource(file, source);\n  const row = DELTAS.find(value => value.file === file);\n  if (!row) return source;\n  const current = identity(source);\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/campaign-continuation-reader-source.test.mjs",
+      "before": {
+        "bytes": 5524,
+        "sha256": "b077148848108301c4a29b50d38f3e83667c7fc3bd0804c3c886ff9440932fb1"
+      },
+      "after": {
+        "bytes": 5623,
+        "sha256": "e1026af6258f6568e5a55f115bde004cecef9316bae6da03a69eef82960d5aa5"
+      },
+      "hunks": [
+        {
+          "before": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport test from 'node:test';\nimport { CAMPAIGN_CONTINUATION_READER_SOURCES, campaignContinuationReaderHistoricalSource,\n  restoreCampaignContinuationReaderPredecessor } from './fixtures/campaign-continuation-reader-source.mjs';\nimport { campaignEvidenceTransportHistoricalSource } from './fixtures/campaign-evidence-transport-source.mjs';\nimport { campaignQualificationHistoricalSource } from './fixtures/campaign-qualification-source.mjs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\nimport { v17HistoricalSource } from './fixtures/native-v17-source.mjs';\nconst read = file => readFileSync(new URL('../../' + file, import.meta.url), 'utf8');\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst frozen = {\n  \"tests/scripts/four-pose-source.test.mjs\": {\n",
+          "after": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport test from 'node:test';\nimport { v18HistoricalSource } from './fixtures/native-v18-source.mjs';\nimport { CAMPAIGN_CONTINUATION_READER_SOURCES, campaignContinuationReaderHistoricalSource,\n  restoreCampaignContinuationReaderPredecessor } from './fixtures/campaign-continuation-reader-source.mjs';\nimport { campaignEvidenceTransportHistoricalSource } from './fixtures/campaign-evidence-transport-source.mjs';\nimport { campaignQualificationHistoricalSource } from './fixtures/campaign-qualification-source.mjs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\nimport { v17HistoricalSource } from './fixtures/native-v17-source.mjs';\nconst read = file => v18HistoricalSource(file, readFileSync(new URL('../../' + file, import.meta.url), 'utf8'));\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst frozen = {\n  \"tests/scripts/four-pose-source.test.mjs\": {\n"
+        }
+      ]
+    }
+  ],
+  "historicalEndpoints": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 77023,
+      "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61069,
+      "sha256": "35ef5605592ddeb9d9f1fc547c1f3f2903e2948f649d103d30ac11e6c06460a3"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 81095,
+      "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+    },
+    {
+      "path": "tests/scripts/native-v17-slot-hint-compiler-integration.test.mjs",
+      "bytes": 14590,
+      "sha256": "006432392da14f1960f2b93ef5dcf547979428275b7f89a8100911e68541ce8e"
+    }
+  ]
+}

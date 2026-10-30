@@ -1,0 +1,72 @@
+{
+  "schema": "boxhead-native-graph-source-v1",
+  "sourceOnly": true,
+  "tested": false,
+  "baseCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "requiresScalarOverlay": true,
+  "before": {
+    "core/src/avm1/globals.rs": {
+      "bytes": 32879,
+      "sha256": "143e26b78b70699f4c8809f9eea5a467a394fba95ece6a5785c98400cbae4fac"
+    },
+    "core/src/avm1/object/script_object.rs": {
+      "bytes": 36608,
+      "sha256": "bd7315a8dba39d24bdf27728a331b74d2c175c4f08235883614fc94cd029ed48"
+    }
+  },
+  "newAbsent": [
+    "core/src/avm1/globals/boxhead_native_graph.rs",
+    "core/src/avm1/globals/boxhead_native_graph/tests.rs"
+  ],
+  "files": {
+    "README.md": {
+      "bytes": 4588,
+      "sha256": "bd28d01815b1a070daae928145c2f443fddf3f2a777685f2ddaaab542b0b6a65"
+    },
+    "core/src/avm1/globals/boxhead_native_graph/tests.rs": {
+      "bytes": 31537,
+      "sha256": "a60a87805e8be141b9a3a501c53a3a5e327a99a67ed2522ff25f9af40dbad5d9"
+    },
+    "core/src/avm1/globals/boxhead_native_graph.rs": {
+      "bytes": 33729,
+      "sha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+    },
+    "core/src/avm1/globals.rs": {
+      "bytes": 33023,
+      "sha256": "9e49cb8c7d59303b16484d8f0fa7e0ffb37ac681ad6d282e008b7bf75800eb39"
+    },
+    "core/src/avm1/object/script_object.rs": {
+      "bytes": 37891,
+      "sha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+    }
+  },
+  "requiredNativeFixtures": [
+    "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit"
+  ],
+  "sourceRevision": 5,
+  "revisionNote": "Raise only the decoded graph ceiling from 64 MiB to 128 MiB for the measured map-18 geometry; retain all other native/application/transport bounds. Safe bulk RGBA writing preserves bytes, drops the completed Writer before hexadecimal allocation and checks unchanged wire length before allocating. Thirteen prior fixture bodies are unchanged, three explicit bound/capability fixtures are updated, and two new fixtures are required.",
+  "documentationRevision": 1,
+  "supersedes": {
+    "manifest": "previous-v4/manifest.json",
+    "bytes": 3969,
+    "sha256": "dec630adaadde691ec8616f20ea089e6d41b1661d662fc07cee872a089504a7b",
+    "preservedUnchanged": true
+  }
+}

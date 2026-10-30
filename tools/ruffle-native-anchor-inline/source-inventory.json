@@ -1,0 +1,144 @@
+{
+  "schema": "boxhead-native-anchor-inline-source-v1",
+  "status": "isolated-source-frozen-CI-not-executed",
+  "integrated": false,
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "files": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 45856,
+      "sha256": "25bcdd5010eb7edc02b588a0ba80b2a970fa0f28bb400e12da4205e67bea61da",
+      "baseline": {
+        "bytes": 44234,
+        "sha256": "87ed575bf2a2024aa928e0aeaf454c6ccf00294900a40c493def19eeafce074f"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/inline_tests.rs",
+      "bytes": 13839,
+      "sha256": "a0fdf96163794bf6a182e45e01e2c7dbe11e742f5235af8041cabb5839d14427",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs",
+      "bytes": 46115,
+      "sha256": "c8333982bd142a97ecff20a4a1e84c73fc3028ba704d28a40ea00f9c2083d47d",
+      "baselineAbsent": true
+    }
+  ],
+  "preservedFiles": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 84766,
+      "sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs",
+      "bytes": 45533,
+      "sha256": "7c66dcc658cbab9fac3c1068807f835433429c19fe22cab838e5e4f9f8eed2a7"
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "native_graph_",
+    "executedExpected": 43,
+    "retainedExpected": 37,
+    "addedExpected": 6,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+      "native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit",
+      "native_graph_capability_is_hidden_readonly_and_registered",
+      "native_graph_deep_anchor_alias_keeps_exact_path_limit_rejection",
+      "native_graph_deep_anchor_filter_never_hides_unsupported_virtual_fields",
+      "native_graph_deep_anchor_numeric_payload_keeps_exact_object_paths_and_aliases",
+      "native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+      "native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+      "native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+      "native_graph_hotpath_dense_schedule_preserves_first_deep_alias_across_words",
+      "native_graph_hotpath_fresh_calls_observe_replaced_edges_kinds_and_flags",
+      "native_graph_hotpath_keeps_utf16_path_and_timeout_errors_before_alias_pruning",
+      "native_graph_hotpath_matches_frozen_v6_packets_for_mixed_aliases_and_variants",
+      "native_graph_hotpath_matches_frozen_v6_rejection_precedence",
+      "native_graph_hotpath_reuses_buffer_without_retaining_prior_object_edges",
+      "native_graph_inline_capacity_preserves_duplicate_errors_without_reservation",
+      "native_graph_inline_classification_matches_frozen_v13_values_and_errors",
+      "native_graph_inline_entries_match_frozen_v13_resizes_aliases_and_collisions",
+      "native_graph_inline_packet_and_receiving_aliases_match_frozen_v13",
+      "native_graph_inline_rejection_and_timeout_order_match_frozen_v13",
+      "native_graph_inline_repeated_observations_read_new_native_kinds",
+      "native_graph_lazy_names_compare_forced_hash_collisions_without_aliasing",
+      "native_graph_lazy_names_keep_unemitted_geometry_paths_lazy_and_iterative",
+      "native_graph_lazy_names_preserve_explicit_generated_collisions_and_segment_boundaries",
+      "native_graph_lazy_names_rebind_fresh_receiving_assets_and_keep_packet_bytes",
+      "native_graph_lazy_names_retain_utf16_empty_segments_and_exact_2048_limit",
+      "native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+      "native_graph_preserves_every_number_bit_and_utf16_units",
+      "native_graph_pruned_anchor_queue_keeps_raw_field_and_timeout_bounds",
+      "native_graph_raw_anchor_edges_match_complete_property_count_and_validation",
+      "native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+      "native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+      "native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+      "native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+      "native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+      "native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+      "native_graph_requires_matching_anchor_kind_and_swf_version",
+      "native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+      "native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+      "native_graph_shared_anchor_tables_keep_exact_capacity_and_duplicate_rules",
+      "native_graph_shared_anchor_tables_keep_frozen_v4_error_precedence",
+      "native_graph_shared_anchor_tables_match_frozen_v4_bytes_and_bfs_names",
+      "native_graph_timeout_prevents_export_and_bitmap_commit"
+    ],
+    "addedExactNames": [
+      "native_graph_inline_capacity_preserves_duplicate_errors_without_reservation",
+      "native_graph_inline_classification_matches_frozen_v13_values_and_errors",
+      "native_graph_inline_entries_match_frozen_v13_resizes_aliases_and_collisions",
+      "native_graph_inline_packet_and_receiving_aliases_match_frozen_v13",
+      "native_graph_inline_rejection_and_timeout_order_match_frozen_v13",
+      "native_graph_inline_repeated_observations_read_new_native_kinds"
+    ]
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-anchor-inline/source-integrity.test.mjs",
+    "executedExpected": 5,
+    "originalGraphSha256": "87ed575bf2a2024aa928e0aeaf454c6ccf00294900a40c493def19eeafce074f",
+    "oldGraph37Sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0"
+  },
+  "supportFiles": [
+    {
+      "path": "source-reversal.json",
+      "bytes": 7003,
+      "sha256": "177f7a6fe89b2812f1485659fab55c4581f2eb8ce25c5e0435e2dc03989513fd"
+    },
+    {
+      "path": "script-object-dependency.json",
+      "bytes": 2274,
+      "sha256": "d1dcd21666786b6e73ebf8135500381a0dd2498e90ccd757c468c1b7c2ef5b16"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 9417,
+      "sha256": "e1fb1767a402a0ffdd58bcc846fa7a21143de5010f9c3eef39bc5d08b5ec43c1"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4648,
+      "sha256": "43ec84cf440c52da2c122dc42a7939b22357779e8e8cf79ef82830c92d45e925"
+    }
+  ],
+  "scriptObjectDependency": {
+    "path": "core/src/avm1/object/script_object.rs",
+    "proof": "script-object-dependency.json",
+    "acceptedWholeFiles": [
+      {
+        "bytes": 42307,
+        "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f"
+      },
+      {
+        "bytes": 43753,
+        "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+      }
+    ],
+    "qualifiedSource": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/object/script_object.rs"
+  }
+}

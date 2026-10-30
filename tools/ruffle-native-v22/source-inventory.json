@@ -1,0 +1,380 @@
+{
+  "schema": "boxhead-v22-short-dispatch-source-inventory-v1",
+  "status": "prospective static candidate; not staged, compiled, executed or runtime-qualified",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 96022,
+    "sha256": "34bed0818df9159ce54eb2c18cbcf5aea6d045bed07dd8cd9c4f1921b64ee201"
+  },
+  "parentBinder": {
+    "bytes": 86788,
+    "sha256": "3247035ec714816040b95f0d3b28edf3505e9cfeab3e19ce3e2a7a75fb2ecd0a"
+  },
+  "engineManifest": {
+    "bytes": 99309,
+    "sha256": "f1376dd1ed5245d3e97a69e1071624a7cbefff0a105b6f0332a8484a92ec7f25"
+  },
+  "binder": {
+    "bytes": 88763,
+    "sha256": "39ef4f53a8f11fc6d0664476b4d3665a3c8ec717a6cad0962f6881a34cb870b6"
+  },
+  "buildDriver": {
+    "bytes": 16708,
+    "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+  },
+  "oldOverlayInputs": 118,
+  "retainedUnchangedInputs": 117,
+  "currentOverlayInputs": 121,
+  "previousRequiredRustTests": 428,
+  "requiredRustTests": 440,
+  "previousRustGroups": 22,
+  "rustGroups": 23,
+  "addedNativeRustNames": [
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_all_82_routes_match_existing_decoder_and_frozen_handlers",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_long_call_unknown_and_malformed_forms_keep_parser_fallback",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_member_getters_setters_and_prototypes_observe_fresh_state",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_mixed_program_debug_pool_registers_and_control_flow_match",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_negative_jumps_and_cross_boundary_operands_keep_movie_cursor",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nested_calls_exceptions_and_removed_base_clip_keep_boundaries",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nonshort_unknown_and_debug_inputs_leave_state_untouched",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_numeric_boolean_and_bitwise_effects_match_frozen_execution",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_stack_return_and_thrown_identity_commit_exactly_one_byte",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_string_and_character_effects_match_frozen_versions",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_timeout_and_eof_precede_every_dispatch_route",
+    "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_variable_and_container_routes_match_frozen_effects"
+  ],
+  "addedNativeRustGroup": {
+    "label": "short_dispatch",
+    "filter": "avm1::activation::boxhead_short_dispatch_tests::",
+    "expectedExecuted": 12,
+    "expectedPassed": 12,
+    "expectedFailed": 0,
+    "expectedIgnored": 0,
+    "exactNames": [
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_all_82_routes_match_existing_decoder_and_frozen_handlers",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_long_call_unknown_and_malformed_forms_keep_parser_fallback",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_member_getters_setters_and_prototypes_observe_fresh_state",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_mixed_program_debug_pool_registers_and_control_flow_match",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_negative_jumps_and_cross_boundary_operands_keep_movie_cursor",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nested_calls_exceptions_and_removed_base_clip_keep_boundaries",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_nonshort_unknown_and_debug_inputs_leave_state_untouched",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_numeric_boolean_and_bitwise_effects_match_frozen_execution",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_stack_return_and_thrown_identity_commit_exactly_one_byte",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_string_and_character_effects_match_frozen_versions",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_timeout_and_eof_precede_every_dispatch_route",
+      "avm1::activation::boxhead_short_dispatch_tests::short_dispatch_variable_and_container_routes_match_frozen_effects"
+    ]
+  },
+  "dispatchTestSource": "core/src/avm1/activation/boxhead_short_dispatch_tests.rs",
+  "dispatcherSource": "core/src/avm1/activation/boxhead_short_dispatch.rs",
+  "frozenOracleSource": "core/src/avm1/activation/short_dispatch_frozen_v21.rs",
+  "frozenDoActionMethod": {
+    "bytes": 8090,
+    "sha256": "c9053da47a71bf91c251615938c1e35328511fe2c420a34534867377f39eda23"
+  },
+  "decoderReferences": [
+    {
+      "role": "opcodes",
+      "path": "tools/ruffle-native-v22/reference/avm1-opcode.rs",
+      "sourcePath": "swf/src/avm1/opcode.rs",
+      "bytes": 2564,
+      "sha256": "8bc28df6f3c4bc7f7a8f4b49e17efe5bc06b52e83471c3ad6f96518949816d2e"
+    },
+    {
+      "role": "reader",
+      "path": "tools/ruffle-native-v22/reference/avm1-read.rs",
+      "sourcePath": "swf/src/avm1/read.rs",
+      "bytes": 20216,
+      "sha256": "a49a966a836277bb6c514aedbfa21d2ccd8e01852a872dcaa4efd9503837af32"
+    }
+  ],
+  "decoderReferenceScope": "Exact read-only reference copies of the supplied current upstream sources; not compiled overlay files. The native frozen-oracle fixtures execute the real Reader. Existing upstream/source closure remains mandatory.",
+  "files": [
+    {
+      "path": "core/src/avm1/activation.rs",
+      "bytes": 126960,
+      "sha256": "e769868fff9fc1137b96ee6b8fb349b5ffb2631c158bc3e5462ea3ae0df00123",
+      "installation": {
+        "baselineBytes": 125386,
+        "baselineSha256": "88d48f22b33f01091d837fc097ca66bf528edee2f8b648331dc8b59c97ba789d"
+      },
+      "reviewPredecessor": {
+        "bytes": 126371,
+        "sha256": "cfe62e1b715eea7a3dc0b2d9207e50d4f0d04e40186e98a6f99f970cc0ceb883"
+      }
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_short_dispatch.rs",
+      "bytes": 5268,
+      "sha256": "a218787fcad5896f179eaa05bfe3c26c5d64b8e14fbfc36a42cede8ddc72a59f",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_short_dispatch_tests.rs",
+      "bytes": 35133,
+      "sha256": "a3931efcc1ac97f6c8a1dd536baf52a1a3ee258388b4db9c01c27dc1690d6f1d",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    },
+    {
+      "path": "core/src/avm1/activation/short_dispatch_frozen_v21.rs",
+      "bytes": 8525,
+      "sha256": "29d20fcbebed2d4dda988a1268eb51645f2ee51c2d9b16cc4272fa9b7c73fc7b",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    }
+  ],
+  "scope": "Stateless direct dispatch for exactly 82 known AVM1 one-byte opcodes after the original action-count/timeout and function-end guards. Commit the same one-byte reader cursor before invoking each unchanged handler. Unknown bytes, every long action including Call 0x9e, empty input and debug output retain the original Reader, Action match and singleton-Push fallback. No bytecode cache, allocation, GC edge, object field, batching, value/prototype caching or reordered callback is added. Exact frozen v21 dispatcher plus independent Reader and stateful differential fixtures cover route, cursor, error, timeout, reentrancy and whole-movie branch semantics. Compiled code size and unprofiled performance remain unmeasured; this source package claims no runtime qualification or speedup.",
+  "memoryTradeoff": {
+    "persistentBytesAdded": 0,
+    "heapAllocationsAddedByDispatcher": 0,
+    "gcEdgesAdded": 0,
+    "objectLayoutChanged": false,
+    "compiledCodeSizeMeasured": false,
+    "limitation": "The retained generic dispatcher and new direct match may increase code size or branch/inlining cost; no speedup is established."
+  },
+  "endpointAuthorities": [
+    {
+      "path": "tools/ruffle-native-v21/source-reversal.json",
+      "bytes": 46783,
+      "sha256": "360af60e3a8ddeb3c0de48af7d28cc408d9ada4ca49d6f1f4f054ae00e7ad2fe"
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-v22/source-reversal.json",
+      "bytes": 43867,
+      "sha256": "43aa0670400a06bdd00512a43165a56f591d43e0ada650c0871a81e2536e08d7"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v22-source.mjs",
+      "bytes": 2217,
+      "sha256": "abf63780bffd84d8196f23085418fa1e47d5d0296d9b53bcc983c5d9a1182f16"
+    },
+    {
+      "path": "tools/ruffle-native-v22/reference/avm1-opcode.rs",
+      "bytes": 2564,
+      "sha256": "8bc28df6f3c4bc7f7a8f4b49e17efe5bc06b52e83471c3ad6f96518949816d2e"
+    },
+    {
+      "path": "tools/ruffle-native-v22/reference/avm1-read.rs",
+      "bytes": 20216,
+      "sha256": "a49a966a836277bb6c514aedbfa21d2ccd8e01852a872dcaa4efd9503837af32"
+    }
+  ],
+  "unchangedSources": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 16708,
+      "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 55104,
+      "sha256": "047497a0849a042610209272b4017e342d033d4d4228f880ab50df1c6855476b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/lib.rs",
+      "bytes": 10243,
+      "sha256": "127b727cd28cbd691d0f930d8e1cb2a6a970e1d93d87be084da807e88a8356dc"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/boxhead_readback.rs",
+      "bytes": 8719,
+      "sha256": "8b75864fd4597c0fb777cec72b1c71c53952f574da10ee3ffae46d62373e829e"
+    },
+    {
+      "path": "scripts/original-coop-campaign-phased.mjs",
+      "bytes": 230427,
+      "sha256": "148d6aa3bc80e8daf731888f6996427c1c8ed535beca7a48fe2be30afc69c1a2"
+    },
+    {
+      "path": "scripts/original-network-performance-phased.mjs",
+      "bytes": 85414,
+      "sha256": "ccc530064eb1bea48b034b2ed6c28da2d13bb29a3bdb0c80e028be1d10add790"
+    },
+    {
+      "path": "scripts/original-checkpoint-profile-phased.mjs",
+      "bytes": 110862,
+      "sha256": "fa072702625e57cbf20fcf20fa34d9969bfa9177bbc89f14651fdbf0eceb5cb0"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-phased.py",
+      "bytes": 9667,
+      "sha256": "65248812f0d3e5a5d4f924dd33b22fc6305e1d3235bcdb7bdd49d4acf188b99b"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer.mjs",
+      "bytes": 9081,
+      "sha256": "9f2294e966811786af7670d9abd69e876364c7fd8e88437468550b32988a72c8"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v19.mjs",
+      "bytes": 24871,
+      "sha256": "0757d3abb4af13bafa6a62d1d034810c1dadeebc5da402c8af9c51f9ae3ccdca"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-gl-readback-v19.py",
+      "bytes": 9719,
+      "sha256": "4c2a172c88fc4246e3a27c0aeebb541517dc62b1a045505121032ec56aed0f95"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-inventory.json",
+      "bytes": 12276,
+      "sha256": "67ed0e30ecfc675d9ae114dfe403cf0615ff06ee8f59f821fa2ff0d5b042cdee"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-reversal.json",
+      "bytes": 96022,
+      "sha256": "9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-inventory.json",
+      "bytes": 6287,
+      "sha256": "460a18f18abddde6bfaa51b159aeb788595aed658812bc861c30acdd24eaf837"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-reversal.json",
+      "bytes": 57010,
+      "sha256": "c55db22c3b58d5ae3c6c9d94683dd261d03389c438d214cf03bcc85506818ae6"
+    },
+    {
+      "path": "tools/ruffle-native-v20/source-inventory.json",
+      "bytes": 7818,
+      "sha256": "56c15912cc5a71a4ee5fc98fb58b0b91880ba3995615b16f1c8e22f1f986c8ba"
+    },
+    {
+      "path": "tools/ruffle-native-v20/source-reversal.json",
+      "bytes": 54307,
+      "sha256": "ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer-v20.mjs",
+      "bytes": 9091,
+      "sha256": "d40efdd9dc0527a8438cb94c71f20cb97168e2c4e809bb8a53aa9c10129950e3"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v20.mjs",
+      "bytes": 24882,
+      "sha256": "e654f37f0ffc2214dbf63cdfaaeb1772cc988c335eed651ce38f39fe935a6ae9"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-gl-readback-v20.py",
+      "bytes": 9719,
+      "sha256": "c897b48dcf4282b8593608b892559e44445dc0628e38a5ace23b3569f38d5b5f"
+    },
+    {
+      "path": "tests/scripts/asset-index-initial-observer-v20.test.mjs",
+      "bytes": 15491,
+      "sha256": "888d592fbbc11858d1ac6a789427f8e2122e509cd1eda97f4485c8f2ebed6fe8"
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v19.test.mjs",
+      "bytes": 14608,
+      "sha256": "0c8252fcf66647f4e07034b9744472f7ab9816e409d307914f5dfbcce80e2f8e"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_index.rs",
+      "bytes": 25824,
+      "sha256": "056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs",
+      "bytes": 14161,
+      "sha256": "dfc8c5f77bfc47983041d4795901462a6a20247fb6e78ce1928526f7e42920bf"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 29576,
+      "sha256": "ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8"
+    },
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-reversal.json",
+      "bytes": 52241,
+      "sha256": "8659cd04d5295eedfd6c68253adf66983d3c5bd05c1c7c1254c5810eb5c2f602"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs",
+      "bytes": 12091,
+      "sha256": "12465675660bdfadaf779fddba2b5760e6434f95bda5293c4863c2d0c4c145ae"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_miss_filter_tests.rs",
+      "bytes": 21470,
+      "sha256": "14752d3e48aeaa17fd4bb372199cc7c8d0c9169b4c2f77883d90eeee08eb0a9e"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push.rs",
+      "bytes": 2369,
+      "sha256": "a4ee213c351119cc61784ed50eef421cc14cf0cae77912cffab05961185b556f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push_tests.rs",
+      "bytes": 18751,
+      "sha256": "3a6eefa7f07650ca371dba9577861f4d1e8f5bb3bcccc5a31384ee682078fa12"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/boxhead_single_push_decode_tests.rs",
+      "bytes": 7614,
+      "sha256": "573d13da42a5eb8caec80d2527085b0697ecf0234d88cedd70c3693197616cae"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/activation/single_push_frozen_v13.rs",
+      "bytes": 9444,
+      "sha256": "9ee82466bcd9b452fbacf8364a3ec4360ad3d166052d95a3c863d40e2f61fc39"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/runtime.rs",
+      "bytes": 26436,
+      "sha256": "6458b5ee92c7f7ec38d150e3dca03d5d381c40bad12073c44b2a8d9d8acf30e5"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope.rs",
+      "bytes": 10718,
+      "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs",
+      "bytes": 51716,
+      "sha256": "60f76fa1eb90024510249662519e6dad7fbf4be74809b22f78178626bddcb0a8"
+    },
+    {
+      "path": "tools/ruffle-native-v21/source-inventory.json",
+      "bytes": 12164,
+      "sha256": "6535bf650bf8513d4ac0b2da1d016728b9a4a808dece38c425993f5b231cdd0a"
+    },
+    {
+      "path": "tools/ruffle-native-v21/source-reversal.json",
+      "bytes": 46783,
+      "sha256": "360af60e3a8ddeb3c0de48af7d28cc408d9ada4ca49d6f1f4f054ae00e7ad2fe"
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v20.test.mjs",
+      "bytes": 14611,
+      "sha256": "1e3fb23689ae15ab5d076892808e346ac5001a1908d94e4a336033ae1467891b"
+    }
+  ],
+  "historicalDiagnosticTest": {
+    "bytes": 14611,
+    "sha256": "1e3fb23689ae15ab5d076892808e346ac5001a1908d94e4a336033ae1467891b"
+  },
+  "historicalDiagnosticBinder": {
+    "bytes": 85125,
+    "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+  },
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false,
+  "stable60Claimed": false
+}

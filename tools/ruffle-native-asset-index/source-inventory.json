@@ -1,0 +1,128 @@
+{
+  "schema": "boxhead-v18-asset-index-source-inventory-v1",
+  "status": "source candidate; CI Rust/WASM/web and fresh native/gameplay/presentation qualification required",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 83585,
+    "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+  },
+  "parentBinder": {
+    "bytes": 78565,
+    "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+  },
+  "engineManifest": {
+    "bytes": 86545,
+    "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+  },
+  "binder": {
+    "bytes": 80552,
+    "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+  },
+  "oldOverlayInputs": 111,
+  "retainedUnchangedInputs": 108,
+  "currentOverlayInputs": 113,
+  "previousRequiredRustTests": 375,
+  "totalRequiredRustTests": 388,
+  "previousRustGroups": 20,
+  "currentRustGroups": 20,
+  "retainedGraphCases": 51,
+  "currentGraphCases": 64,
+  "addedRustNames": [
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_array_native_and_opaque_leaf_mutations_are_observed",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_entry_budget_never_publishes_partial_coverage",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_explicit_aliases_and_name_collisions_use_exact_fresh_fallback",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_partial_work_restarts_after_writes_and_call_cap_finishes_loading",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_path_and_field_caps_keep_alias_errors_and_fresh_limits",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_production_calls_match_fresh_packets_and_receiving_objects",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_publication_during_marking_keeps_only_live_asset_references",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_readonly_status_and_timeout_keep_existing_contracts",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_real_semantic_write_routes_invalidate_before_reuse",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_reentrant_write_invalidates_active_lookup_and_next_read_is_fresh",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_requires_complete_ordered_current_roots_and_no_extra_deep_rows",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_stage_super_and_virtual_inputs_fall_back_without_callbacks",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::native_graph_asset_index_weak_gc_does_not_retain_removed_children_or_roots"
+  ],
+  "files": [
+    {
+      "path": "core/src/avm1/anchor_metadata.rs",
+      "bytes": 14574,
+      "sha256": "8ceef1008899d4d48833384be5ab3b76a4638b4095c78ce461073a7c5c6065df",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 12960,
+        "sha256": "791a1497490aef8516b77140c60deab561391af5110b6fd989ebd8dce6219030"
+      }
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 51716,
+      "sha256": "60f76fa1eb90024510249662519e6dad7fbf4be74809b22f78178626bddcb0a8",
+      "installation": {
+        "baselineBytes": 37891,
+        "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+      },
+      "reviewPredecessor": {
+        "bytes": 49392,
+        "sha256": "4b200e17071d8bc822173ce288dce77530abb02a41415abb8bac7b9b7876fec9"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 51705,
+      "sha256": "1c5ecda3fd37ebc9afbce367d07123f144a6b2c118c1044f9f9d81304bc5a091",
+      "installation": {
+        "baselineBytes": 33729,
+        "baselineSha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+      },
+      "reviewPredecessor": {
+        "bytes": 46307,
+        "sha256": "ce6ac40b99ce2677cafbe34915966b33df913b2411b772e997e8c4b1936bdd86"
+      }
+    },
+    {
+      "path": "core/src/avm1/anchor_index.rs",
+      "bytes": 16116,
+      "sha256": "e80c96f3c4cacc32eea996b44aed517f9bf8a4d8e5053e045307b287a441d380",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 28407,
+      "sha256": "957be44d213bf008aa672b08a9108534397bc3e21fdb5d4bdf923fdf447722af",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "baselineAbsent": true
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-asset-index/source-reversal.json",
+      "bytes": 57010,
+      "sha256": "c55db22c3b58d5ae3c6c9d94683dd261d03389c438d214cf03bcc85506818ae6"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v18-source.mjs",
+      "bytes": 2225,
+      "sha256": "4d0dfc09db88770180e47b6834635229765afcb33966cf54c8a527f390bac782"
+    }
+  ],
+  "unchangedBuildDriver": {
+    "path": "tools/ruffle-native-smooth/build.py",
+    "bytes": 16458,
+    "sha256": "e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d"
+  },
+  "freshBfsBody": {
+    "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+    "bytes": 2767,
+    "sha256": "fa49aabdd7d14d83d155f76824a55d516fb2220e342f0fcd8e0b6dfce44af7f1"
+  },
+  "scope": "Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.",
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false
+}

@@ -1,0 +1,184 @@
+{
+  "schema": "boxhead-native-display-lookup-source-v1",
+  "status": "source-candidate-CI-not-executed",
+  "integrated": false,
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "reviewedEngineManifest": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v14-push-anchor/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 71812,
+    "sha256": "df8c7e72e90a3c5d1c8bb6a701bd86aff85fe1872f909aa19a200ff85bf22e76"
+  },
+  "reviewedNativeSourceAfter": {
+    "bytes": 527854,
+    "sha256": "afef22db6369abca22df5fa07fb05a4785765756206c2d135b75983f998e58c4"
+  },
+  "reviewedNativeBuildResultSha256": "8b93a1da2c8e1595952ceddf799dede3898043f902621dfe21f89b4a7d11d4c3",
+  "files": [
+    {
+      "path": "core/src/avm1/object.rs",
+      "bytes": 20703,
+      "sha256": "50a782424948d00be67a47a3ff93ce8288198bc6436e29000c8c0d1e0bdd8588",
+      "baseline": {
+        "bytes": 20276,
+        "sha256": "1929a336bd4b60cae4491b28542116f88027f823e36b2dd5b2936ffc4458b2bc"
+      },
+      "installationBaseline": {
+        "bytes": 17992,
+        "sha256": "b672d142ad23793f6ef95b4a505735458ca33b75b5b92488ddefbc5451eaa3a7"
+      }
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 45254,
+      "sha256": "75d9478f35f3c8d97108fb35ff27c544926b3a483d4d925d30bcd78643621239",
+      "baseline": {
+        "bytes": 43753,
+        "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+      },
+      "installationBaseline": {
+        "bytes": 37891,
+        "sha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+      }
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_display_lookup/tests.rs",
+      "bytes": 21921,
+      "sha256": "1a553be0231775bceb64031795fc5c5fa824772aeece2f3e0a584400e2875698",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_display_lookup/frozen_v14.rs",
+      "bytes": 2595,
+      "sha256": "bf98717c0fd6789b49431f5f1844cbff8d905d843a18debdd11c28a81acd6e39",
+      "baselineAbsent": true
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "display_lookup_",
+    "executedExpected": 17,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "display_lookup_case_collisions_and_utf16_names_keep_actual_property_selection",
+      "display_lookup_child_precedence_and_hidden_own_shadowing_match_stage_order",
+      "display_lookup_getter_deletion_and_reparenting_keep_live_prototype_walk",
+      "display_lookup_magic_case_paths_and_missing_levels_match_frozen_versions",
+      "display_lookup_native_data_values_flags_and_identity_match_frozen_reads",
+      "display_lookup_native_getter_results_errors_receiver_and_depth_match",
+      "display_lookup_noncallable_virtual_getter_still_shadows_native_value",
+      "display_lookup_raw_code_identity_helper_remains_side_effect_free_and_native_excluding",
+      "display_lookup_real_activation_get_member_keeps_scalar_bits_and_movieclip_wrapping",
+      "display_lookup_real_text_field_uses_native_properties_and_own_precedence",
+      "display_lookup_recursive_getter_replacement_is_read_fresh",
+      "display_lookup_reentrant_virtual_getter_can_mutate_without_retained_borrow",
+      "display_lookup_repeated_reads_observe_data_deletion_native_and_prototype_changes",
+      "display_lookup_resolver_switch_receiver_arguments_and_missing_value_match",
+      "display_lookup_stored_undefined_shadows_magic_properties_and_parent_getters",
+      "display_lookup_super_forwarding_and_native_prototype_recursion_remain_slow",
+      "display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback"
+    ],
+    "fullNames": [
+      "avm1::object::boxhead_display_lookup::display_lookup_case_collisions_and_utf16_names_keep_actual_property_selection",
+      "avm1::object::boxhead_display_lookup::display_lookup_child_precedence_and_hidden_own_shadowing_match_stage_order",
+      "avm1::object::boxhead_display_lookup::display_lookup_getter_deletion_and_reparenting_keep_live_prototype_walk",
+      "avm1::object::boxhead_display_lookup::display_lookup_magic_case_paths_and_missing_levels_match_frozen_versions",
+      "avm1::object::boxhead_display_lookup::display_lookup_native_data_values_flags_and_identity_match_frozen_reads",
+      "avm1::object::boxhead_display_lookup::display_lookup_native_getter_results_errors_receiver_and_depth_match",
+      "avm1::object::boxhead_display_lookup::display_lookup_noncallable_virtual_getter_still_shadows_native_value",
+      "avm1::object::boxhead_display_lookup::display_lookup_raw_code_identity_helper_remains_side_effect_free_and_native_excluding",
+      "avm1::object::boxhead_display_lookup::display_lookup_real_activation_get_member_keeps_scalar_bits_and_movieclip_wrapping",
+      "avm1::object::boxhead_display_lookup::display_lookup_real_text_field_uses_native_properties_and_own_precedence",
+      "avm1::object::boxhead_display_lookup::display_lookup_recursive_getter_replacement_is_read_fresh",
+      "avm1::object::boxhead_display_lookup::display_lookup_reentrant_virtual_getter_can_mutate_without_retained_borrow",
+      "avm1::object::boxhead_display_lookup::display_lookup_repeated_reads_observe_data_deletion_native_and_prototype_changes",
+      "avm1::object::boxhead_display_lookup::display_lookup_resolver_switch_receiver_arguments_and_missing_value_match",
+      "avm1::object::boxhead_display_lookup::display_lookup_stored_undefined_shadows_magic_properties_and_parent_getters",
+      "avm1::object::boxhead_display_lookup::display_lookup_super_forwarding_and_native_prototype_recursion_remain_slow",
+      "avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback"
+    ]
+  },
+  "retainedRequiredRustTests": 324,
+  "totalRequiredRustTestsWithOnlyThisCandidate": 341,
+  "retainedPropertyGroup": {
+    "label": "property",
+    "filter": "avm1::object::boxhead_property_tests",
+    "expectedExecuted": 28,
+    "expectedPassed": 28,
+    "expectedFailed": 0,
+    "expectedIgnored": 0,
+    "exactNames": [
+      "avm1::object::boxhead_property_tests::ordinary_data_and_inherited_depth_match_the_original_lookup",
+      "avm1::object::boxhead_property_tests::stored_undefined_shadows_parent_getters_and_resolvers",
+      "avm1::object::boxhead_property_tests::getter_returning_undefined_stops_at_its_original_depth_and_receiver",
+      "avm1::object::boxhead_property_tests::getter_throws_and_nonfatal_error_handling_match_original",
+      "avm1::object::boxhead_property_tests::recursive_getter_error_reads_the_descriptor_again_after_replacement",
+      "avm1::object::boxhead_property_tests::getter_deletion_and_prototype_mutation_preserve_live_continuation",
+      "avm1::object::boxhead_property_tests::version_hidden_stored_and_virtual_descriptors_follow_the_parent",
+      "avm1::object::boxhead_property_tests::mixed_case_stored_names_use_the_same_runtime_collision_choice",
+      "avm1::object::boxhead_property_tests::own_watchers_do_not_change_read_semantics",
+      "avm1::object::boxhead_property_tests::unresolved_lookup_retains_resolver_switch_receiver_and_arguments",
+      "avm1::object::boxhead_property_tests::special_native_and_super_objects_keep_the_original_lookup_path",
+      "avm1::object::boxhead_property_tests::prototype_cycle_reaches_the_original_recursion_limit",
+      "avm1::object::boxhead_property_tests::own_data_writes_preserve_flags_order_and_version_clearing",
+      "avm1::object::boxhead_property_tests::own_data_shadows_inherited_virtual_setters_even_when_initially_hidden",
+      "avm1::object::boxhead_property_tests::watchers_and_own_virtual_setters_still_receive_every_write",
+      "avm1::object::boxhead_property_tests::missing_write_falls_back_without_insertion_and_preserves_inherited_setter",
+      "avm1::object::boxhead_property_tests::native_arrays_display_super_and_functions_never_use_the_write_fast_path",
+      "avm1::object::boxhead_property_tests::empty_property_name_keeps_its_original_early_return",
+      "avm1::object::boxhead_property_tests::stored_proto_write_changes_subsequent_lookup_without_any_cached_shape",
+      "avm1::object::boxhead_property_tests::mixed_case_writes_retain_collision_selection_and_enumeration_order",
+      "avm1::object::boxhead_property_tests::missing_write_searches_past_inherited_stored_slots_for_a_deeper_setter",
+      "avm1::object::boxhead_property_tests::missing_write_keeps_visible_getter_only_and_hidden_virtual_stopping_rules",
+      "avm1::object::boxhead_property_tests::missing_write_preserves_inherited_setter_mutations_and_error_precedence",
+      "avm1::object::boxhead_property_tests::missing_write_watchers_keep_slot_creation_reparenting_and_thrown_value_rules",
+      "avm1::object::boxhead_property_tests::missing_write_reads_proto_data_with_original_case_and_attribute_rules",
+      "avm1::object::boxhead_property_tests::missing_ordinary_write_retains_native_and_super_prototype_setter_paths",
+      "avm1::object::boxhead_property_tests::missing_write_keeps_new_field_case_flags_order_and_raw_proto_insertion",
+      "avm1::object::boxhead_property_tests::missing_write_rechecks_prototypes_watchers_and_native_kind_between_writes"
+    ]
+  },
+  "unchangedStageObject": {
+    "path": "core/src/avm1/object/stage_object.rs",
+    "bytes": 23196,
+    "sha256": "1c9997851f254a1ca0edf35c7e1b81bb04a4e1cdd58e0ed68e34b4c1421e1359"
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-display-lookup/source-integrity.test.mjs",
+    "executedExpected": 5
+  },
+  "rustCommand": "cargo test -p ruffle_core --lib display_lookup_ -- --nocapture",
+  "integration": {
+    "newGlobalRegistrations": 0,
+    "runtimeOrActivationChanges": 0,
+    "nativeSourceOverlays": 4,
+    "reviewPredecessorIsNotInstallationBaseline": true,
+    "rawIdentityHelperUnchanged": true
+  },
+  "supportFiles": [
+    {
+      "path": "DISPLAY_LOOKUP.md",
+      "bytes": 6685,
+      "sha256": "0951095bbba8155da1c74a5dfbbb58c97df77b32da61a9fa5e7aa0489857e134"
+    },
+    {
+      "path": "predecessor-identities.json",
+      "bytes": 5129,
+      "sha256": "61cc9c70896e1a437691f1ffe5ef38c054c69df41f481db9021db3e9a994d56d"
+    },
+    {
+      "path": "source-delta.json",
+      "bytes": 5018,
+      "sha256": "254f04c1558d23a354e22fed362e2b01bed00edd44daf06d11d1dd6c7fcefed1"
+    },
+    {
+      "path": "source-normalization.mjs",
+      "bytes": 2188,
+      "sha256": "76275c68e23b421b147158fdbc4ba3ea6ddf719f9e31555b8f28fe4bfb627fda"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 9940,
+      "sha256": "80353a5e91705d0a0d759ba3e3132842b4c4d51b821c509310da423a66bce7c0"
+    }
+  ],
+  "testsExecutedLocally": false
+}

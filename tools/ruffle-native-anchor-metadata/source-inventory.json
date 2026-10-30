@@ -1,0 +1,251 @@
+{
+  "schema": "boxhead-native-anchor-metadata-source-v1",
+  "status": "isolated-source-frozen-CI-not-executed",
+  "integrated": false,
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "repositoryPath": "tools/ruffle-native-smooth/integration-plans/v15-graph-display/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 75992,
+    "sha256": "0b5ce5a50ee68f977bded19688706c901c2f9eb7af8c996e944f5bd45efe07ba"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/anchor_metadata.rs",
+      "bytes": 12960,
+      "sha256": "791a1497490aef8516b77140c60deab561391af5110b6fd989ebd8dce6219030",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/anchor_metadata_tests.rs",
+      "bytes": 11319,
+      "sha256": "0bccd5b3b7273b8b163ed4500d2ddeb36eccb0e84e7054cf152db8639985b4ac",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v15.rs",
+      "bytes": 46472,
+      "sha256": "f169563d0b5f4cd817ae09e912ea54c8cbac84c9537296150e7afcf0e4eb917c",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/metadata_tests.rs",
+      "bytes": 9487,
+      "sha256": "4897597c9ac4f7c7722865e340a6100dfbd3c56d5d53dd5538a71d4e25fb715f",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 46307,
+      "sha256": "ce6ac40b99ce2677cafbe34915966b33df913b2411b772e997e8c4b1936bdd86",
+      "baseline": {
+        "bytes": 46215,
+        "sha256": "d7e560ebc3abb476d2fef6f0cbb0b826a81d4975092105130667cc9e3166d948"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33728,
+      "sha256": "448d72aeb9aef16ac9e233f3cfaf5582f9c17f42c530ed149f062760d0d72b7d",
+      "baseline": {
+        "bytes": 33610,
+        "sha256": "d7a632b1d66128761b3b9ef040d1ac9401b97084494daf011ab6ade47d39f649"
+      }
+    },
+    {
+      "path": "core/src/avm1/object/anchor_metadata_tests.rs",
+      "bytes": 17011,
+      "sha256": "38d905743ceffcd20d96b6027c7a0b4b1de2cf3da3cf972dc19df629ffa1f13b",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 49392,
+      "sha256": "4b200e17071d8bc822173ce288dce77530abb02a41415abb8bac7b9b7876fec9",
+      "baseline": {
+        "bytes": 45254,
+        "sha256": "75d9478f35f3c8d97108fb35ff27c544926b3a483d4d925d30bcd78643621239"
+      }
+    },
+    {
+      "path": "core/src/avm1/runtime.rs",
+      "bytes": 26436,
+      "sha256": "6458b5ee92c7f7ec38d150e3dca03d5d381c40bad12073c44b2a8d9d8acf30e5",
+      "baseline": {
+        "bytes": 26231,
+        "sha256": "e1d54cedfb23f3f87e1e7a071d97499c3574b2c20d62db8016faa4a9297980aa"
+      }
+    },
+    {
+      "path": "core/src/avm1.rs",
+      "bytes": 3045,
+      "sha256": "92334b585db21f08a06a06df1b0ee4f9ad1867e5e44749f69ef6a1deb7ee1621",
+      "baseline": {
+        "bytes": 3013,
+        "sha256": "1576168e3099b75ec369ad5df77cf97b04b4f43dedbc79993780711af9c6da7d"
+      }
+    }
+  ],
+  "applicationFiles": [
+    {
+      "target": "tools/original-bridge/CMain.bridge.asinc",
+      "packagePath": "proposal/tools/original-bridge/CMain.bridge.asinc",
+      "bytes": 62619,
+      "sha256": "87bd63670a303cddc56a52de951b04560eea38d5fd5e1f7bc19b7817151fddec",
+      "baseline": {
+        "bytes": 61911,
+        "sha256": "27e4749c382c25c6c48bf33ed29017d81bf4d0be72d36f649ca4aae487adadde"
+      }
+    }
+  ],
+  "preservedFiles": [
+    {
+      "repositoryPath": "tools/ruffle-native-smooth/integration-plans/v15-graph-display/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 75992,
+      "sha256": "0b5ce5a50ee68f977bded19688706c901c2f9eb7af8c996e944f5bd45efe07ba"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 84766,
+      "sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs",
+      "bytes": 45533,
+      "sha256": "7c66dcc658cbab9fac3c1068807f835433429c19fe22cab838e5e4f9f8eed2a7"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-anchor-inline/engine/core/src/avm1/globals/boxhead_native_graph/inline_tests.rs",
+      "bytes": 13839,
+      "sha256": "a0fdf96163794bf6a182e45e01e2c7dbe11e742f5235af8041cabb5839d14427"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-anchor-inline/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v13.rs",
+      "bytes": 46115,
+      "sha256": "c8333982bd142a97ecff20a4a1e84c73fc3028ba704d28a40ea00f9c2083d47d"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-graph-paths/engine/core/src/avm1/globals/boxhead_native_graph/path_tests.rs",
+      "bytes": 10780,
+      "sha256": "c764e40af3c79fad30ef9a79d03451e3b709f9fd750b2faa2555c097273709d7"
+    },
+    {
+      "repositoryPath": "tools/ruffle-native-graph-paths/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v14.rs",
+      "bytes": 46385,
+      "sha256": "063eba0c3f6dd4aa00476fa26174b8b51b8ba3a0e5de12e7bcb3852dc3fe16f4"
+    }
+  ],
+  "rustFixtureGroups": [
+    {
+      "source": "core/src/avm1/object/anchor_metadata_tests.rs",
+      "filter": "avm1::object::script_object::anchor_metadata_tests::",
+      "expectedExecuted": 10,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "anchor_metadata_array_length_indices_proto_and_native_construction_stay_fresh",
+        "anchor_metadata_checkpoint_misses_never_admit_gameplay_objects_or_retain_errors",
+        "anchor_metadata_fast_data_local_and_definition_writes_invalidate_before_reuse",
+        "anchor_metadata_flags_delete_and_readonly_writes_keep_original_descriptor_effects",
+        "anchor_metadata_gc_drops_deleted_child_and_refunds_invalidated_and_collected_entries",
+        "anchor_metadata_gc_mutation_and_publication_during_marking_keep_current_alias_only",
+        "anchor_metadata_large_object_falls_back_without_partial_cache_or_error_cache",
+        "anchor_metadata_positive_rows_keep_raw_order_hidden_keys_proto_count_and_clip_values",
+        "anchor_metadata_reentrant_property_callback_invalidates_warmed_descendant_only",
+        "anchor_metadata_virtual_watcher_and_interface_changes_reject_without_callbacks"
+      ],
+      "fullNames": [
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_array_length_indices_proto_and_native_construction_stay_fresh",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_checkpoint_misses_never_admit_gameplay_objects_or_retain_errors",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_fast_data_local_and_definition_writes_invalidate_before_reuse",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_flags_delete_and_readonly_writes_keep_original_descriptor_effects",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_gc_drops_deleted_child_and_refunds_invalidated_and_collected_entries",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_gc_mutation_and_publication_during_marking_keep_current_alias_only",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_large_object_falls_back_without_partial_cache_or_error_cache",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_positive_rows_keep_raw_order_hidden_keys_proto_count_and_clip_values",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_reentrant_property_callback_invalidates_warmed_descendant_only",
+        "avm1::object::script_object::anchor_metadata_tests::anchor_metadata_virtual_watcher_and_interface_changes_reject_without_callbacks"
+      ]
+    },
+    {
+      "source": "core/src/avm1/anchor_metadata_tests.rs",
+      "filter": "avm1::anchor_metadata::tests::",
+      "expectedExecuted": 7,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "anchor_metadata_global_budget_covers_inactive_entries_and_reports_denied_admission",
+        "anchor_metadata_loading_caps_call_object_and_property_work_without_weakening_fresh_reads",
+        "anchor_metadata_loading_keeps_movieclip_references_opaque_until_original_resolution",
+        "anchor_metadata_loading_rejects_virtual_or_inherited_namespace_without_coercion",
+        "anchor_metadata_loading_uses_exact_six_raw_roots_and_deduplicates_cycles",
+        "anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work",
+        "anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive"
+      ],
+      "fullNames": [
+        "avm1::anchor_metadata::tests::anchor_metadata_global_budget_covers_inactive_entries_and_reports_denied_admission",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_caps_call_object_and_property_work_without_weakening_fresh_reads",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_keeps_movieclip_references_opaque_until_original_resolution",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_rejects_virtual_or_inherited_namespace_without_coercion",
+        "avm1::anchor_metadata::tests::anchor_metadata_loading_uses_exact_six_raw_roots_and_deduplicates_cycles",
+        "avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work",
+        "avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive"
+      ]
+    },
+    {
+      "source": "core/src/avm1/globals/boxhead_native_graph/metadata_tests.rs",
+      "filter": "avm1::globals::boxhead_native_graph::metadata_tests::",
+      "expectedExecuted": 4,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces",
+        "native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits",
+        "native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence",
+        "native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps"
+      ],
+      "fullNames": [
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence",
+        "avm1::globals::boxhead_native_graph::metadata_tests::native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps"
+      ]
+    }
+  ],
+  "requiredAfterIntegration": 366,
+  "existingGraphGroup": {
+    "filter": "native_graph",
+    "retained": 47,
+    "added": 4,
+    "combined": 51,
+    "addedExactNames": [
+      "native_graph_anchor_metadata_child_mutation_rechecks_kinds_descriptors_and_interfaces",
+      "native_graph_anchor_metadata_hits_keep_raw_field_path_and_timeout_limits",
+      "native_graph_anchor_metadata_keeps_movieclip_path_resolution_and_explicit_alias_precedence",
+      "native_graph_anchor_metadata_warm_packets_keep_alias_names_flags_cycles_and_bitmaps"
+    ],
+    "runNewGraphModuleSeparatelyInFullBuild": false
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-anchor-metadata/source-integrity.test.mjs tools/ruffle-native-anchor-metadata/loading-hook.test.mjs",
+    "expectedExecuted": 7
+  },
+  "supportFiles": [
+    {
+      "path": "README.md",
+      "bytes": 6913,
+      "sha256": "c8159d08510e11308fe8b3b286c19cb443847946e2424c973efe1ea3cf48ec4b"
+    },
+    {
+      "path": "source-reversal.json",
+      "bytes": 24686,
+      "sha256": "1aa0df5eb7258ad4d1455953d6edadf4bf36cf338e6c3dab0c9ffb9d861b77e4"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 6482,
+      "sha256": "22584b181a1f49a05cdaadf0736ed5fddcf3cdfc86960f6d9ccb332ec7215faf"
+    },
+    {
+      "path": "loading-hook.test.mjs",
+      "bytes": 6580,
+      "sha256": "b5a307113ee9a156553188cd1f5f3c6b5b496336118a543914813e392e006921"
+    }
+  ]
+}

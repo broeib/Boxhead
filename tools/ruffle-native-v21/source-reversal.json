@@ -1,0 +1,272 @@
+{
+  "schema": "boxhead-v21-exact-v20-source-reversal-v1",
+  "purpose": "Test-only exact historical normalization; runtime validators read actual current bytes. Old diagnostic evidence stays version-bound.",
+  "files": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs",
+      "before": {
+        "bytes": 10526,
+        "sha256": "2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42"
+      },
+      "after": {
+        "bytes": 12091,
+        "sha256": "12465675660bdfadaf779fddba2b5760e6434f95bda5293c4863c2d0c4c145ae"
+      },
+      "hunks": [
+        {
+          "before": "/// A map from property names to values.\n#[derive(Default, Clone, Debug, Collect)]\n#[collect(no_drop)]\npub struct PropertyMap<'gc, V>(PropertyIndexMap<PropertyName<'gc>, V>);\n\nimpl<'gc, V> PropertyMap<'gc, V> {\n    pub fn new() -> Self {\n        Self(PropertyIndexMap::default())\n    }\n\n    /// A hint skips only hash-table search, never the current descriptor.\n",
+          "after": "/// A map from property names to values.\n#[derive(Default, Clone, Debug, Collect)]\n#[collect(no_drop)]\npub struct PropertyMap<'gc, V>(\n    PropertyIndexMap<PropertyName<'gc>, V>,\n    // Monotone possible-membership bits, not cached descriptors or misses.\n    // Two u32 lanes avoid imposing a new u64 alignment on every map.\n    #[collect(require_static)] [u32; 2],\n);\n\n/// Every hash, including zero, requires one nonzero bit in each lane.\n/// Collisions only retain the original exact table lookup; no bit accepts a key.\n#[inline]\nfn property_miss_bits(hash: u64) -> [u32; 2] {\n    [1u32 << ((hash as u32) & 31), 1u32 << (((hash >> 32) as u32) & 31)]\n}\n\nimpl<'gc, V> PropertyMap<'gc, V> {\n    pub fn new() -> Self {\n        Self(PropertyIndexMap::default(), [0; 2])\n    }\n\n    /// Mark before lending out a vacant entry, in both case modes. An unused\n    /// entry or a later deletion may leave extra bits, never a false negative.\n    #[inline]\n    fn mark_possible_key(&mut self, key: AvmString<'gc>) {\n        let required = property_miss_bits(key.avm1_property_hash());\n        self.1[0] |= required[0];\n        self.1[1] |= required[1];\n    }\n\n    #[inline]\n    fn may_contain_key(&self, key: AvmString<'gc>) -> bool {\n        // Preserve the cheap empty-map miss without computing a string hash.\n        if self.1[0] == 0 || self.1[1] == 0 {\n            return false;\n        }\n        let required = property_miss_bits(key.avm1_property_hash());\n        self.1[0] & required[0] != 0 && self.1[1] & required[1] != 0\n    }\n\n    /// A hint skips only hash-table search, never the current descriptor.\n"
+        },
+        {
+          "before": "            && self.0.get_index(index).is_some_and(|(stored, _)| stored.0 == key)\n        {\n            return Some(index);\n        }\n        let found = self.0.get_index_of(&CaseSensitive(key));\n        if let Some(index) = found {\n",
+          "after": "            && self.0.get_index(index).is_some_and(|(stored, _)| stored.0 == key)\n        {\n            return Some(index);\n        }\n        if !self.may_contain_key(key) {\n            return None;\n        }\n        let found = self.0.get_index_of(&CaseSensitive(key));\n        if let Some(index) = found {\n"
+        },
+        {
+          "before": "                    map: &mut self.0,\n                    index,\n                }),\n                None => Entry::Vacant(VacantEntry {\n                    map: &mut self.0,\n                    key,\n                }),\n            }\n        } else {\n            match self.0.get_index_of(&CaseInsensitive(key)) {\n",
+          "after": "                    map: &mut self.0,\n                    index,\n                }),\n                None => {\n                    self.mark_possible_key(key);\n                    Entry::Vacant(VacantEntry {\n                        map: &mut self.0,\n                        key,\n                    })\n                },\n            }\n        } else {\n            match self.0.get_index_of(&CaseInsensitive(key)) {\n"
+        },
+        {
+          "before": "                    map: &mut self.0,\n                    index,\n                }),\n                None => Entry::Vacant(VacantEntry {\n                    map: &mut self.0,\n                    key,\n                }),\n            }\n        }\n    }\n",
+          "after": "                    map: &mut self.0,\n                    index,\n                }),\n                None => {\n                    self.mark_possible_key(key);\n                    Entry::Vacant(VacantEntry {\n                        map: &mut self.0,\n                        key,\n                    })\n                },\n            }\n        }\n    }\n"
+        },
+        {
+          "before": "\n#[cfg(test)]\nmod boxhead_slot_hint_tests;\n",
+          "after": "\n#[cfg(test)]\nmod boxhead_slot_hint_tests;\n\n#[cfg(test)]\nmod boxhead_miss_filter_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "before": {
+        "bytes": 93496,
+        "sha256": "10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf"
+      },
+      "after": {
+        "bytes": 96022,
+        "sha256": "34bed0818df9159ce54eb2c18cbcf5aea6d045bed07dd8cd9c4f1921b64ee201"
+      },
+      "hunks": [
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/property_map.rs\",\n      \"bytes\": 10526,\n      \"sha256\": \"2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42\",\n      \"baselineBytes\": 6702,\n      \"baselineSha256\": \"dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/property_map.rs\",\n      \"bytes\": 12091,\n      \"sha256\": \"12465675660bdfadaf779fddba2b5760e6434f95bda5293c4863c2d0c4c145ae\",\n      \"baselineBytes\": 6702,\n      \"baselineSha256\": \"dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b\"\n    },\n"
+        },
+        {
+          "before": "      \"path\": \"core/src/avm1/property_map/boxhead_hash_tests.rs\",\n      \"bytes\": 20165,\n      \"sha256\": \"c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "      \"path\": \"core/src/avm1/property_map/boxhead_hash_tests.rs\",\n      \"bytes\": 20165,\n      \"sha256\": \"c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/property_map/boxhead_miss_filter_tests.rs\",\n      \"bytes\": 21470,\n      \"sha256\": \"14752d3e48aeaa17fd4bb372199cc7c8d0c9169b4c2f77883d90eeee08eb0a9e\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "        \"boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels\",\n        \"boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path\"\n      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 418,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n",
+          "after": "        \"boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels\",\n        \"boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path\"\n      ]\n    },\n    {\n      \"label\": \"property_miss_filter\",\n      \"filter\": \"avm1::property_map::boxhead_miss_filter_tests::\",\n      \"expectedExecuted\": 10,\n      \"expectedPassed\": 10,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_abandoned_vacant_entries_never_create_membership\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_getters_setters_and_watchers_keep_callbacks\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_movieclip_fallback_and_own_shadowing_are_preserved\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_prototype_reads_observe_later_writes_and_reparenting\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_resolve_mutation_and_thrown_getter_stay_fresh\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_all_deletions_and_reinsertion_keep_live_keys_and_order\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_casefold_utf16_and_range_aliases_match_frozen_table\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_clone_take_swap_and_value_mutation_preserve_coverage\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_new_default_and_all_insert_paths_preserve_unhinted_hits\",\n        \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_zero_hash_collisions_and_saturation_keep_exact_fallback\"\n      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 428,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n"
+        },
+        {
+          "before": "    \"assetIndex\": \"Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.\",\n    \"assetDisplayReplay\": \"Extends the prior six-root optional asset topology with bounded opaque display-edge replay. Preparation retains weak owners and immutable field names only. Each checkpoint rereads live values, replays original MovieClip reference resolution and exact alias/error order, and skips only freshly recognized explicit opaque constructors. Ordinary/namespace overlaps and unsupported states retain the unchanged fresh BFS. Read-only nested assetIndex status adds no traversal or native work.\",\n    \"webglReadbackAllocation\": \"Only wasm WebGL Rgba8Unorm NotCopied bitmap capture may replace a pooled MAP_READ buffer when its allocation exceeds twice the requested padded size and the excess is at least256KiB. Return the pooled guard before allocating an exact call-local COPY_DST|MAP_READ buffer; retain the original rectangle, row layout, submission, synchronous capture, unmap and copy-count sequence. Other backends, formats, AlreadyCopied and ordinary pool policy remain unchanged. No persistent cache is added.\",\n    \"assetIndexCapacity\": \"Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.\"\n  }\n}\n",
+          "after": "    \"assetIndex\": \"Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.\",\n    \"assetDisplayReplay\": \"Extends the prior six-root optional asset topology with bounded opaque display-edge replay. Preparation retains weak owners and immutable field names only. Each checkpoint rereads live values, replays original MovieClip reference resolution and exact alias/error order, and skips only freshly recognized explicit opaque constructors. Ordinary/namespace overlaps and unsupported states retain the unchanged fresh BFS. Read-only nested assetIndex status adds no traversal or native work.\",\n    \"webglReadbackAllocation\": \"Only wasm WebGL Rgba8Unorm NotCopied bitmap capture may replace a pooled MAP_READ buffer when its allocation exceeds twice the requested padded size and the excess is at least256KiB. Return the pooled guard before allocating an exact call-local COPY_DST|MAP_READ buffer; retain the original rectangle, row layout, submission, synchronous capture, unmap and copy-count sequence. Other backends, formats, AlreadyCopied and ordinary pool policy remain unchanged. No persistent cache is added.\",\n    \"assetIndexCapacity\": \"Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.\",\n    \"propertyMissFilter\": \"Negative-only two-u32 possible-membership mask in each AVM1 PropertyMap. The exact positive current-key slot hint stays first. Both case modes mark before returning a vacant entry; deletes retain bits, new/default are empty, and clones/moves retain the table and mask together. Only a missing bit can reject an own-table query; possible matches use the original IndexMap, casefold FNV, descriptor and enumeration paths. No prototype/getter/watcher/native-display result, object identity or mutation epoch is cached. Added scalar payload is 8 bytes per map; ObjectData has two maps. Target layout/RSS and unprofiled FPS remain unmeasured, with no qualification or performance claim.\"\n  }\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "before": {
+        "bytes": 85125,
+        "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+      },
+      "after": {
+        "bytes": 86788,
+        "sha256": "3247035ec714816040b95f0d3b28edf3505e9cfeab3e19ce3e2a7a75fb2ecd0a"
+      },
+      "hunks": [
+        {
+          "before": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n",
+          "after": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '34bed0818df9159ce54eb2c18cbcf5aea6d045bed07dd8cd9c4f1921b64ee201',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n"
+        },
+        {
+          "before": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs',\n  'core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs',\n  'render/wgpu/src/boxhead_readback.rs',\n",
+          "after": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/property_map/boxhead_miss_filter_tests.rs',\n  'core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs',\n  'core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs',\n  'render/wgpu/src/boxhead_readback.rs',\n"
+        },
+        {
+          "before": "  \"avm1::object::boxhead_display_lookup::display_lookup_super_forwarding_and_native_prototype_recursion_remain_slow\",\n  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 82, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n",
+          "after": "  \"avm1::object::boxhead_display_lookup::display_lookup_super_forwarding_and_native_prototype_recursion_remain_slow\",\n  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst PROPERTY_MISS_FILTER_TEST_NAMES = Object.freeze([\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_abandoned_vacant_entries_never_create_membership\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_getters_setters_and_watchers_keep_callbacks\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_movieclip_fallback_and_own_shadowing_are_preserved\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_prototype_reads_observe_later_writes_and_reparenting\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_resolve_mutation_and_thrown_getter_stay_fresh\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_all_deletions_and_reinsertion_keep_live_keys_and_order\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_casefold_utf16_and_range_aliases_match_frozen_table\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_clone_take_swap_and_value_mutation_preserve_coverage\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_new_default_and_all_insert_paths_preserve_unhinted_hits\",\n  \"avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_zero_hash_collisions_and_saturation_keep_exact_fallback\",\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 82, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n"
+        },
+        {
+          "before": "  { label: 'anchor_metadata_loading', filter: 'avm1::anchor_metadata::tests::', passed: 7, ignored: 0 },\n  { label: 'slot_hint', filter: 'slot_hint', passed: 9, ignored: 0 },\n  { label: 'readback_buffer', filter: 'boxhead_readback::tests::', passed: 12, ignored: 0, package: 'ruffle_render_wgpu' },\n]);\n// Derived only from reviewed code constants above, never a supplied manifest.\nconst REQUIRED_RUST_TESTS = GROUPS.reduce((sum, group) => sum + group.passed, 0);\n",
+          "after": "  { label: 'anchor_metadata_loading', filter: 'avm1::anchor_metadata::tests::', passed: 7, ignored: 0 },\n  { label: 'slot_hint', filter: 'slot_hint', passed: 9, ignored: 0 },\n  { label: 'readback_buffer', filter: 'boxhead_readback::tests::', passed: 12, ignored: 0, package: 'ruffle_render_wgpu' },\n  { label: 'property_miss_filter', filter: 'avm1::property_map::boxhead_miss_filter_tests::', passed: 10, ignored: 0 },\n]);\n// Derived only from reviewed code constants above, never a supplied manifest.\nconst REQUIRED_RUST_TESTS = GROUPS.reduce((sum, group) => sum + group.passed, 0);\n"
+        },
+        {
+          "before": "  \"boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels\",\n  \"boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path\"\n], 'Reviewed WebGL readback allocation fixtures changed');\n  const names = engine.rustUnitGroups.flatMap(group => group.exactNames);\n  assert.equal(new Set([...names, BITMAP_IGNORED_NAME]).size, REQUIRED_RUST_TESTS + 1,\n    'Rust fixture names must be unique, including the ignored diagnostic');\n",
+          "after": "  \"boxhead_readback::tests::boxhead_readback_uses_existing_rgba_row_alignment_at_63_64_65_pixels\",\n  \"boxhead_readback::tests::boxhead_readback_zero_or_undersized_input_keeps_legacy_path\"\n], 'Reviewed WebGL readback allocation fixtures changed');\n  assert.deepEqual(engine.rustUnitGroups[21].exactNames, PROPERTY_MISS_FILTER_TEST_NAMES,\n    'Reviewed own-property miss-filter fixtures changed');\n  const names = engine.rustUnitGroups.flatMap(group => group.exactNames);\n  assert.equal(new Set([...names, BITMAP_IGNORED_NAME]).size, REQUIRED_RUST_TESTS + 1,\n    'Rust fixture names must be unique, including the ignored diagnostic');\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "before": {
+        "bytes": 65166,
+        "sha256": "6ee0db3e64553cecfc00405a64e2b335af3efd517c8ca97cddacaf749a7d1187"
+      },
+      "after": {
+        "bytes": 70207,
+        "sha256": "05ed00cdf4800ea383bb2b03a59e58a391c8fe2dabcf22b40331e0e9c13ed310"
+      },
+      "hunks": [
+        {
+          "before": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 418;\nconst EXPECTED_GROUPS = 21;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'readback_buffer', 'wasm', 'selfhosted'];\n\ntest('the added anchor and singleton-Push fixtures cannot be omitted, renamed, reordered or inherited', () => {\n  for (const mutate of [\n",
+          "after": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 428;\nconst EXPECTED_GROUPS = 22;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'readback_buffer', 'property_miss_filter', 'wasm', 'selfhosted'];\n\ntest('the added anchor and singleton-Push fixtures cannot be omitted, renamed, reordered or inherited', () => {\n  for (const mutate of [\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 24);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 25);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit adaptive asset-capacity candidate pin, 117 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 117);\n  assert.equal(engine.files.length, 117);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n",
+          "after": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit property-miss-filter candidate pin, 118 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 118);\n  assert.equal(engine.files.length, 118);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n"
+        },
+        {
+          "before": "  ]) { const value = structuredClone(engine); mutate(value); assert.throws(() => validateSmoothEngine(value, parent, graphParent)); }\n});\n\ntest('complete synthetic metadata binds all twenty-three stages without claiming a compiler or gameplay run', () => {\n  const value = documents(); validateSmoothBuildDocuments(value);\n  assert.deepEqual(value.plan.stages.map(stage => stage.label), EXPECTED_STAGE_LABELS);\n  assert.equal(value.fixtures.groups.reduce((total, group) => total + group.passed, 0), EXPECTED_TESTS);\n",
+          "after": "  ]) { const value = structuredClone(engine); mutate(value); assert.throws(() => validateSmoothEngine(value, parent, graphParent)); }\n});\n\ntest('complete synthetic metadata binds all twenty-four stages without claiming a compiler or gameplay run', () => {\n  const value = documents(); validateSmoothBuildDocuments(value);\n  assert.deepEqual(value.plan.stages.map(stage => stage.label), EXPECTED_STAGE_LABELS);\n  assert.equal(value.fixtures.groups.reduce((total, group) => total + group.passed, 0), EXPECTED_TESTS);\n"
+        },
+        {
+          "before": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly95 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 95);\n  assert.equal(proof.length, value.parentSource.files.length + 95);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n",
+          "after": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly96 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 96);\n  assert.equal(proof.length, value.parentSource.files.length + 96);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 18);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 19);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "    assert.throws(() => validateSmoothBuildDocuments(changed), 'Consistent plan/capture cannot select another package');\n  }\n  for (const change of [\n    changed => { changed.rustUnitGroups.pop(); },\n    changed => { changed.rustUnitGroups[20].filter = 'boxhead_readback_'; },\n    changed => { changed.rustUnitGroups[20].exactNames.reverse(); },\n    changed => { const group = changed.rustUnitGroups[20]; group.exactNames.pop(); group.expectedExecuted--; group.expectedPassed--; },\n",
+          "after": "    assert.throws(() => validateSmoothBuildDocuments(changed), 'Consistent plan/capture cannot select another package');\n  }\n  for (const change of [\n    changed => { changed.rustUnitGroups.splice(20, 1); },\n    changed => { changed.rustUnitGroups[20].filter = 'boxhead_readback_'; },\n    changed => { changed.rustUnitGroups[20].exactNames.reverse(); },\n    changed => { const group = changed.rustUnitGroups[20]; group.exactNames.pop(); group.expectedExecuted--; group.expectedPassed--; },\n"
+        },
+        {
+          "before": "    text.replace('test ' + group.exactNames[0] + ' ... ok', 'test ' + group.exactNames[0] + ' ... ignored'),\n  ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n});\n",
+          "after": "    text.replace('test ' + group.exactNames[0] + ' ... ok', 'test ' + group.exactNames[0] + ' ... ignored'),\n  ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n});\n\ntest('v21 property miss-filter fixtures require the exact fresh core group, source and log with all earlier groups retained', () => {\n  const index = 21, group = engine.rustUnitGroups[index];\n  assert.equal(group.label, 'property_miss_filter');\n  assert.equal(group.filter, 'avm1::property_map::boxhead_miss_filter_tests::');\n  assert.equal(group.expectedExecuted, 10); assert.equal(group.expectedPassed, 10);\n  assert.equal(group.expectedFailed, 0); assert.equal(group.expectedIgnored, 0);\n  assert.equal(group.exactNames.length, 10);\n  assert.equal(engine.rustUnitGroups.slice(0, index).reduce((sum, value) => sum + value.expectedPassed, 0), 418);\n  const value = documents(); validateSmoothBuildDocuments(value);\n  const command = value.plan.stages[index].command;\n  assert.equal(command[command.indexOf('-p') + 1], 'ruffle_core');\n  assert.equal(value.plan.stages[20].label, 'readback_buffer');\n  assert.equal(value.plan.stages[22].label, 'wasm');\n\n  for (const change of [\n    changed => { changed.rustUnitGroups.splice(index, 1); },\n    changed => { changed.rustUnitGroups[index].label = 'unreviewed_property_group'; },\n    changed => { changed.rustUnitGroups[index].filter = 'property_miss_filter_'; },\n    changed => { changed.rustUnitGroups[index].exactNames.reverse(); },\n    changed => { changed.rustUnitGroups[index].exactNames[0] = changed.rustUnitGroups[index].exactNames[1]; },\n    changed => { changed.rustUnitGroups[index].exactNames[0] = group.filter + 'unreviewed'; },\n    changed => { const added = changed.rustUnitGroups[index]; added.exactNames.pop(); added.expectedExecuted--; added.expectedPassed--; },\n    changed => { const added = changed.rustUnitGroups[index]; added.expectedIgnored = 1; added.exactIgnoredNames = [added.exactNames.pop()];\n      added.expectedExecuted--; added.expectedPassed--; },\n  ]) {\n    const changed = structuredClone(engine); change(changed);\n    changed.totalRequiredRustTests = changed.rustUnitGroups.reduce((sum, entry) => sum + entry.expectedPassed, 0);\n    assert.throws(() => validateSmoothEngine(changed, parent, graphParent));\n  }\n  for (const change of [\n    changed => { changed.plan.stages.splice(index, 1); changed.capture.stages.splice(index, 1); },\n    changed => { changed.fixtures.groups.splice(index, 1); },\n    changed => { changed.fixtures.groups[index].log = rec('inherited-property-filter.log'); },\n    changed => { changed.fixtures.groups[index].exactNames.pop(); changed.fixtures.groups[index].passed--; changed.fixtures.groups[index].executed--; },\n    changed => { changed.fixtures.groups[index].failed = 1; },\n    changed => { changed.fixtures.groups[index].ignored = 1; changed.fixtures.groups[index].exactIgnoredNames = ['unreviewed::ignored']; },\n    changed => { changed.fixtures.groups[index].resources.maxRssKiB = 0; },\n    changed => changeCommand(changed, index, argv => { argv[argv.indexOf('-p') + 1] = 'ruffle_render_wgpu'; }),\n    changed => changeCommand(changed, index, argv => { argv[argv.indexOf('-p') + 1] = 'unreviewed_core'; }),\n    changed => changeCommand(changed, index, argv => { argv[argv.indexOf(group.filter)] = 'property_miss_filter_'; }),\n  ]) {\n    const changed = documents(); change(changed);\n    changed.fixtures.totalExecuted = changed.fixtures.groups.reduce((sum, entry) => sum + entry.executed, 0);\n    assert.throws(() => validateSmoothBuildDocuments(changed));\n  }\n  const stale = documents(), oldEngine = rec('engine-v20.json', '10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf');\n  for (const owner of [stale.manifest, stale.result, stale.plan, stale.fixtures]) owner.engineManifest = oldEngine;\n  assert.throws(() => validateSmoothBuildDocuments(stale), 'Matching documents cannot substitute the v20 engine pin');\n\n  const resources = { maxRssKiB: 12345, scope: SMOOTH_RESOURCE_SCOPE }, text = rustLog(group, resources);\n  for (const broken of [\n    text.replace('test ' + group.exactNames[0] + ' ... ok\\n', ''),\n    text.replace(group.exactNames[0], group.filter + 'unreviewed'),\n    text.replace('test ' + group.exactNames[0] + ' ... ok', 'test ' + group.exactNames[0] + ' ... ignored'),\n    text + 'test ' + group.exactNames[0] + ' ... ok\\n',\n  ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  const source = 'core/src/avm1/property_map/boxhead_miss_filter_tests.rs';\n  assert.equal(engine.files.find(entry => entry.path === source)?.baselineAbsent, true);\n  const missingSource = structuredClone(engine);\n  missingSource.files = missingSource.files.filter(entry => entry.path !== source);\n  assert.throws(() => validateSmoothEngine(missingSource, parent, graphParent));\n  const snapshots = sourceDocuments();\n  for (const capture of [snapshots.before, snapshots.after]) {\n    capture.files = capture.files.filter(entry => entry.path !== source);\n    capture.gitUntracked = capture.gitUntracked.filter(entry => entry !== source);\n  }\n  assert.throws(() => sourceProof(snapshots), 'Self-consistent source captures cannot omit the new fixture');\n});\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v20-asset-capacity-integration.test.mjs",
+      "before": {
+        "bytes": 16987,
+        "sha256": "f38732b14315141212b8b97d7ae188f0dc972706cc6235274730b092994da35e"
+      },
+      "after": {
+        "bytes": 18127,
+        "sha256": "16b7142742cae9905f7437d8779d4b7589e4f2cd93ef344e86ba3afacb34d3b0"
+      },
+      "hunks": [
+        {
+          "before": "import { reviewedV19Paths, restoreV18Source, v19HistoricalSource } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE }\n  from '../../scripts/lib/native-smooth-runtime-binding.mjs';\n\n// Source authentication and rejection fixtures only. These do not execute a\n// native build or claim cache readiness, late-join latency or gameplay FPS.\nconst read = file => readFileSync(new URL('../../' + file, import.meta.url), 'utf8');\nconst identity = text => ({ bytes: Buffer.byteLength(text), sha256: createHash('sha256').update(text).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v20/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 7818,\n",
+          "after": "import { reviewedV19Paths, restoreV18Source, v19HistoricalSource } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { v21HistoricalSource } from './fixtures/native-v21-source.mjs';\n\n// Source authentication and rejection fixtures only. These do not execute a\n// native build or claim cache readiness, late-join latency or gameplay FPS.\nconst read = file => v21HistoricalSource(file, readFileSync(new URL('../../' + file, import.meta.url), 'utf8'));\nconst identity = text => ({ bytes: Buffer.byteLength(text), sha256: createHash('sha256').update(text).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v20/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\n\n// Exercise the exact sealed v20 validator and its original 418-case contract.\n// Only its three relative import URLs change for this test-only data module.\nconst historicalBinderSource = read(binderPath);\nassert.deepEqual(identity(historicalBinderSource), { bytes: 85125,\n  sha256: '45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f' });\nconst binderURL = new URL('../../' + binderPath, import.meta.url);\nconst siblingImports = ['./native-runtime-bundle.mjs', './native-graph-runtime-binding.mjs', './native-projection-runtime-binding.mjs'];\nassert.deepEqual([...historicalBinderSource.matchAll(/from '(\\.\\/[^']+)'/g)].map(match => match[1]), siblingImports);\nlet historicalBinderModule = historicalBinderSource;\nfor (const specifier of siblingImports) {\n  const from = \"from '\" + specifier + \"'\";\n  assert.equal(historicalBinderModule.split(from).length, 2);\n  historicalBinderModule = historicalBinderModule.replace(from, \"from '\" + new URL(specifier, binderURL).href + \"'\");\n}\nconst { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE } =\n  await import('data:text/javascript;base64,' + Buffer.from(historicalBinderModule).toString('base64'));\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 7818,\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v20-source.mjs",
+      "before": {
+        "bytes": 2217,
+        "sha256": "aa50cec350e087592df13e6ec3ef5e70e71d2e46cb205116d5dad7467c716b35"
+      },
+      "after": {
+        "bytes": 2326,
+        "sha256": "d7bedb70c460c0d5e2469e0f76396b45057a76400466f9223a60a1080369dff0"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v20/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 54307, \"sha256\": \"ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e\"}, 'Unreviewed v20 exact source delta');\n",
+          "after": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { v21HistoricalSource } from './native-v21-source.mjs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v20/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 54307, \"sha256\": \"ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e\"}, 'Unreviewed v20 exact source delta');\n"
+        },
+        {
+          "before": "}\nexport function v20HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n",
+          "after": "}\nexport function v20HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  source = v21HistoricalSource(path, source);\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v20.test.mjs",
+      "before": {
+        "bytes": 14363,
+        "sha256": "6bcc4e3aa2d82ef70fcaa1c04541bdcd499d50741d13f45358fbeb1fcc933f94"
+      },
+      "after": {
+        "bytes": 14611,
+        "sha256": "1e3fb23689ae15ab5d076892808e346ac5001a1908d94e4a336033ae1467891b"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { readFile } from 'node:fs/promises';\nimport { createHash } from 'node:crypto';\nimport path from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\n",
+          "after": "import assert from 'node:assert/strict';\nimport { readFile } from 'node:fs/promises';\nimport { createHash } from 'node:crypto';\nimport { v21HistoricalSource } from './fixtures/native-v21-source.mjs';\nimport path from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\n"
+        },
+        {
+          "before": "\ntest('new GPU wrapper is an exact one-entry whitelist delta; original producer and wrapper stay pinned', async () => {\n  for (const [file, expected] of Object.entries(GL_DIAGNOSTIC_PINS)) {\n    const bytes = await readFile(path.join(root, file));\n    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);\n  }\n  const before = await readFile(path.join(root, 'scripts/run-original-ci-gpu-phased.py'), 'utf8');\n",
+          "after": "\ntest('new GPU wrapper is an exact one-entry whitelist delta; original producer and wrapper stay pinned', async () => {\n  for (const [file, expected] of Object.entries(GL_DIAGNOSTIC_PINS)) {\n    const currentBytes = await readFile(path.join(root, file));\n    const bytes = file === 'scripts/lib/native-smooth-runtime-binding.mjs'\n      ? Buffer.from(v21HistoricalSource(file, currentBytes.toString('utf8'))) : currentBytes;\n    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);\n  }\n  const before = await readFile(path.join(root, 'scripts/run-original-ci-gpu-phased.py'), 'utf8');\n"
+        }
+      ]
+    }
+  ],
+  "historicalEndpoints": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 77023,
+      "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 78565,
+      "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 80552,
+      "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 84138,
+      "sha256": "9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61069,
+      "sha256": "35ef5605592ddeb9d9f1fc547c1f3f2903e2948f649d103d30ac11e6c06460a3"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61231,
+      "sha256": "ad9b3eece33148396381d1d5f580e98e19a7488212079469a38b81f741bbf516"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61238,
+      "sha256": "e9ff2866cf7d00f440ef9c17f9284cc5f7bdbd45ad694efa6d23877de3e8ac1b"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 65166,
+      "sha256": "2b5bef5ea11ca85c4698c884fb5bcb0d39558d76d667bfea564706d69b0e1a07"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs",
+      "bytes": 9568,
+      "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 81095,
+      "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 83585,
+      "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 86545,
+      "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 91688,
+      "sha256": "0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921"
+    }
+  ]
+}

@@ -1,0 +1,363 @@
+{
+  "schema": "boxhead-v17-exact-v16-source-reversal-v1",
+  "scope": "Exact reviewed source normalization for historical tests only; current runtime inputs remain raw.",
+  "files": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "before": {
+        "bytes": 77023,
+        "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+      },
+      "after": {
+        "bytes": 78565,
+        "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+      },
+      "hunks": [
+        {
+          "before": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: 'a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b',\n  buildDriver: 'e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n",
+          "after": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: 'dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57',\n  buildDriver: 'e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n"
+        },
+        {
+          "before": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1.rs',\n  'core/src/avm1/anchor_metadata.rs',\n  'core/src/avm1/anchor_metadata_tests.rs',\n",
+          "after": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/property_map/boxhead_slot_hint_tests.rs',\n  'web/packages/core/tools/build_wasm.ts',\n  'core/src/avm1.rs',\n  'core/src/avm1/anchor_metadata.rs',\n  'core/src/avm1/anchor_metadata_tests.rs',\n"
+        },
+        {
+          "before": "// identities must also occur in its complete source-before capture; a runtime\n// may not supply its own replacement baseline or label these paths as new.\nexport const SMOOTH_UPSTREAM_BASELINES = Object.freeze({\n  'core/src/avm1.rs': Object.freeze({ bytes: 3013,\n    sha256: '1576168e3099b75ec369ad5df77cf97b04b4f43dedbc79993780711af9c6da7d' }),\n  'Cargo.lock': Object.freeze({ bytes: 188669,\n",
+          "after": "// identities must also occur in its complete source-before capture; a runtime\n// may not supply its own replacement baseline or label these paths as new.\nexport const SMOOTH_UPSTREAM_BASELINES = Object.freeze({\n  'web/packages/core/tools/build_wasm.ts': Object.freeze({ bytes: 5579,\n    sha256: '51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e' }),\n  'core/src/avm1.rs': Object.freeze({ bytes: 3013,\n    sha256: '1576168e3099b75ec369ad5df77cf97b04b4f43dedbc79993780711af9c6da7d' }),\n  'Cargo.lock': Object.freeze({ bytes: 188669,\n"
+        },
+        {
+          "before": "  { label: 'display_lookup', filter: 'display_lookup_', passed: 17, ignored: 0 },\n  { label: 'anchor_metadata_object', filter: 'avm1::object::script_object::anchor_metadata_tests::', passed: 10, ignored: 0 },\n  { label: 'anchor_metadata_loading', filter: 'avm1::anchor_metadata::tests::', passed: 7, ignored: 0 },\n]);\n// Derived only from reviewed code constants above, never a supplied manifest.\nconst REQUIRED_RUST_TESTS = GROUPS.reduce((sum, group) => sum + group.passed, 0);\n",
+          "after": "  { label: 'display_lookup', filter: 'display_lookup_', passed: 17, ignored: 0 },\n  { label: 'anchor_metadata_object', filter: 'avm1::object::script_object::anchor_metadata_tests::', passed: 10, ignored: 0 },\n  { label: 'anchor_metadata_loading', filter: 'avm1::anchor_metadata::tests::', passed: 7, ignored: 0 },\n  { label: 'slot_hint', filter: 'slot_hint', passed: 9, ignored: 0 },\n]);\n// Derived only from reviewed code constants above, never a supplied manifest.\nconst REQUIRED_RUST_TESTS = GROUPS.reduce((sum, group) => sum + group.passed, 0);\n"
+        },
+        {
+          "before": "    \"avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work\",\n    \"avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive\"\n], 'Reviewed metadata fixtures changed');\n  const names = engine.rustUnitGroups.flatMap(group => group.exactNames);\n  assert.equal(new Set([...names, BITMAP_IGNORED_NAME]).size, REQUIRED_RUST_TESTS + 1,\n    'Rust fixture names must be unique, including the ignored diagnostic');\n",
+          "after": "    \"avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work\",\n    \"avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive\"\n], 'Reviewed metadata fixtures changed');\n  assert.deepEqual(engine.rustUnitGroups[19].exactNames, [\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_actual_avm_warm_slot_reobserves_virtual_descriptor_and_new_watcher\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_borrowed_wstr_operations_do_not_consume_or_rewrite_the_hint\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_case_insensitive_collisions_and_mutations_keep_frozen_selection\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_positive_queries_recheck_wrong_keys_and_out_of_bounds_indices\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_range_aliases_append_and_equal_widths_keep_range_local_hints\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_shared_query_revalidates_each_map_and_independently_mutated_clone\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_shift_remove_entry_remove_and_reinsert_preserve_order\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_warm_reads_observe_insert_get_mut_entry_and_iter_mut_values\",\n    \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_zero_and_checked_u32_encoding_never_truncate_indices\"\n], 'Reviewed positive slot-hint fixtures changed');\n  const names = engine.rustUnitGroups.flatMap(group => group.exactNames);\n  assert.equal(new Set([...names, BITMAP_IGNORED_NAME]).size, REQUIRED_RUST_TESTS + 1,\n    'Rust fixture names must be unique, including the ignored diagnostic');\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v16-source.mjs",
+      "before": {
+        "bytes": 4770,
+        "sha256": "e9a25ef0c27936e796aaccc32390a48ee375494585015810d9d7c3e9da7193f5"
+      },
+      "after": {
+        "bytes": 4906,
+        "sha256": "a95911c9a76a0759f9312e1b2f7a3f8822866e07c78db594a8cac7d69519ac5b"
+      },
+      "hunks": [
+        {
+          "before": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { nativeV16QualificationHistoricalSource } from './native-v16-qualification-source.mjs';\nconst root = new URL('../../../', import.meta.url);\nconst read = path => readFileSync(new URL(path, root), 'utf8');\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\n",
+          "after": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { nativeV16QualificationHistoricalSource } from './native-v16-qualification-source.mjs';\nimport { v17HistoricalSource } from './native-v17-source.mjs';\nconst root = new URL('../../../', import.meta.url);\nconst read = path => readFileSync(new URL(path, root), 'utf8');\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\n"
+        },
+        {
+          "before": "export function restoreV15Source(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  const row = rows.get(path); assert(row, 'Unknown reviewed v16 source');\n  assert.deepEqual(identity(source), row.after, 'Unreviewed complete v16 source');\n  let previous = source;\n  if (row.frozen) previous = read(frozenRoot + path);\n",
+          "after": "export function restoreV15Source(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  const row = rows.get(path); assert(row, 'Unknown reviewed v16 source');\n  source = v17HistoricalSource(path, source);\n  assert.deepEqual(identity(source), row.after, 'Unreviewed complete v16 source');\n  let previous = source;\n  if (row.frozen) previous = read(frozenRoot + path);\n"
+        },
+        {
+          "before": "}\nexport function v16HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  return rows.has(path) ? restoreV15Source(path, source) : nativeV16QualificationHistoricalSource(path, source);\n}\n",
+          "after": "}\nexport function v16HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  return rows.has(path) ? restoreV15Source(path, source) : nativeV16QualificationHistoricalSource(path, v17HistoricalSource(path, source));\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "before": {
+        "bytes": 61069,
+        "sha256": "35ef5605592ddeb9d9f1fc547c1f3f2903e2948f649d103d30ac11e6c06460a3"
+      },
+      "after": {
+        "bytes": 61238,
+        "sha256": "e9ff2866cf7d00f440ef9c17f9284cc5f7bdbd45ad694efa6d23877de3e8ac1b"
+      },
+      "hunks": [
+        {
+          "before": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 366;\nconst EXPECTED_GROUPS = 19;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'wasm', 'selfhosted'];\n\ntest('the added anchor and singleton-Push fixtures cannot be omitted, renamed, reordered or inherited', () => {\n  for (const mutate of [\n",
+          "after": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 375;\nconst EXPECTED_GROUPS = 20;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'wasm', 'selfhosted'];\n\ntest('the added anchor and singleton-Push fixtures cannot be omitted, renamed, reordered or inherited', () => {\n  for (const mutate of [\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 16);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 18);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit metadata candidate pin, 109 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 109);\n  assert.equal(engine.files.length, 109);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n",
+          "after": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit slot-hint/compiler candidate pin, 111 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 111);\n  assert.equal(engine.files.length, 111);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n"
+        },
+        {
+          "before": "  ]) { const value = structuredClone(engine); mutate(value); assert.throws(() => validateSmoothEngine(value, parent, graphParent)); }\n});\n\ntest('complete synthetic metadata binds all eighteen stages without claiming a compiler or gameplay run', () => {\n  const value = documents(); validateSmoothBuildDocuments(value);\n  assert.deepEqual(value.plan.stages.map(stage => stage.label), EXPECTED_STAGE_LABELS);\n  assert.equal(value.fixtures.groups.reduce((total, group) => total + group.passed, 0), EXPECTED_TESTS);\n",
+          "after": "  ]) { const value = structuredClone(engine); mutate(value); assert.throws(() => validateSmoothEngine(value, parent, graphParent)); }\n});\n\ntest('complete synthetic metadata binds all twenty-two stages without claiming a compiler or gameplay run', () => {\n  const value = documents(); validateSmoothBuildDocuments(value);\n  assert.deepEqual(value.plan.stages.map(stage => stage.label), EXPECTED_STAGE_LABELS);\n  assert.equal(value.fixtures.groups.reduce((total, group) => total + group.passed, 0), EXPECTED_TESTS);\n"
+        },
+        {
+          "before": "});\n\ntest('upstream replacement baselines are explicit and inherited scanner/object files are overlaid', () => {\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 13);\n  assert.deepEqual(SMOOTH_UPSTREAM_BASELINES['core/src/avm1/scope.rs'], { bytes: 9350,\n    sha256: '85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d' });\n  assert.deepEqual(SMOOTH_UPSTREAM_BASELINES['core/src/avm1/object.rs'], { bytes: 17992,\n",
+          "after": "});\n\ntest('upstream replacement baselines are explicit and inherited scanner/object files are overlaid', () => {\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 14);\n  assert.deepEqual(SMOOTH_UPSTREAM_BASELINES['core/src/avm1/scope.rs'], { bytes: 9350,\n    sha256: '85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d' });\n  assert.deepEqual(SMOOTH_UPSTREAM_BASELINES['core/src/avm1/object.rs'], { bytes: 17992,\n"
+        },
+        {
+          "before": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly89 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 89);\n  assert.equal(proof.length, value.parentSource.files.length + 89);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n",
+          "after": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly90 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 90);\n  assert.equal(proof.length, value.parentSource.files.length + 90);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n"
+        },
+        {
+          "before": "    value.totalRequiredRustTests = value.rustUnitGroups.reduce((sum, group) => sum + group.expectedPassed, 0);\n    assert.throws(() => validateSmoothEngine(value, parent, graphParent));\n  }\n  for (const index of [0, 16, 17, 18]) for (const mutate of [\n    group => { group.log = rec('inherited-graph-display.log'); },\n    group => { group.exactNames.pop(); group.executed--; group.passed--; },\n    group => { group.exactNames[0] = 'unreviewed::renamed'; },\n",
+          "after": "    value.totalRequiredRustTests = value.rustUnitGroups.reduce((sum, group) => sum + group.expectedPassed, 0);\n    assert.throws(() => validateSmoothEngine(value, parent, graphParent));\n  }\n  for (const index of [0, 16, 17, 18, 19]) for (const mutate of [\n    group => { group.log = rec('inherited-graph-display.log'); },\n    group => { group.exactNames.pop(); group.executed--; group.passed--; },\n    group => { group.exactNames[0] = 'unreviewed::renamed'; },\n"
+        },
+        {
+          "before": "\ntest('v15 added source files and actual new fixture log rows remain compulsory in complete source captures', () => {\n  const resources = { maxRssKiB: 12345, scope: SMOOTH_RESOURCE_SCOPE };\n  for (const [index, first] of [[0, 43], [16, 0], [0, 47], [17, 0], [18, 0]]) {\n    const group = engine.rustUnitGroups[index], text = rustLog(group, resources);\n    for (const broken of [\n      text.replace('test ' + group.exactNames[first] + ' ... ok\\n', ''),\n",
+          "after": "\ntest('v15 added source files and actual new fixture log rows remain compulsory in complete source captures', () => {\n  const resources = { maxRssKiB: 12345, scope: SMOOTH_RESOURCE_SCOPE };\n  for (const [index, first] of [[0, 43], [16, 0], [0, 47], [17, 0], [18, 0], [19, 0]]) {\n    const group = engine.rustUnitGroups[index], text = rustLog(group, resources);\n    for (const broken of [\n      text.replace('test ' + group.exactNames[first] + ' ... ok\\n', ''),\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 10);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 12);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "  }\n});\n\ntest('v16 metadata groups and appended graph cases cannot be omitted, relabeled, reordered or ignored', () => {\n  for (const index of [17, 18]) for (const change of [\n    group => { group.exactNames.pop(); group.expectedExecuted--; group.expectedPassed--; },\n    group => { group.exactNames.reverse(); },\n    group => { group.exactNames[0] = 'unreviewed::replacement'; },\n",
+          "after": "  }\n});\n\ntest('v16 metadata and v17 slot-hint groups and appended graph cases cannot be omitted, relabeled, reordered or ignored', () => {\n  for (const index of [17, 18, 19]) for (const change of [\n    group => { group.exactNames.pop(); group.expectedExecuted--; group.expectedPassed--; },\n    group => { group.exactNames.reverse(); },\n    group => { group.exactNames[0] = 'unreviewed::replacement'; },\n"
+        },
+        {
+          "before": "      const integrated = readFileSync(new URL('../../tools/ruffle-native-smooth/engine/' + expected.path, import.meta.url));\n      const actual = engine.files.find(file => file.path === expected.path);\n      assert.deepEqual(integrated, packaged, expected.path);",
+          "after": "      const current = readFileSync(new URL('../../tools/ruffle-native-smooth/engine/' + expected.path, import.meta.url));\n      const currentRow = engine.files.find(file => file.path === expected.path);\n      const integrated = v15HistoricalBytes(expected.path, current), actual = v15HistoricalRow(currentRow);\n      assert.deepEqual(integrated, packaged, expected.path);"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v14-push-anchor-integration.test.mjs",
+      "before": {
+        "bytes": 12083,
+        "sha256": "0e7c606d3ad1f30f82be295d15b5f5bc03506cd13e8f3e22841154818a9e60ee"
+      },
+      "after": {
+        "bytes": 12083,
+        "sha256": "9dad00a1f31fb0e963887a58b7146eef611b19ce57a2fa3cc9aec91e41797385"
+      },
+      "hunks": [
+        {
+          "before": "\ntest('v14 binds both frozen packages and preserves every other qualified v13 overlay', () => {\n  assert.equal(sha(currentEngineText), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 99); assert.equal(SMOOTH_OVERLAY_PATHS.length, 109);\n  assert.equal(engine.files.filter(row => row.baselineAbsent).length, 80);\n  const overlaid = new Set();\n  for (const { path, count, inventory } of packages) {\n",
+          "after": "\ntest('v14 binds both frozen packages and preserves every other qualified v13 overlay', () => {\n  assert.equal(sha(currentEngineText), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 99); assert.equal(SMOOTH_OVERLAY_PATHS.length, 111);\n  assert.equal(engine.files.filter(row => row.baselineAbsent).length, 80);\n  const overlaid = new Set();\n  for (const { path, count, inventory } of packages) {\n"
+        },
+        {
+          "before": "  delete scope.anchorInline; delete scope.singlePush;\n  scope.activation = v13.integrationScope.activation;\n  assert.deepEqual(scope, v13.integrationScope);\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 13);\n  const activation = engine.files.find(row => row.path === 'core/src/avm1/activation.rs');\n  assert.equal(activation.baselineBytes, 125386);\n  assert.equal(activation.baselineSha256, '88d48f22b33f01091d837fc097ca66bf528edee2f8b648331dc8b59c97ba789d');\n",
+          "after": "  delete scope.anchorInline; delete scope.singlePush;\n  scope.activation = v13.integrationScope.activation;\n  assert.deepEqual(scope, v13.integrationScope);\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 14);\n  const activation = engine.files.find(row => row.path === 'core/src/avm1/activation.rs');\n  assert.equal(activation.baselineBytes, 125386);\n  assert.equal(activation.baselineSha256, '88d48f22b33f01091d837fc097ca66bf528edee2f8b648331dc8b59c97ba789d');\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v15-graph-display-integration.test.mjs",
+      "before": {
+        "bytes": 15962,
+        "sha256": "951031005b1a48fdea6da0091897509ef26b791669fadc37296fe9e656e93236"
+      },
+      "after": {
+        "bytes": 15962,
+        "sha256": "cf9e762c603971fb208b3779dde25779329e871f0bc11608622078ab5a63acfc"
+      },
+      "hunks": [
+        {
+          "before": "\ntest('v15 binds both exact packages and all96 unaffected v14a overlay files without changing installation baselines', () => {\n  assert.equal(sha(readFileSync(new URL(engineRoot + 'manifest.json', root))), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 103); assert.equal(SMOOTH_OVERLAY_PATHS.length, 109);\n  assert.equal(engine.files.filter(row => row.baselineAbsent).length, 84);\n  const overlaid = new Set();\n  for (const { path, count, inventory } of packages) {\n",
+          "after": "\ntest('v15 binds both exact packages and all96 unaffected v14a overlay files without changing installation baselines', () => {\n  assert.equal(sha(readFileSync(new URL(engineRoot + 'manifest.json', root))), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 103); assert.equal(SMOOTH_OVERLAY_PATHS.length, 111);\n  assert.equal(engine.files.filter(row => row.baselineAbsent).length, 84);\n  const overlaid = new Set();\n  for (const { path, count, inventory } of packages) {\n"
+        },
+        {
+          "before": "  const scope = { ...engine.integrationScope };\n  delete scope.graphPaths; delete scope.displayLookup;\n  assert.deepEqual(scope, v14a.integrationScope);\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 13);\n  for (const path of ['core/src/avm1/object.rs', 'core/src/avm1/object/script_object.rs',\n    'core/src/avm1/globals/boxhead_native_graph.rs'])\n    assert.deepEqual(origin(engine.files.find(row => row.path === path)), origin(v14a.files.find(row => row.path === path)));\n",
+          "after": "  const scope = { ...engine.integrationScope };\n  delete scope.graphPaths; delete scope.displayLookup;\n  assert.deepEqual(scope, v14a.integrationScope);\n  assert.equal(Object.keys(SMOOTH_UPSTREAM_BASELINES).length, 14);\n  for (const path of ['core/src/avm1/object.rs', 'core/src/avm1/object/script_object.rs',\n    'core/src/avm1/globals/boxhead_native_graph.rs'])\n    assert.deepEqual(origin(engine.files.find(row => row.path === path)), origin(v14a.files.find(row => row.path === path)));\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v16-anchor-metadata-integration.test.mjs",
+      "before": {
+        "bytes": 3532,
+        "sha256": "86f77b837ec808d330e7878e2592b6fe09a01e92c35b2913d306bc8ee2765dee"
+      },
+      "after": {
+        "bytes": 3654,
+        "sha256": "31a395e5f4b1b82d1e3db1943f1e20a87abef6e2892978e8cc3c1c4ba8fb614b"
+      },
+      "hunks": [
+        {
+          "before": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\nimport { reviewedV16Paths, restoreV15Source } from './fixtures/native-v16-source.mjs';\nimport { SMOOTH_RUNTIME_PINS } from '../../scripts/lib/native-smooth-runtime-binding.mjs';\nconst root = new URL('../../', import.meta.url);\nconst read = path => nativeV16QualificationHistoricalSource(path, readFileSync(new URL(path, root), 'utf8'));\nconst sha = source => createHash('sha256').update(source).digest('hex');\nconst manifestPath = 'tools/ruffle-native-smooth/engine/manifest.json';\nconst engine = JSON.parse(read(manifestPath));\n",
+          "after": "import { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { nativeV16QualificationHistoricalSource } from './fixtures/native-v16-qualification-source.mjs';\nimport { v17HistoricalSource } from './fixtures/native-v17-source.mjs';\nimport { reviewedV16Paths, restoreV15Source } from './fixtures/native-v16-source.mjs';\nimport { SMOOTH_RUNTIME_PINS } from '../../scripts/lib/native-smooth-runtime-binding.mjs';\nconst root = new URL('../../', import.meta.url);\nconst read = path => nativeV16QualificationHistoricalSource(path, v17HistoricalSource(path, readFileSync(new URL(path, root), 'utf8')));\nconst sha = source => createHash('sha256').update(source).digest('hex');\nconst manifestPath = 'tools/ruffle-native-smooth/engine/manifest.json';\nconst engine = JSON.parse(read(manifestPath));\n"
+        },
+        {
+          "before": "const inventory = JSON.parse(inventoryText);\n\ntest('v16 installs the exact reviewed metadata sources and retains every old Rust fixture and baseline', () => {\n  assert.equal(sha(read(manifestPath)), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 109); assert.equal(engine.totalRequiredRustTests, 366);\n  assert.equal(engine.rustUnitGroups.length, 19); assert.equal(old.totalRequiredRustTests, 345);\n  const retained = structuredClone(engine.rustUnitGroups.slice(0, 17));\n",
+          "after": "const inventory = JSON.parse(inventoryText);\n\ntest('v16 installs the exact reviewed metadata sources and retains every old Rust fixture and baseline', () => {\n  assert.equal(sha(readFileSync(new URL(manifestPath, root))), SMOOTH_RUNTIME_PINS.engineManifest);\n  assert.equal(engine.files.length, 109); assert.equal(engine.totalRequiredRustTests, 366);\n  assert.equal(engine.rustUnitGroups.length, 19); assert.equal(old.totalRequiredRustTests, 345);\n  const retained = structuredClone(engine.rustUnitGroups.slice(0, 17));\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v16-qualification-source.test.mjs",
+      "before": {
+        "bytes": 6469,
+        "sha256": "504da5cb9750362fc4436e19f6b1b068a26b7efd6afbb3d894bf632f2ae353cb"
+      },
+      "after": {
+        "bytes": 6568,
+        "sha256": "0848860f9de018d9bc402c507fc8df5250804b1b8d27a2fca7bb4f6690e7de8a"
+      },
+      "hunks": [
+        {
+          "before": "  from './fixtures/native-v16-qualification-source.mjs';\nimport { reviewedV16Paths, restoreV15Source, v16HistoricalSource } from './fixtures/native-v16-source.mjs';\nimport { campaignQualificationHistoricalSource } from './fixtures/campaign-qualification-source.mjs';\n\n// CI-only source authentication. This file does not execute a producer, browser,\n// native callback or measurement and cannot qualify gameplay or presentation.\nconst read = file => readFileSync(new URL('../../' + file, import.meta.url), 'utf8');\nconst sha = source => createHash('sha256').update(source).digest('hex');\nconst helperFile = 'tests/scripts/fixtures/native-v16-source.mjs';\nconst readerFile = 'tests/scripts/four-pose-source.test.mjs';\n",
+          "after": "  from './fixtures/native-v16-qualification-source.mjs';\nimport { reviewedV16Paths, restoreV15Source, v16HistoricalSource } from './fixtures/native-v16-source.mjs';\nimport { campaignQualificationHistoricalSource } from './fixtures/campaign-qualification-source.mjs';\nimport { v17HistoricalSource } from './fixtures/native-v17-source.mjs';\n\n// CI-only source authentication. This file does not execute a producer, browser,\n// native callback or measurement and cannot qualify gameplay or presentation.\nconst read = file => v17HistoricalSource(file, readFileSync(new URL('../../' + file, import.meta.url), 'utf8'));\nconst sha = source => createHash('sha256').update(source).digest('hex');\nconst helperFile = 'tests/scripts/fixtures/native-v16-source.mjs';\nconst readerFile = 'tests/scripts/four-pose-source.test.mjs';\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/Cargo.toml",
+      "before": {
+        "bytes": 5957,
+        "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361"
+      },
+      "after": {
+        "bytes": 6019,
+        "sha256": "50ae24b1bd4a0b45c1194f33ee8aac08e9b0b6cb8adac493b5f8ac44d051ed50"
+      },
+      "hunks": [
+        {
+          "before": "# across \"dual-wasm\" builds, separating it for the two .wasm modules.\n[profile.web-wasm-mvp]\ninherits = \"release\"\n\n[profile.web-wasm-extensions]\ninherits = \"release\"\n\n[profile.ci]\ninherits = \"release\"\n",
+          "after": "# across \"dual-wasm\" builds, separating it for the two .wasm modules.\n[profile.web-wasm-mvp]\ninherits = \"release\"\nlto = \"thin\"\ncodegen-units = 1\n\n[profile.web-wasm-extensions]\ninherits = \"release\"\nlto = \"thin\"\ncodegen-units = 1\n\n[profile.ci]\ninherits = \"release\"\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/avm_string.rs",
+      "before": {
+        "bytes": 5858,
+        "sha256": "dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b"
+      },
+      "after": {
+        "bytes": 6267,
+        "sha256": "aaed4cd525c83b77aaeddb2ef17f18f602ba09afea8e04c9c7aa41948738f26a"
+      },
+      "hunks": [
+        {
+          "before": "    #[inline]\n    pub fn avm1_property_hash(&self) -> u64 {\n        self.0.avm1_property_hash()\n    }\n\n    pub fn as_interned(&self) -> Option<AvmAtom<'gc>> {\n",
+          "after": "    #[inline]\n    pub fn avm1_property_hash(&self) -> u64 {\n        self.0.avm1_property_hash()\n    }\n\n    /// A positive AVM1 property slot hint, never a cached lookup result.\n    /// The caller must recheck the current indexed key before reading a value.\n    #[inline]\n    pub fn avm1_property_index_hint(&self) -> Option<usize> {\n        self.0.avm1_property_index_hint()\n    }\n\n    #[inline]\n    pub fn cache_avm1_property_index(&self, index: usize) {\n        self.0.cache_avm1_property_index(index);\n    }\n\n    pub fn as_interned(&self) -> Option<AvmAtom<'gc>> {\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/repr.rs",
+      "before": {
+        "bytes": 8327,
+        "sha256": "255e9167c20c94db7803cf4b73205e83f4da3572b4be15652614266fb3a8c141"
+      },
+      "after": {
+        "bytes": 9320,
+        "sha256": "383f46468df1eeb3340e261ceea3c8c9b5c7ec58f1984b14ddac9a571f2f2107"
+      },
+      "hunks": [
+        {
+          "before": "    #[collect(require_static)]\n    avm1_folded_hash: Cell<[u32; 2]>,\n\n    // If Some, the string is Dependent. The owner is assumed to be non-dynamic.\n    owner: Option<Gc<'gc, Self>>,\n}\n",
+          "after": "    #[collect(require_static)]\n    avm1_folded_hash: Cell<[u32; 2]>,\n\n    // One range-local positive slot hint; zero means absent, otherwise index+1.\n    // No object, value or key is retained, and every use rechecks the indexed\n    // key. These four raw bytes need no GC root or mutation barrier.\n    #[collect(require_static)]\n    avm1_property_index: Cell<u32>,\n\n    // If Some, the string is Dependent. The owner is assumed to be non-dynamic.\n    owner: Option<Gc<'gc, Self>>,\n}\n"
+        },
+        {
+          "before": "            capacity,\n            chars_used: Cell::new(meta.len32()),\n            avm1_folded_hash: Cell::new([0, 0]),\n            owner: None,\n        }\n    }\n",
+          "after": "            capacity,\n            chars_used: Cell::new(meta.len32()),\n            avm1_folded_hash: Cell::new([0, 0]),\n            avm1_property_index: Cell::new(0),\n            owner: None,\n        }\n    }\n"
+        },
+        {
+          "before": "            meta: unsafe { wptr::WStrMetadata::of(wstr) },\n            chars_used: Cell::new(0),\n            avm1_folded_hash: Cell::new([0, 0]),\n            capacity: Cell::new(wptr::WStrMetadata::new32(0, interned)),\n        }\n    }\n",
+          "after": "            meta: unsafe { wptr::WStrMetadata::of(wstr) },\n            chars_used: Cell::new(0),\n            avm1_folded_hash: Cell::new([0, 0]),\n            avm1_property_index: Cell::new(0),\n            capacity: Cell::new(wptr::WStrMetadata::new32(0, interned)),\n        }\n    }\n"
+        },
+        {
+          "before": "        hash\n    }\n\n    pub fn is_interned(&self) -> bool {\n        self.capacity.get().is_wide()\n    }\n",
+          "after": "        hash\n    }\n\n    #[inline]\n    pub(crate) fn avm1_property_index_hint(&self) -> Option<usize> {\n        self.avm1_property_index.get().checked_sub(1)\n            .and_then(|index| usize::try_from(index).ok())\n    }\n\n    #[inline]\n    pub(crate) fn cache_avm1_property_index(&self, index: usize) {\n        // A huge native index remains an ordinary hash lookup, never a\n        // truncated hint. Failed/negative queries do not erase a useful hint.\n        if let Some(encoded) = index.checked_add(1).and_then(|value| u32::try_from(value).ok()) {\n            self.avm1_property_index.set(encoded);\n        }\n    }\n\n    pub fn is_interned(&self) -> bool {\n        self.capacity.get().is_wide()\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs",
+      "before": {
+        "bytes": 9568,
+        "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b"
+      },
+      "after": {
+        "bytes": 10526,
+        "sha256": "2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42"
+      },
+      "hunks": [
+        {
+          "before": "        Self(PropertyIndexMap::default())\n    }\n\n    pub fn contains_key<T: AsRef<WStr>>(&self, key: T, case_sensitive: bool) -> bool {\n        if case_sensitive {\n            self.0.contains_key(&CaseSensitive(key.as_ref()))\n",
+          "after": "        Self(PropertyIndexMap::default())\n    }\n\n    /// A hint skips only hash-table search, never the current descriptor.\n    /// Exact-case keys are unique. A stale index after deletion, a different\n    /// object layout or a cloned map is usable only if its current key is equal.\n    /// Case-insensitive queries retain IndexMap's original collision selection.\n    #[inline]\n    fn case_sensitive_index(&self, key: AvmString<'gc>) -> Option<usize> {\n        if let Some(index) = key.avm1_property_index_hint()\n            && self.0.get_index(index).is_some_and(|(stored, _)| stored.0 == key)\n        {\n            return Some(index);\n        }\n        let found = self.0.get_index_of(&CaseSensitive(key));\n        if let Some(index) = found {\n            key.cache_avm1_property_index(index);\n        }\n        found\n    }\n\n    pub fn contains_key<T: AsRef<WStr>>(&self, key: T, case_sensitive: bool) -> bool {\n        if case_sensitive {\n            self.0.contains_key(&CaseSensitive(key.as_ref()))\n"
+        },
+        {
+          "before": "    /// Retains the managed string identity so repeated queries reuse its hash.\n    pub fn contains_key_avm(&self, key: AvmString<'gc>, case_sensitive: bool) -> bool {\n        if case_sensitive {\n            self.0.contains_key(&CaseSensitive(key))\n        } else {\n            self.0.contains_key(&CaseInsensitive(key))\n        }\n",
+          "after": "    /// Retains the managed string identity so repeated queries reuse its hash.\n    pub fn contains_key_avm(&self, key: AvmString<'gc>, case_sensitive: bool) -> bool {\n        if case_sensitive {\n            self.case_sensitive_index(key).is_some()\n        } else {\n            self.0.contains_key(&CaseInsensitive(key))\n        }\n"
+        },
+        {
+          "before": "\n    pub fn entry<'a>(&'a mut self, key: AvmString<'gc>, case_sensitive: bool) -> Entry<'gc, 'a, V> {\n        if case_sensitive {\n            match self.0.get_index_of(&CaseSensitive(key)) {\n                Some(index) => Entry::Occupied(OccupiedEntry {\n                    map: &mut self.0,\n                    index,\n",
+          "after": "\n    pub fn entry<'a>(&'a mut self, key: AvmString<'gc>, case_sensitive: bool) -> Entry<'gc, 'a, V> {\n        if case_sensitive {\n            match self.case_sensitive_index(key) {\n                Some(index) => Entry::Occupied(OccupiedEntry {\n                    map: &mut self.0,\n                    index,\n"
+        },
+        {
+          "before": "\n    pub fn get_avm(&self, key: AvmString<'gc>, case_sensitive: bool) -> Option<&V> {\n        if case_sensitive {\n            self.0.get(&CaseSensitive(key))\n        } else {\n            self.0.get(&CaseInsensitive(key))\n        }\n",
+          "after": "\n    pub fn get_avm(&self, key: AvmString<'gc>, case_sensitive: bool) -> Option<&V> {\n        if case_sensitive {\n            let index = self.case_sensitive_index(key)?;\n            self.0.get_index(index).map(|(_, value)| value)\n        } else {\n            self.0.get(&CaseInsensitive(key))\n        }\n"
+        },
+        {
+          "before": "\n    pub fn get_mut_avm(&mut self, key: AvmString<'gc>, case_sensitive: bool) -> Option<&mut V> {\n        if case_sensitive {\n            self.0.get_mut(&CaseSensitive(key))\n        } else {\n            self.0.get_mut(&CaseInsensitive(key))\n        }\n",
+          "after": "\n    pub fn get_mut_avm(&mut self, key: AvmString<'gc>, case_sensitive: bool) -> Option<&mut V> {\n        if case_sensitive {\n            let index = self.case_sensitive_index(key)?;\n            self.0.get_index_mut(index).map(|(_, value)| value)\n        } else {\n            self.0.get_mut(&CaseInsensitive(key))\n        }\n"
+        },
+        {
+          "before": "\n#[cfg(test)]\nmod boxhead_equality_tests;\n",
+          "after": "\n#[cfg(test)]\nmod boxhead_equality_tests;\n\n#[cfg(test)]\nmod boxhead_slot_hint_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "before": {
+        "bytes": 81095,
+        "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+      },
+      "after": {
+        "bytes": 83585,
+        "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+      },
+      "hunks": [
+        {
+          "before": "    },\n    {\n      \"path\": \"Cargo.toml\",\n      \"bytes\": 5957,\n      \"sha256\": \"cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361\",\n      \"baselineBytes\": 5842,\n      \"baselineSha256\": \"6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"Cargo.toml\",\n      \"bytes\": 6019,\n      \"sha256\": \"50ae24b1bd4a0b45c1194f33ee8aac08e9b0b6cb8adac493b5f8ac44d051ed50\",\n      \"baselineBytes\": 5842,\n      \"baselineSha256\": \"6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b\"\n    },\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/common/src/avm_string/avm_string.rs\",\n      \"bytes\": 5858,\n      \"sha256\": \"dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b\",\n      \"baselineBytes\": 5517,\n      \"baselineSha256\": \"ceeeeb9431c7c4f2601a6d61eb2ca47878225f5f78c61e73788808809d3ee38a\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"core/common/src/avm_string/avm_string.rs\",\n      \"bytes\": 6267,\n      \"sha256\": \"aaed4cd525c83b77aaeddb2ef17f18f602ba09afea8e04c9c7aa41948738f26a\",\n      \"baselineBytes\": 5517,\n      \"baselineSha256\": \"ceeeeb9431c7c4f2601a6d61eb2ca47878225f5f78c61e73788808809d3ee38a\"\n    },\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/common/src/avm_string/repr.rs\",\n      \"bytes\": 8327,\n      \"sha256\": \"255e9167c20c94db7803cf4b73205e83f4da3572b4be15652614266fb3a8c141\",\n      \"baselineBytes\": 7433,\n      \"baselineSha256\": \"61c9876a88dee4f473ea9030141ebfb3fca060f7d26fa96e5b31768fb4fdf4da\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"core/common/src/avm_string/repr.rs\",\n      \"bytes\": 9320,\n      \"sha256\": \"383f46468df1eeb3340e261ceea3c8c9b5c7ec58f1984b14ddac9a571f2f2107\",\n      \"baselineBytes\": 7433,\n      \"baselineSha256\": \"61c9876a88dee4f473ea9030141ebfb3fca060f7d26fa96e5b31768fb4fdf4da\"\n    },\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/property_map.rs\",\n      \"bytes\": 9568,\n      \"sha256\": \"2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b\",\n      \"baselineBytes\": 6702,\n      \"baselineSha256\": \"dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b\"\n    },\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/property_map.rs\",\n      \"bytes\": 10526,\n      \"sha256\": \"2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42\",\n      \"baselineBytes\": 6702,\n      \"baselineSha256\": \"dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b\"\n    },\n"
+        },
+        {
+          "before": "      \"path\": \"core/src/avm1/property_map/boxhead_hash_tests.rs\",\n      \"bytes\": 20165,\n      \"sha256\": \"c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "      \"path\": \"core/src/avm1/property_map/boxhead_hash_tests.rs\",\n      \"bytes\": 20165,\n      \"sha256\": \"c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/property_map/boxhead_slot_hint_tests.rs\",\n      \"bytes\": 17489,\n      \"sha256\": \"05c752cea2020acc15d2de267241e4e325b49aa6ec89e37483d16e74254eb80e\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "      \"bytes\": 333,\n      \"sha256\": \"b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"web/src/lib.rs\",\n",
+          "after": "      \"bytes\": 333,\n      \"sha256\": \"b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"web/packages/core/tools/build_wasm.ts\",\n      \"bytes\": 5580,\n      \"sha256\": \"5a8bc1daad24204909c8081784a9e262571572f2081b81650ca4c753b60113c1\",\n      \"baselineBytes\": 5579,\n      \"baselineSha256\": \"51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e\"\n    },\n    {\n      \"path\": \"web/src/lib.rs\",\n"
+        },
+        {
+          "before": "        \"avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work\",\n        \"avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive\"\n      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 366,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n",
+          "after": "        \"avm1::anchor_metadata::tests::anchor_metadata_status_is_bounded_plain_snapshot_without_vm_traversal_or_work\",\n        \"avm1::anchor_metadata::tests::anchor_metadata_weak_loading_queue_cannot_keep_removed_asset_roots_alive\"\n      ]\n    },\n    {\n      \"label\": \"slot_hint\",\n      \"filter\": \"slot_hint\",\n      \"expectedExecuted\": 9,\n      \"expectedPassed\": 9,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_actual_avm_warm_slot_reobserves_virtual_descriptor_and_new_watcher\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_borrowed_wstr_operations_do_not_consume_or_rewrite_the_hint\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_case_insensitive_collisions_and_mutations_keep_frozen_selection\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_positive_queries_recheck_wrong_keys_and_out_of_bounds_indices\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_range_aliases_append_and_equal_widths_keep_range_local_hints\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_shared_query_revalidates_each_map_and_independently_mutated_clone\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_shift_remove_entry_remove_and_reinsert_preserve_order\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_warm_reads_observe_insert_get_mut_entry_and_iter_mut_values\",\n        \"avm1::property_map::boxhead_slot_hint_tests::slot_hint_zero_and_checked_u32_encoding_never_truncate_indices\"\n      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 375,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n"
+        },
+        {
+          "before": "    \"singlePush\": \"fully validated exact-length fixed singleton ActionPush operands avoid the temporary parser Vec; strings, multi-value, malformed, debug and other actions retain the original reader; register/pool values and MovieClip references remain fresh\",\n    \"graphPaths\": \"Only export diagnostic path strings are created lazily by per-call FnOnce closures; fresh traversal, errors, exact path limits, MovieClip resolution, time checks and wire bytes remain unchanged.\",\n    \"displayLookup\": \"Fresh own data lookup within search_prototype using the separately reviewed native/display descriptor helper; original virtual, hidden, native and prototype fallbacks retain their order. No value, miss or chain cache.\",\n    \"anchorMetadata\": \"Optional six-root loading prewarm only; weak queue, bounded work and 6 MiB live cache cap; no getters, prototypes, native properties or MovieClip resolution while warming; all checkpoint limits and original mutation semantics retained.\"\n  }\n}\n",
+          "after": "    \"singlePush\": \"fully validated exact-length fixed singleton ActionPush operands avoid the temporary parser Vec; strings, multi-value, malformed, debug and other actions retain the original reader; register/pool values and MovieClip references remain fresh\",\n    \"graphPaths\": \"Only export diagnostic path strings are created lazily by per-call FnOnce closures; fresh traversal, errors, exact path limits, MovieClip resolution, time checks and wire bytes remain unchanged.\",\n    \"displayLookup\": \"Fresh own data lookup within search_prototype using the separately reviewed native/display descriptor helper; original virtual, hidden, native and prototype fallbacks retain their order. No value, miss or chain cache.\",\n    \"anchorMetadata\": \"Optional six-root loading prewarm only; weak queue, bounded work and 6 MiB live cache cap; no getters, prototypes, native properties or MovieClip resolution while warming; all checkpoint limits and original mutation semantics retained.\",\n    \"propertySlotHint\": \"Range-local positive property index hint only; checked u32 encoding; every case-sensitive hit rechecks the current indexed key and reads the current descriptor/value. Misses and case-insensitive access keep the original lookup; no object/value roots, negative result or membership cache.\",\n    \"webCompiler\": \"Both existing web-wasm profiles use thin LTO and one codegen unit; the existing wasm-opt calls use -O3 with their debug/feature arguments unchanged. Combined slot-hint/compiler candidate; separate attribution and gameplay/presentation qualification are not claimed by this source package.\"\n  }\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/web/packages/core/tools/build_wasm.ts",
+      "before": {
+        "bytes": 5579,
+        "sha256": "51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e"
+      },
+      "after": {
+        "bytes": 5580,
+        "sha256": "5a8bc1daad24204909c8081784a9e262571572f2081b81650ca4c753b60113c1"
+      },
+      "hunks": [
+        {
+          "before": "import * as process from \"process\";\n\nfunction runWasmOpt({ path, flags }: { path: string; flags?: string[] }) {\n    let args = [\"-o\", path, \"-O\", \"-g\", path];\n    if (flags) {\n        args = args.concat(flags);\n    }\n",
+          "after": "import * as process from \"process\";\n\nfunction runWasmOpt({ path, flags }: { path: string; flags?: string[] }) {\n    let args = [\"-o\", path, \"-O3\", \"-g\", path];\n    if (flags) {\n        args = args.concat(flags);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

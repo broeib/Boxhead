@@ -1,0 +1,74 @@
+{
+  "schema": "boxhead-native-property-equality-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "files": [
+    {
+      "path": "core/src/avm1/property_map/boxhead_equality_tests.rs",
+      "bytes": 17982,
+      "sha256": "193dc3ae52597f7efb92c8082cea1363e340d19e290ee464648454be32c770d2",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 9568,
+      "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b",
+      "baseline": {
+        "bytes": 9076,
+        "sha256": "ac1b2f0b0caa0e906db2529551cd38d2fc1d68e4f12dbedfdc9dc0b6c430dba7"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "property_equality_",
+    "executedExpected": 8,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "property_equality_actual_case_collisions_and_readonly_flags_match_frozen_table",
+      "property_equality_actual_interned_reads_keep_getter_setter_and_watcher_calls",
+      "property_equality_actual_swf6_and_7_reads_reobserve_own_and_prototype_slots",
+      "property_equality_interned_names_keep_sensitive_and_folded_collision_choices",
+      "property_equality_interning_after_insertion_does_not_change_membership",
+      "property_equality_mixed_mutations_clone_entries_and_order_match_frozen_map",
+      "property_equality_owned_identity_and_equal_allocations_match_frozen_queries",
+      "property_equality_utf16_widths_and_dependent_ranges_keep_exact_contents"
+    ]
+  },
+  "retainedFixtureGroups": {
+    "property_hash_": 9,
+    "avm1::object::boxhead_property_tests": 28
+  },
+  "frozenOracle": {
+    "path": "core/src/avm1/property_map/frozen_v8.rs",
+    "restoreSuffix": "\n#[cfg(test)]\nmod boxhead_hash_tests;\n",
+    "bytes": 9076,
+    "sha256": "ac1b2f0b0caa0e906db2529551cd38d2fc1d68e4f12dbedfdc9dc0b6c430dba7"
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-property-equality/source-integrity.test.mjs",
+    "executedExpected": 3
+  },
+  "supportFiles": [
+    {
+      "path": "PROPERTY_EQUALITY.md",
+      "bytes": 4396,
+      "sha256": "24c96f302eaf2f16f7185789736339c8d73d031e4fe4c725b9a4dd285a42bfc7"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 4144,
+      "sha256": "03d24e3cc6a88b51be9a753906c9826c5d80d9523ef87aaaf7e6183f41635dc3"
+    }
+  ],
+  "unchangedManagedEquality": {
+    "path": "core/common/src/avm_string/avm_string.rs",
+    "bytes": 5858,
+    "sha256": "dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b"
+  }
+}

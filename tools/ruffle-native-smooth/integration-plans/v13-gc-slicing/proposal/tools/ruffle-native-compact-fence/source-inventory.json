@@ -1,0 +1,139 @@
+{
+  "schema": "boxhead-native-compact-fence-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "baselineManifest": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 39872,
+    "sha256": "fb85f0134a82aad0652b725672c015d0a206483b3d9e05f5d15274a08dc2b86f"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/compact_tests.rs",
+      "bytes": 38950,
+      "sha256": "ab013e4e154c99c184a8b3bc4a68df09ac41e4d8db6215a554ba754f62bfd39f",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 38451,
+      "sha256": "fb0929bae8d3205d5d1df66588786856e2b38d5ac675950bff388afdad9f81c6",
+      "baseline": {
+        "bytes": 28121,
+        "sha256": "92d2491249068bd8f8935d8c0cc07f10939cc28db27f576783f6acd9bdaed10c"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33610,
+      "sha256": "d7a632b1d66128761b3b9ef040d1ac9401b97084494daf011ab6ade47d39f649",
+      "baseline": {
+        "bytes": 33490,
+        "sha256": "d3b8596082ad35bd4ded2407609e6f5d548e17d14bb304bbb02186350da0c0e9"
+      }
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/compact_tests.rs",
+      "bytes": 9524,
+      "sha256": "3cdbae716ad3130708a419649591648ff952a314ebd8c0271e35f65676352e93",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "bytes": 7659,
+      "sha256": "66958cbdb35fd43bd8367f05d73879700df3de55fe0771988c138e76ddffdc5c",
+      "baseline": {
+        "bytes": 7626,
+        "sha256": "e1e8ed7da173b2ce42ccf02451f9ef8a709ac0609c0dac7b68ccb0d377355d04"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "label": "compact",
+    "filter": "compact_fence_",
+    "executedExpected": 28,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_accepts_exact_join_record_without_changing_the_phase_contract",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_ambient_reentry_is_rejected_before_game_and_disposal_never_drains",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_argument_setter_cannot_begin_before_the_pinned_body_or_hide_poison",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_callback_world_and_raw_body_replacement_are_terminal",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_capability_is_exact_and_leaves_full_capability_unchanged",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_caught_receipt_serialization_reentry_stays_poisoned_after_finish",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_causal_action_drain_is_allowed_only_inside_entered_body",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_commit_rng_and_world_tick_keep_the_original_result_contract",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_cross_family_external_callbacks_never_switch_the_open_transaction",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_explicit_and_catch_abort_clean_both_abilities_once",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_full_and_compact_transactions_share_one_monotonic_epoch",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_info_receipt_and_present_obey_exact_phase_order",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_install_requires_full_owner_and_cannot_repeat",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_missing_duplicate_or_malformed_begin_never_releases_the_owner",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_native_callee_and_protocol_are_authenticated_independently",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_new_round_can_reset_tick_only_with_a_fresh_epoch",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_present_cannot_reenter_an_entered_phase_even_when_rejection_is_caught",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_receipt_scope_header_and_finish_must_all_match_the_commit",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_rejects_full_tick_numbers_and_malformed_begin_before_game",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_shared_callback_identity_cannot_be_replaced_at_install",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_stale_tuple_and_duplicate_commit_are_rejected_before_another_body",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_terminal_begin_can_paint_nothing_and_still_return_the_verified_receipt",
+      "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_two_phase_chain_keeps_game_once_and_releases_after_frame_receipt_serialization",
+      "player::boxhead_step_fence::compact_tests::compact_fence_player_fifo_matches_unfenced_input_timer_clipboard_and_frame_order",
+      "player::boxhead_step_fence::compact_tests::compact_fence_player_opaque_loader_mutation_fails_before_its_closure",
+      "player::boxhead_step_fence::compact_tests::compact_fence_player_paints_without_timeline_or_render_broadcast_during_the_split",
+      "player::boxhead_step_fence::compact_tests::compact_fence_player_queue_overload_cleans_once_and_never_resumes_partial_game",
+      "player::boxhead_step_fence::compact_tests::compact_fence_player_receipt_never_drains_and_next_external_entry_cannot_overtake_fifo"
+    ]
+  },
+  "retainedFunctionalTests": 209,
+  "retainedFullFenceFixtures": 35,
+  "retainedIgnoredTests": 1,
+  "retainedSource": [
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9"
+    },
+    {
+      "path": "core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c"
+    },
+    {
+      "path": "core/src/player.rs",
+      "bytes": 131004,
+      "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80"
+    },
+    {
+      "path": "web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f"
+    }
+  ],
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+    "executedExpected": 4
+  },
+  "supportFiles": [
+    {
+      "path": "COMPACT_FENCE.md",
+      "bytes": 7973,
+      "sha256": "2a69839aab6716e8dcb9c601e30bfaaa38303ed63777985ae1a61c99b6a35462"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 5295,
+      "sha256": "bc020dbfe0c4941d85d3a78f3985bd2de1351f4581b041e26f7651e2d87cbae6"
+    }
+  ],
+  "qualificationLimits": [
+    "No local tests or builds were executed.",
+    "Existing full35 fixture bodies and Player/external/web integration remain byte-identical.",
+    "New Rust fixtures model callee boundaries; compiled AS2 lifecycle and original game equivalence remain required.",
+    "Fresh hardware submission and motion measurements are required; no60FPS claim."
+  ]
+}

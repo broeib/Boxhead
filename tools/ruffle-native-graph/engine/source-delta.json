@@ -1,0 +1,46 @@
+{
+  "schema": "boxhead-native-graph-v5-source-delta-v1",
+  "sourceOnly": true,
+  "locallyExecuted": false,
+  "previousSourceRevision": 4,
+  "sourceRevision": 5,
+  "productionChanges": [
+    "Decoded cap64MiB to128MiB only; all other limits unchanged",
+    "Copy each RGBA slice in one safe bulk operation; test compares frozen v4 complete packets",
+    "Release decoded Writer after compression",
+    "Reject checked hexadecimal length before allocation; retain final wire-size guard"
+  ],
+  "updatedExistingFixtures": [
+    "fn native_graph_accepts_exact_64mib_decoded_packet_and_rejects_next_byte()",
+    "fn native_graph_export_rejects_sum_above_64mib_without_mutating_source()",
+    "native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation (capability maxBytes expectation only)"
+  ],
+  "newFixtures": [
+    "native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+    "native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit"
+  ],
+  "files": [
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33023,
+      "sha256": "9e49cb8c7d59303b16484d8f0fa7e0ffb37ac681ad6d282e008b7bf75800eb39"
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 37891,
+      "sha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 33729,
+      "sha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 31537,
+      "sha256": "a60a87805e8be141b9a3a501c53a3a5e327a99a67ed2522ff25f9af40dbad5d9"
+    }
+  ],
+  "unchangedExistingFixtureCount": 13,
+  "requiredGraphFixtureCount": 18
+}

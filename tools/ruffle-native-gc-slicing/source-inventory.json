@@ -1,0 +1,670 @@
+{
+  "schema": "boxhead-native-gc-slicing-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "baselineManifest": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 44549,
+    "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+  },
+  "registryArchive": {
+    "package": "gc-arena",
+    "version": "0.7.0",
+    "bytes": 65181,
+    "sha256": "160a11f93020eea95cb4c59e2eda2e4c6353f75aa4fbb01f2bf8729b2e4d6dd2",
+    "sourceFiles": 47
+  },
+  "files": [
+    {
+      "path": "Cargo.lock",
+      "bytes": 188526,
+      "sha256": "5d699d18c0eb06d9bf5350321c754ae5d98cfd3662b4103566c73f25354f0555",
+      "baseline": {
+        "bytes": 188669,
+        "sha256": "c5483f1461377c35a895f487b4c3e7e4e8e85aad0ab5eac1b63c1aecdfcf41c7"
+      }
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 5957,
+      "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361",
+      "baseline": {
+        "bytes": 5842,
+        "sha256": "6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 38949,
+      "sha256": "77d8417a5164590bae4055339f5633a4dbb150af2bd55469f7f7922e05813929",
+      "baseline": {
+        "bytes": 38451,
+        "sha256": "fb0929bae8d3205d5d1df66588786856e2b38d5ac675950bff388afdad9f81c6"
+      }
+    },
+    {
+      "path": "core/src/player/boxhead_gc/tests.rs",
+      "bytes": 20830,
+      "sha256": "0a8c1be65ca74236f9032d5cbac959b42d604f524c4e4ad203aeb361808450a7",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_gc.rs",
+      "bytes": 4180,
+      "sha256": "26e3958f73cbc57ff39e72d8971224c17cf372f153286e94291dcd55dc70bd4d",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/gc_tests.rs",
+      "bytes": 39742,
+      "sha256": "197907ace98a212f0d3bc1cd1e47e13261912cad451e9b94868e495020e96a71",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "bytes": 7770,
+      "sha256": "c64354477249b2af6b5f7d228deeb75ef0e6a26ab0d805afd396b1f07a603a01",
+      "baseline": {
+        "bytes": 7659,
+        "sha256": "66958cbdb35fd43bd8367f05d73879700df3de55fe0771988c138e76ddffdc5c"
+      }
+    },
+    {
+      "path": "core/src/player.rs",
+      "bytes": 131902,
+      "sha256": "be71219d896c52fd186a5d4c42aa49c9a2977c8d82d354df03be4307af26e3c9",
+      "baseline": {
+        "bytes": 131004,
+        "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.cargo_vcs_info.json",
+      "bytes": 94,
+      "sha256": "4f58c43b655f0b03d1e0c16e41f6a4fc44225a63ec6a201cc5709fa3c077314a",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 94,
+        "sha256": "4f58c43b655f0b03d1e0c16e41f6a4fc44225a63ec6a201cc5709fa3c077314a"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.circleci/config.yml",
+      "bytes": 1604,
+      "sha256": "5b78a664d012d99fceb75c0c4b7f7968321c59d8f9dc6b9a30a4fdece8921be9",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1604,
+        "sha256": "5b78a664d012d99fceb75c0c4b7f7968321c59d8f9dc6b9a30a4fdece8921be9"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/.gitignore",
+      "bytes": 106,
+      "sha256": "f671c5401a1b46b1491f8d07f5e5ec5ca1625c8fbdb17b18f7516da4ea4726cb",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 106,
+        "sha256": "f671c5401a1b46b1491f8d07f5e5ec5ca1625c8fbdb17b18f7516da4ea4726cb"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/CHANGELOG.md",
+      "bytes": 11788,
+      "sha256": "471d0db3a20b1aff8cf80831869add428cd1edd9dde6d01a261a7edfdb343638",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 11788,
+        "sha256": "471d0db3a20b1aff8cf80831869add428cd1edd9dde6d01a261a7edfdb343638"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.lock",
+      "bytes": 16008,
+      "sha256": "aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 16008,
+        "sha256": "aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.toml",
+      "bytes": 1761,
+      "sha256": "29ccdc825e6ac5622a87bcb670710858462793258947849b76a9478c4225fa5b",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1761,
+        "sha256": "29ccdc825e6ac5622a87bcb670710858462793258947849b76a9478c4225fa5b"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/Cargo.toml.orig",
+      "bytes": 1167,
+      "sha256": "13497ba2b10ea88c8c9f7a8dcedf290ba3525155f5c9c0260f14fa57e753605f",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1167,
+        "sha256": "13497ba2b10ea88c8c9f7a8dcedf290ba3525155f5c9c0260f14fa57e753605f"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/LICENSE-CC0",
+      "bytes": 7047,
+      "sha256": "6d489af6292662d9e36d34ce49423784984a5f6e41d7b58f49b01264df59fa03",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 7047,
+        "sha256": "6d489af6292662d9e36d34ce49423784984a5f6e41d7b58f49b01264df59fa03"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/LICENSE-MIT",
+      "bytes": 1024,
+      "sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1024,
+        "sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/README.md",
+      "bytes": 5467,
+      "sha256": "dcf3b0489dc13796d8a825cf7411edae06d4963040e39e0a3a2013571eaa3676",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 5467,
+        "sha256": "dcf3b0489dc13796d8a825cf7411edae06d4963040e39e0a3a2013571eaa3676"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/examples/linked_list.rs",
+      "bytes": 6119,
+      "sha256": "fa4e5a1d8191f402fc4fb5609b087fe5ed6b14792d92f76705153109422fc944",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 6119,
+        "sha256": "fa4e5a1d8191f402fc4fb5609b087fe5ed6b14792d92f76705153109422fc944"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/arena.rs",
+      "bytes": 17808,
+      "sha256": "30baeedb410d2fd35c9df88815d4b68854282bc194b43b37c7e842a62df91a84",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 16138,
+        "sha256": "b0fb4d1562378e74b73d873a0a7d035414305872a7babe120dd0e81064e15ba0"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/barrier.rs",
+      "bytes": 9437,
+      "sha256": "dfb55d737905b4877ab253ca83d7562bfc482e2e38f9ba38994b659342a6a7f0",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 9437,
+        "sha256": "dfb55d737905b4877ab253ca83d7562bfc482e2e38f9ba38994b659342a6a7f0"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/collect.rs",
+      "bytes": 7848,
+      "sha256": "6682ad4b4a550c5ad63bf764ea2c7a30eab7477a1bf49055ca8a2e5e089c4b47",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 7848,
+        "sha256": "6682ad4b4a550c5ad63bf764ea2c7a30eab7477a1bf49055ca8a2e5e089c4b47"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/collect_impl.rs",
+      "bytes": 8218,
+      "sha256": "719f742e35ac0e24e36c1ad4cefcd256e20ce519f48bdf75a6e1c5df05d97561",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 8218,
+        "sha256": "719f742e35ac0e24e36c1ad4cefcd256e20ce519f48bdf75a6e1c5df05d97561"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/context.rs",
+      "bytes": 35311,
+      "sha256": "57414577ed6e866b482e11700bae8102bb2d5974b1d76e24ced1eb4c41175c5c",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 31114,
+        "sha256": "bb21cecf28bb7bfe433851dd7d848743ab42488c4c38dd9419380689469096ef"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/dynamic_roots.rs",
+      "bytes": 9861,
+      "sha256": "5c93c6e36303afcfc6e2f17b0deaf1be42c35aa37824b5db13e4b95aeeeb2af5",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 9861,
+        "sha256": "5c93c6e36303afcfc6e2f17b0deaf1be42c35aa37824b5db13e4b95aeeeb2af5"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/enum_map.rs",
+      "bytes": 689,
+      "sha256": "967023479767760cea61a77e0bf5ef2cfb15f97dd5869d89ab2a6a048d578b10",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 689,
+        "sha256": "967023479767760cea61a77e0bf5ef2cfb15f97dd5869d89ab2a6a048d578b10"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/gc.rs",
+      "bytes": 8803,
+      "sha256": "f5231deff95cee0b81e2baf9e582da613acc5eb4a95f7f403d9ef5a1e1139274",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 8803,
+        "sha256": "f5231deff95cee0b81e2baf9e582da613acc5eb4a95f7f403d9ef5a1e1139274"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/gc_weak.rs",
+      "bytes": 6033,
+      "sha256": "5e525a6982dd4bdf5743655c0c2a50a1fd5649c579a26f698bc6a0c759a6c4c8",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 6033,
+        "sha256": "5e525a6982dd4bdf5743655c0c2a50a1fd5649c579a26f698bc6a0c759a6c4c8"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/hashbrown.rs",
+      "bytes": 1198,
+      "sha256": "64b93c1a5a3db7165da21b28e4e54052b1e5ce6f6d28e14bd035536b9e988f0d",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1198,
+        "sha256": "64b93c1a5a3db7165da21b28e4e54052b1e5ce6f6d28e14bd035536b9e988f0d"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/indexmap.rs",
+      "bytes": 1440,
+      "sha256": "7e54c975c56ae42d118d8e156b25ba5c160e37b4394b7503f62a7f71225c692e",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1440,
+        "sha256": "7e54c975c56ae42d118d8e156b25ba5c160e37b4394b7503f62a7f71225c692e"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/lib.rs",
+      "bytes": 980,
+      "sha256": "f9fcf405fb8a322d5fa38334c27d3b581d853fe4230bc37101f22d8b68a1d139",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 980,
+        "sha256": "f9fcf405fb8a322d5fa38334c27d3b581d853fe4230bc37101f22d8b68a1d139"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/lock.rs",
+      "bytes": 11393,
+      "sha256": "b49cbb6774f5a2259d1f346d0dda929554a7861ff631c7e371da9f3896e6b949",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 11393,
+        "sha256": "b49cbb6774f5a2259d1f346d0dda929554a7861ff631c7e371da9f3896e6b949"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/metrics.rs",
+      "bytes": 14310,
+      "sha256": "d5cee5e575230539ca99cd1e0dedddc569daa9d632a6611a2e67ece8c2bbf8a8",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 14310,
+        "sha256": "d5cee5e575230539ca99cd1e0dedddc569daa9d632a6611a2e67ece8c2bbf8a8"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/no_drop.rs",
+      "bytes": 294,
+      "sha256": "f7fbd46c73b8fc51f986fe62be151845aac02460a6d64ce43faf41c0dfc55cde",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 294,
+        "sha256": "f7fbd46c73b8fc51f986fe62be151845aac02460a6d64ce43faf41c0dfc55cde"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/slotmap.rs",
+      "bytes": 723,
+      "sha256": "fd24d7f52c65bb0695b119bbe550a292476eabb05513495496406371a2c4a3a0",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 723,
+        "sha256": "fd24d7f52c65bb0695b119bbe550a292476eabb05513495496406371a2c4a3a0"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/smallvec.rs",
+      "bytes": 760,
+      "sha256": "d61070e5646a59222fe49159cd98c1e513d2296e5e71303c014f5c57d8069f48",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 760,
+        "sha256": "d61070e5646a59222fe49159cd98c1e513d2296e5e71303c014f5c57d8069f48"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/static_wrapper.rs",
+      "bytes": 1363,
+      "sha256": "8e225e981b39750cef879cfbcd310ad865eebd2da270ecb226c0645122038c7e",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1363,
+        "sha256": "8e225e981b39750cef879cfbcd310ad865eebd2da270ecb226c0645122038c7e"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/types.rs",
+      "bytes": 15942,
+      "sha256": "b399b4bbbe7ef684daeee9a8725246e54360e6f3dbb150cd62f29dd34d414507",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 15942,
+        "sha256": "b399b4bbbe7ef684daeee9a8725246e54360e6f3dbb150cd62f29dd34d414507"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/unsize.rs",
+      "bytes": 3076,
+      "sha256": "57b5f2203009f4383cd96e6e204d92b1363b397886a4aeffbc385f36be384526",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 3076,
+        "sha256": "57b5f2203009f4383cd96e6e204d92b1363b397886a4aeffbc385f36be384526"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/zst_cache.rs",
+      "bytes": 4288,
+      "sha256": "607396ce79ff7782538b5ea289b32a8fb6782ae6efbdf4f175d0db654cafccfc",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 4288,
+        "sha256": "607396ce79ff7782538b5ea289b32a8fb6782ae6efbdf4f175d0db654cafccfc"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/tests.rs",
+      "bytes": 32667,
+      "sha256": "cef0036488485787110b3d2faa09e9666f5aca1fbd257e90a7443e9cfaff61c1",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 32667,
+        "sha256": "cef0036488485787110b3d2faa09e9666f5aca1fbd257e90a7443e9cfaff61c1"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs",
+      "bytes": 139,
+      "sha256": "09f7d5e855a10518f8792a851eca23c612d6d2ab861effde0347bf318a9ad378",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 139,
+        "sha256": "09f7d5e855a10518f8792a851eca23c612d6d2ab861effde0347bf318a9ad378"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr",
+      "bytes": 1700,
+      "sha256": "a36310d03015cb0d2d19e858b907b4ce4599f7fcd93bf4374f5c91254cbeb865",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 1700,
+        "sha256": "a36310d03015cb0d2d19e858b907b4ce4599f7fcd93bf4374f5c91254cbeb865"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs",
+      "bytes": 703,
+      "sha256": "17f74ad93604ff89fa82b13088bd507865e5a6c0ec6e762aa8924fc8417098b1",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 703,
+        "sha256": "17f74ad93604ff89fa82b13088bd507865e5a6c0ec6e762aa8924fc8417098b1"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr",
+      "bytes": 2809,
+      "sha256": "0387ca384670870896490897574c6642146a1b8f85d6917af3c7fa313cfe7e0d",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 2809,
+        "sha256": "0387ca384670870896490897574c6642146a1b8f85d6917af3c7fa313cfe7e0d"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs",
+      "bytes": 135,
+      "sha256": "25dc4c50a27ac4a4a82fd03f66562ff3a8128ff1632f8de81383f9cf3f0dbd43",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 135,
+        "sha256": "25dc4c50a27ac4a4a82fd03f66562ff3a8128ff1632f8de81383f9cf3f0dbd43"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr",
+      "bytes": 181,
+      "sha256": "b1b7c4681f443d2b24d34ca9488efc99017f7d2aed3cd0c3ac5e0ca12c3a9d89",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 181,
+        "sha256": "b1b7c4681f443d2b24d34ca9488efc99017f7d2aed3cd0c3ac5e0ca12c3a9d89"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs",
+      "bytes": 175,
+      "sha256": "9b70c4bf6cb6bace1350a0ab853635701a240395aa0e065bd4d28483cd467ff6",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 175,
+        "sha256": "9b70c4bf6cb6bace1350a0ab853635701a240395aa0e065bd4d28483cd467ff6"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr",
+      "bytes": 181,
+      "sha256": "a06d930d9db1d34cb2c531f3fe8d0f7fd60eb9acf0efcc7910cf5fc4c85ed09a",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 181,
+        "sha256": "a06d930d9db1d34cb2c531f3fe8d0f7fd60eb9acf0efcc7910cf5fc4c85ed09a"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs",
+      "bytes": 141,
+      "sha256": "fd49ac93e7d5860062cf17f3874f8dc3a94c11fc2b73f36efe534d4023486493",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 141,
+        "sha256": "fd49ac93e7d5860062cf17f3874f8dc3a94c11fc2b73f36efe534d4023486493"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr",
+      "bytes": 456,
+      "sha256": "72f956f45e1df80638a91f5033a8c8a2180199182d2d7400715a3ceb5c68bf95",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 456,
+        "sha256": "72f956f45e1df80638a91f5033a8c8a2180199182d2d7400715a3ceb5c68bf95"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs",
+      "bytes": 160,
+      "sha256": "98477ca85f39668345a22c837d150746608ba33b52ad3e4a1acbc81e32c9f045",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 160,
+        "sha256": "98477ca85f39668345a22c837d150746608ba33b52ad3e4a1acbc81e32c9f045"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr",
+      "bytes": 156,
+      "sha256": "74816e068ef501859a8ae8170d8b60a9d57097f1794ce886d71ead333cce9da8",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 156,
+        "sha256": "74816e068ef501859a8ae8170d8b60a9d57097f1794ce886d71ead333cce9da8"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs",
+      "bytes": 278,
+      "sha256": "e45ae2ade1817ee3edf3d549d3a733cb2157c8b88fce17c2908d49d6cd6f5902",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 278,
+        "sha256": "e45ae2ade1817ee3edf3d549d3a733cb2157c8b88fce17c2908d49d6cd6f5902"
+      }
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr",
+      "bytes": 333,
+      "sha256": "b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e",
+      "baselineAbsent": true,
+      "registryBaseline": {
+        "bytes": 333,
+        "sha256": "b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e"
+      }
+    }
+  ],
+  "rustFixtureGroups": [
+    {
+      "label": "gc_slice",
+      "filter": "gc_slice_",
+      "executedExpected": 17,
+      "ignoredExpected": 0,
+      "exactNames": [
+        "player::boxhead_gc::tests::gc_slice_allocations_during_sweep_survive_until_the_next_mark_cycle",
+        "player::boxhead_gc::tests::gc_slice_atomic_full_cycle_retains_original_debt_reset",
+        "player::boxhead_gc::tests::gc_slice_backward_barrier_retraces_black_owner_and_keeps_fresh_child",
+        "player::boxhead_gc::tests::gc_slice_budget_expiring_inside_trace_never_splits_the_object_trace",
+        "player::boxhead_gc::tests::gc_slice_finite_work_cap_and_indivisible_time_overrun_remain_exhausted",
+        "player::boxhead_gc::tests::gc_slice_interrupted_sweep_preserves_carried_debt_after_empty_heap_and_new_allocation",
+        "player::boxhead_gc::tests::gc_slice_nested_entries_share_time_and_work_without_resetting_the_outer_allowance",
+        "player::boxhead_gc::tests::gc_slice_no_debt_does_not_call_budget_or_change_sleep_state",
+        "player::boxhead_gc::tests::gc_slice_non_collection_game_time_does_not_consume_the_collector_allowance",
+        "player::boxhead_gc::tests::gc_slice_panicking_budget_callback_leaves_a_resumable_collector",
+        "player::boxhead_gc::tests::gc_slice_panicking_trace_is_requeued_before_an_old_api_resumes_collection",
+        "player::boxhead_gc::tests::gc_slice_small_caps_eventually_match_original_roots_weak_liveness_and_drop_order",
+        "player::boxhead_gc::tests::gc_slice_sustained_allocation_and_barrier_churn_keeps_bounded_live_count_and_releases_all",
+        "player::boxhead_gc::tests::gc_slice_uninstalled_player_keeps_the_original_full_debt_collection",
+        "player::boxhead_gc::tests::gc_slice_unlimited_matches_original_public_api_from_each_collection_phase",
+        "player::boxhead_gc::tests::gc_slice_unwind_restores_nested_entry_depth_without_losing_the_next_budget",
+        "player::boxhead_gc::tests::gc_slice_zero_work_and_rejected_budget_leave_phase_debt_and_objects_untouched"
+      ]
+    },
+    {
+      "label": "gc_fence",
+      "filter": "gc_fence_",
+      "executedExpected": 7,
+      "ignoredExpected": 0,
+      "exactNames": [
+        "player::boxhead_step_fence::gc_tests::gc_fence_abort_and_malformed_receipt_never_gain_a_valid_receipt_after_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_collections_do_not_release_or_reorder_the_actual_deferred_fifo",
+        "player::boxhead_step_fence::gc_tests::gc_fence_compact_frame_bitmap_and_receipt_survive_each_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_full_projected_graph_bitmap_and_receipt_survive_each_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_installed_owner_and_pinned_callbacks_survive_removed_public_registrations",
+        "player::boxhead_step_fence::gc_tests::gc_fence_serialization_reentry_stays_poisoned_after_real_collection",
+        "player::boxhead_step_fence::gc_tests::gc_fence_transaction_world_is_rooted_after_owner_replacement_until_poison_cleanup"
+      ]
+    }
+  ],
+  "newMandatoryTests": 24,
+  "newIgnoredTests": 0,
+  "combinedV12MandatoryTestsExpected": 294,
+  "retainedFullFenceFixtures": 35,
+  "retainedCompactFenceFixtures": 28,
+  "retainedSource": [
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/compact_tests.rs",
+      "bytes": 38950,
+      "sha256": "ab013e4e154c99c184a8b3bc4a68df09ac41e4d8db6215a554ba754f62bfd39f"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/compact_tests.rs",
+      "bytes": 9524,
+      "sha256": "3cdbae716ad3130708a419649591648ff952a314ebd8c0271e35f65676352e93"
+    },
+    {
+      "path": "core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c"
+    },
+    {
+      "path": "web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f"
+    }
+  ],
+  "declaredIgnoredSource": [
+    "third_party/boxhead-gc-arena/Cargo.lock"
+  ],
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-gc-slicing/source-integrity.test.mjs",
+    "executedExpected": 5
+  },
+  "supportFiles": [
+    {
+      "path": "baseline-identities.json",
+      "bytes": 8543,
+      "sha256": "01b49049efe22fdf967e1f8b08a0478db3e3052326b31b504a93d56c9b0d2ad2"
+    },
+    {
+      "path": "source-delta.json",
+      "bytes": 23835,
+      "sha256": "991931a76afbf23dacc0645d5b8c382955aacc5d609687a208b8d7e39325923a"
+    },
+    {
+      "path": "source-normalization.mjs",
+      "bytes": 1479,
+      "sha256": "c6857a806600c0c4d1ac14714759a9c0f5f5bdc2ad05c1cc099e8d85a656c462"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 9494,
+      "sha256": "17e1c970c6527e7bc7013c022cc3e51f6ad92af4ce370959f87e7d1b72bb0502"
+    },
+    {
+      "path": "GC_SLICING.md",
+      "bytes": 9988,
+      "sha256": "6a4bec91a109df5f10a85eb2788abc0dbedcb16b6bf4d7d89110fac2ad2c14be"
+    }
+  ],
+  "limits": [
+    "1ms soft actual-collection allowance, shared per instrumented outer Player entry; tick and render are distinct entries.",
+    "Complete trace/drop units and32-unit clock cadence can overrun; no hard realtime guarantee.",
+    "All unpaid debt remains; actual sustained memory/throughput and gameplay frame-gap qualification required."
+  ]
+}

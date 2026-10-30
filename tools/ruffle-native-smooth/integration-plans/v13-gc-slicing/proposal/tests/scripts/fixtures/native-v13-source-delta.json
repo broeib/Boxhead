@@ -1,0 +1,65 @@
+{
+  "schema": "boxhead-native-v13-support-source-delta-v1",
+  "scope": "Only exact reviewed v13 ignored-source capture and historical compact-source proof additions. No arbitrary source normalization.",
+  "files": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "before": {
+        "bytes": 15411,
+        "sha256": "7214fc10be4bd3a586c63b005b0157d52df2843ebc5321d23ca2df6acf9de6c0"
+      },
+      "candidate": {
+        "bytes": 16458,
+        "sha256": "e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d"
+      },
+      "hunks": [
+        {
+          "before": "\nIMAGE = \"sha256:612f92fa418bc2af18dca2501464dbffa6393ad895a7c7f906216f71e896c8cf\"\nPARENT_MANIFEST = \"4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e\"\nPARENT_RESULT = \"71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4\"\nVARIANT = \"native-smooth-v2\"\nRESOURCE_SCOPE = \"Cargo and all descendant build/test processes; not export-only memory\"\nRESOURCE_WRAPPER = (\n    \"import json,resource,subprocess,sys\\n\"\n    \"p=subprocess.run(sys.argv[1:])\\n\"\n    \"print('BOXHEAD_NATIVE_SMOOTH_RESOURCE '+json.dumps({'maxRssKiB':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,\"\n",
+          "after": "\nIMAGE = \"sha256:612f92fa418bc2af18dca2501464dbffa6393ad895a7c7f906216f71e896c8cf\"\nPARENT_MANIFEST = \"4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e\"\nPARENT_RESULT = \"71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4\"\nVARIANT = \"native-smooth-v2\"\n# The preserved registry archive ignores its own lockfile. This is the only\n# ignored source admitted by this reviewed driver, never a runtime-supplied\n# allowlist. Query the whole vendor subtree to reject other ignored additions.\nIGNORED_SOURCE_ROOT = \"third_party/boxhead-gc-arena\"\nIGNORED_SOURCES = {\n    \"third_party/boxhead-gc-arena/Cargo.lock\": {\n        \"bytes\": 16008,\n        \"sha256\": \"aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6\",\n    },\n}\nRESOURCE_SCOPE = \"Cargo and all descendant build/test processes; not export-only memory\"\nRESOURCE_WRAPPER = (\n    \"import json,resource,subprocess,sys\\n\"\n    \"p=subprocess.run(sys.argv[1:])\\n\"\n    \"print('BOXHEAD_NATIVE_SMOOTH_RESOURCE '+json.dumps({'maxRssKiB':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,\"\n"
+        },
+        {
+          "before": "    head = git(source, \"rev-parse\", \"HEAD\").strip()\n    assert head == engine[\"upstream\"][\"commit\"]\n    assert not git(source, \"diff\", \"--cached\", \"--name-only\").strip(), \"Source index must stay clean\"\n    changed = sorted(git(source, \"diff\", \"--name-only\").splitlines())\n    untracked = sorted(git(source, \"ls-files\", \"--others\", \"--exclude-standard\").splitlines())\n    required_changed = sorted(set(prior[\"gitDiffNames\"]) | {\n        row[\"path\"] for row in engine[\"files\"] if not row.get(\"baselineAbsent\") and row[\"path\"] not in prior[\"gitUntracked\"]})\n    required_untracked = sorted(set(prior[\"gitUntracked\"]) | {\"web/version_seal.json\"} | {\n        row[\"path\"] for row in engine[\"files\"] if row.get(\"baselineAbsent\")})\n    assert changed == required_changed, \"Undeclared tracked source change\"\n    assert untracked == required_untracked, \"Undeclared untracked source\"\n    return {\"schema\": \"boxhead-native-smooth-full-source-v2\", \"recordedAt\": stamp(),\n            \"sourceRoot\": str(source), \"sourceCommit\": head, \"engineVariant\": VARIANT,\n            \"files\": rows, \"gitHead\": head, \"gitIndexClean\": True,\n            \"gitDiffNames\": changed, \"gitUntracked\": untracked,\n            \"versionSeal\": identity(source / \"web/version_seal.json\")}\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n",
+          "after": "    head = git(source, \"rev-parse\", \"HEAD\").strip()\n    assert head == engine[\"upstream\"][\"commit\"]\n    assert not git(source, \"diff\", \"--cached\", \"--name-only\").strip(), \"Source index must stay clean\"\n    changed = sorted(git(source, \"diff\", \"--name-only\").splitlines())\n    untracked = sorted(git(source, \"ls-files\", \"--others\", \"--exclude-standard\").splitlines())\n    ignored = sorted(git(source, \"ls-files\", \"--others\", \"--ignored\", \"--exclude-standard\",\n                         \"--\", IGNORED_SOURCE_ROOT).splitlines())\n    assert ignored == sorted(IGNORED_SOURCES), \"Undeclared or missing ignored vendor source\"\n    for name, wanted in IGNORED_SOURCES.items():\n        assert expected.get(name) == wanted, f\"Ignored source missing from complete inventory: {name}\"\n        assert identity(source / name) == wanted, f\"Changed ignored vendor source: {name}\"\n    required_changed = sorted(set(prior[\"gitDiffNames\"]) | {\n        row[\"path\"] for row in engine[\"files\"] if not row.get(\"baselineAbsent\") and row[\"path\"] not in prior[\"gitUntracked\"]})\n    required_untracked = sorted(set(prior[\"gitUntracked\"]) | {\"web/version_seal.json\"} | {\n        row[\"path\"] for row in engine[\"files\"] if row.get(\"baselineAbsent\") and row[\"path\"] not in IGNORED_SOURCES})\n    assert changed == required_changed, \"Undeclared tracked source change\"\n    assert untracked == required_untracked, \"Undeclared untracked source\"\n    return {\"schema\": \"boxhead-native-smooth-full-source-v2\", \"recordedAt\": stamp(),\n            \"sourceRoot\": str(source), \"sourceCommit\": head, \"engineVariant\": VARIANT,\n            \"files\": rows, \"gitHead\": head, \"gitIndexClean\": True,\n            \"gitDiffNames\": changed, \"gitUntracked\": untracked,\n            \"gitIgnoredSources\": ignored,\n            \"versionSeal\": identity(source / \"web/version_seal.json\")}\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+      "before": {
+        "bytes": 5097,
+        "sha256": "e73868e27083069177daaa13e5de7eccb014edb202f420cb4579d3bb48473745"
+      },
+      "candidate": {
+        "bytes": 5295,
+        "sha256": "bc020dbfe0c4941d85d3a78f3985bd2de1351f4581b041e26f7651e2d87cbae6"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport test from 'node:test';\n\nconst read = path => readFileSync(new URL(path, import.meta.url), 'utf8');\nconst sha = value => createHash('sha256').update(value).digest('hex');\nconst fence = read('./engine/core/src/avm1/globals/boxhead_step_fence.rs');\nconst inventory = JSON.parse(read('./source-inventory.json'));\n",
+          "after": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport test from 'node:test';\nimport { restoreReviewedGcSource } from '../ruffle-native-gc-slicing/source-normalization.mjs';\n\nconst read = path => readFileSync(new URL(path, import.meta.url), 'utf8');\nconst sha = value => createHash('sha256').update(value).digest('hex');\nconst fence = read('./engine/core/src/avm1/globals/boxhead_step_fence.rs');\nconst inventory = JSON.parse(read('./source-inventory.json'));\n"
+        },
+        {
+          "before": "    ['core/src/player.rs', 131004, '229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80'],\n    ['web/src/lib.rs', 54683, 'c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f'],\n  ];\n  let oldTests = 0;\n  for (const [path, bytes, hash] of expected) {\n    const source = read('../ruffle-native-smooth/engine/' + path);\n    assert.equal(Buffer.byteLength(source), bytes, path); assert.equal(sha(source), hash, path);\n    if (path.endsWith('/tests.rs')) oldTests += (source.match(/#\\[test\\]/g) ?? []).length;\n  }\n  assert.equal(oldTests, 35);\n});\n",
+          "after": "    ['core/src/player.rs', 131004, '229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80'],\n    ['web/src/lib.rs', 54683, 'c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f'],\n  ];\n  let oldTests = 0;\n  for (const [path, bytes, hash] of expected) {\n    const current = read('../ruffle-native-smooth/engine/' + path);\n    const source = path === 'core/src/player.rs' ? restoreReviewedGcSource(path, current) : current;\n    assert.equal(Buffer.byteLength(source), bytes, path); assert.equal(sha(source), hash, path);\n    if (path.endsWith('/tests.rs')) oldTests += (source.match(/#\\[test\\]/g) ?? []).length;\n  }\n  assert.equal(oldTests, 35);\n});\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-inventory.json",
+      "before": {
+        "bytes": 7436,
+        "sha256": "7676461e8a801e9b49464fe157ac23c7d1563bcc1fc2001109870f0a49288d7f"
+      },
+      "candidate": {
+        "bytes": 7436,
+        "sha256": "57ea50cca0cdc64832a3f5d689f50c3ca3eaadb4362fe6623e0ca168bdea053c"
+      },
+      "hunks": [
+        {
+          "before": "      \"bytes\": 7973,\n      \"sha256\": \"2a69839aab6716e8dcb9c601e30bfaaa38303ed63777985ae1a61c99b6a35462\"\n    },\n    {\n      \"path\": \"source-integrity.test.mjs\",\n      \"bytes\": 5097,\n      \"sha256\": \"e73868e27083069177daaa13e5de7eccb014edb202f420cb4579d3bb48473745\"\n    }\n  ],\n  \"qualificationLimits\": [\n    \"No local tests or builds were executed.\",\n    \"Existing full35 fixture bodies and Player/external/web integration remain byte-identical.\",\n",
+          "after": "      \"bytes\": 7973,\n      \"sha256\": \"2a69839aab6716e8dcb9c601e30bfaaa38303ed63777985ae1a61c99b6a35462\"\n    },\n    {\n      \"path\": \"source-integrity.test.mjs\",\n      \"bytes\": 5295,\n      \"sha256\": \"bc020dbfe0c4941d85d3a78f3985bd2de1351f4581b041e26f7651e2d87cbae6\"\n    }\n  ],\n  \"qualificationLimits\": [\n    \"No local tests or builds were executed.\",\n    \"Existing full35 fixture bodies and Player/external/web integration remain byte-identical.\",\n"
+        }
+      ]
+    }
+  ]
+}

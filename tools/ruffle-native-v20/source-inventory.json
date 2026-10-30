@@ -1,0 +1,187 @@
+{
+  "schema": "boxhead-v20-asset-capacity-source-inventory-v1",
+  "status": "source candidate; fresh CI Rust/WASM/web and native/gameplay/presentation qualification required",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 91688,
+    "sha256": "0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921"
+  },
+  "parentBinder": {
+    "bytes": 84138,
+    "sha256": "9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff"
+  },
+  "engineManifest": {
+    "bytes": 93496,
+    "sha256": "10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf"
+  },
+  "binder": {
+    "bytes": 85125,
+    "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+  },
+  "buildDriver": {
+    "bytes": 16708,
+    "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+  },
+  "oldOverlayInputs": 116,
+  "retainedUnchangedInputs": 114,
+  "currentOverlayInputs": 117,
+  "previousRequiredRustTests": 412,
+  "requiredRustTests": 418,
+  "rustGroups": 21,
+  "addedNativeRustNames": [
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_growth_math_rejects_overflow_and_unfunded_keys",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_large_catalog_rebinds_beyond_initial_map_capacity",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_map_replacement_charges_old_and_new_tables",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_root_and_call_limits_remain_fail_closed",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_storage_denial_uses_complete_fresh_fallback",
+    "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_tiny_tiers_preserve_aliases_and_collision_chains"
+  ],
+  "capacityTestSource": "core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs",
+  "capacityTestPrefix": "avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::",
+  "capacityConstants": {
+    "MAX_ENTRIES": "250_000",
+    "INITIAL_ENTRIES": "65_536",
+    "MAX_STAGE_EDGES": "8_192",
+    "MAX_STORAGE_BYTES": "64 * 1024 * 1024",
+    "MAX_CALLS": "128",
+    "SLICE_MICROS": "4_000",
+    "MAX_OBJECTS_PER_SLICE": "2_048",
+    "MAX_FIELDS_PER_SLICE": "32_768",
+    "MAX_FIELDS_PER_OBJECT": "8_192",
+    "MAX_TOTAL_FIELDS": "4_000_000",
+    "MAX_PATH": "2_048",
+    "HASH_START": "0xcbf29ce484222325"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/anchor_index.rs",
+      "bytes": 25824,
+      "sha256": "056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 19253,
+        "sha256": "6dae428bd0ca60330d7e27a9d424320645718a7a64ee590b0aeead907421f570"
+      }
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs",
+      "bytes": 14161,
+      "sha256": "dfc8c5f77bfc47983041d4795901462a6a20247fb6e78ce1928526f7e42920bf",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 29576,
+      "sha256": "ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": {
+        "bytes": 29128,
+        "sha256": "f02f64650b00d212ec6d1d584e5764c78505c9717d26d5dc47678bcfad1ff3de"
+      }
+    }
+  ],
+  "scope": "Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.",
+  "freshBfsBody": {
+    "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+    "bytes": 2767,
+    "sha256": "fa49aabdd7d14d83d155f76824a55d516fb2220e342f0fcd8e0b6dfce44af7f1"
+  },
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-v20/source-reversal.json",
+      "bytes": 54307,
+      "sha256": "ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v20-source.mjs",
+      "bytes": 2217,
+      "sha256": "aa50cec350e087592df13e6ec3ef5e70e71d2e46cb205116d5dad7467c716b35"
+    }
+  ],
+  "unchangedSources": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 16708,
+      "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 55104,
+      "sha256": "047497a0849a042610209272b4017e342d033d4d4228f880ab50df1c6855476b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/lib.rs",
+      "bytes": 10243,
+      "sha256": "127b727cd28cbd691d0f930d8e1cb2a6a970e1d93d87be084da807e88a8356dc"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/boxhead_readback.rs",
+      "bytes": 8719,
+      "sha256": "8b75864fd4597c0fb777cec72b1c71c53952f574da10ee3ffae46d62373e829e"
+    },
+    {
+      "path": "scripts/original-coop-campaign-phased.mjs",
+      "bytes": 230427,
+      "sha256": "148d6aa3bc80e8daf731888f6996427c1c8ed535beca7a48fe2be30afc69c1a2"
+    },
+    {
+      "path": "scripts/original-network-performance-phased.mjs",
+      "bytes": 85414,
+      "sha256": "ccc530064eb1bea48b034b2ed6c28da2d13bb29a3bdb0c80e028be1d10add790"
+    },
+    {
+      "path": "scripts/original-checkpoint-profile-phased.mjs",
+      "bytes": 110862,
+      "sha256": "fa072702625e57cbf20fcf20fa34d9969bfa9177bbc89f14651fdbf0eceb5cb0"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-phased.py",
+      "bytes": 9667,
+      "sha256": "65248812f0d3e5a5d4f924dd33b22fc6305e1d3235bcdb7bdd49d4acf188b99b"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer.mjs",
+      "bytes": 9081,
+      "sha256": "9f2294e966811786af7670d9abd69e876364c7fd8e88437468550b32988a72c8"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v19.mjs",
+      "bytes": 24871,
+      "sha256": "0757d3abb4af13bafa6a62d1d034810c1dadeebc5da402c8af9c51f9ae3ccdca"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-gl-readback-v19.py",
+      "bytes": 9719,
+      "sha256": "4c2a172c88fc4246e3a27c0aeebb541517dc62b1a045505121032ec56aed0f95"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-inventory.json",
+      "bytes": 12276,
+      "sha256": "67ed0e30ecfc675d9ae114dfe403cf0615ff06ee8f59f821fa2ff0d5b042cdee"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-reversal.json",
+      "bytes": 96022,
+      "sha256": "9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-inventory.json",
+      "bytes": 6287,
+      "sha256": "460a18f18abddde6bfaa51b159aeb788595aed658812bc861c30acdd24eaf837"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-reversal.json",
+      "bytes": 57010,
+      "sha256": "c55db22c3b58d5ae3c6c9d94683dd261d03389c438d214cf03bcc85506818ae6"
+    }
+  ],
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false
+}

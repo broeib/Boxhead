@@ -1,0 +1,21 @@
+--- engine-v1/core/src/avm1/globals/boxhead_native_scalars.rs
++++ engine-v2/core/src/avm1/globals/boxhead_native_scalars.rs
+@@ -155,6 +155,9 @@
+     // stack. Iterating this Vec forwards therefore preserves the AS2 order.
+     // A later getter can change membership/values, but not the collected list.
+     let keys = source.get_keys(activation, false);
++    // The pinned CommonStrings has no hasOwnProperty entry. Reuse only its
++    // name; source.call_method still resolves the current method per key.
++    let has_own_property = AvmString::new_utf8(activation.gc(), "hasOwnProperty");
+     let mut own_reads: u64 = 0;
+     for (index, key) in keys.into_iter().enumerate() {
+         if index % TIMEOUT_KEY_INTERVAL == 0 {
+@@ -164,7 +167,7 @@
+             return Err(rejected(activation, "Native scalar witness overflow"));
+         }
+         let owns = source.call_method(
+-            istr!(activation, "hasOwnProperty"),
++            has_own_property,
+             &[key.into()],
+             activation,
+             ExecutionReason::FunctionCall,

@@ -1,0 +1,180 @@
+{
+  "schema": "boxhead-native-single-push-source-v1",
+  "status": "isolated-source-frozen-CI-not-executed",
+  "integrated": false,
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "baselineEngineManifest": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 65954,
+    "sha256": "487588b8c0d594705ef43a970a875591ba74d5b010756f525b7eab6c7e9d2189"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push.rs",
+      "bytes": 2369,
+      "sha256": "a4ee213c351119cc61784ed50eef421cc14cf0cae77912cffab05961185b556f",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push_decode_tests.rs",
+      "bytes": 7614,
+      "sha256": "573d13da42a5eb8caec80d2527085b0697ecf0234d88cedd70c3693197616cae",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/activation/boxhead_single_push_tests.rs",
+      "bytes": 18751,
+      "sha256": "3a6eefa7f07650ca371dba9577861f4d1e8f5bb3bcccc5a31384ee682078fa12",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/activation/single_push_frozen_v13.rs",
+      "bytes": 9444,
+      "sha256": "9ee82466bcd9b452fbacf8364a3ec4360ad3d166052d95a3c863d40e2f61fc39",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/activation.rs",
+      "bytes": 126371,
+      "sha256": "cfe62e1b715eea7a3dc0b2d9207e50d4f0d04e40186e98a6f99f970cc0ceb883",
+      "baseline": {
+        "bytes": 125491,
+        "sha256": "7aab0b274d5ba3a80b0e22d14ed90074c894b9ff187b4cd42a61f672741d9727"
+      },
+      "upstreamBaseline": {
+        "bytes": 125147,
+        "sha256": "5cbbaa1a78c6cff6f9fcb3df1ef1432f95077f35208f539c4bdb3108dc3e579d"
+      }
+    }
+  ],
+  "preservedUpstream": [
+    {
+      "path": "swf/src/avm1/read.rs",
+      "bytes": 20216,
+      "sha256": "a49a966a836277bb6c514aedbfa21d2ccd8e01852a872dcaa4efd9503837af32"
+    },
+    {
+      "path": "swf/src/avm1/types.rs",
+      "bytes": 7908,
+      "sha256": "7e0ce1074c6ee100a55a54ca5273ee9c04687fc0e0c3a2af9176ae9b6ebc993c"
+    },
+    {
+      "path": "swf/src/avm1/opcode.rs",
+      "bytes": 2564,
+      "sha256": "8bc28df6f3c4bc7f7a8f4b49e17efe5bc06b52e83471c3ad6f96518949816d2e"
+    },
+    {
+      "path": "swf/src/extensions.rs",
+      "bytes": 2998,
+      "sha256": "48559d6e523f2b355d10f8691e942d04a0a364376c7897d1265cf9947e8b3b6d"
+    },
+    {
+      "path": "core/common/src/tag_utils.rs",
+      "bytes": 15407,
+      "sha256": "e68327fdc8915b5a5f261fe306e7ad8dc05b17a61e08f8d674db111e58e05b3d"
+    }
+  ],
+  "rustFixtureGroup": {
+    "group": "single_push",
+    "filter": "single_push_",
+    "executedExpected": 24,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "single_push_accepted_decoding_leaves_following_actions_untouched",
+      "single_push_activation_action_count_and_timeout_precede_decoding",
+      "single_push_activation_constant_pool_reads_are_fresh_and_keep_invalid_indices",
+      "single_push_activation_debug_mode_keeps_parser_route",
+      "single_push_activation_fixed_values_match_frozen_execution",
+      "single_push_activation_function_end_precedes_opcode_but_does_not_bound_operand",
+      "single_push_activation_local_and_global_register_rules_match_player_versions",
+      "single_push_activation_malformed_lengths_keep_return_stack_and_cursor",
+      "single_push_activation_mixed_program_keeps_stack_registers_pool_and_jumps",
+      "single_push_activation_multi_push_parse_errors_do_not_partially_mutate_stack",
+      "single_push_activation_plain_objects_are_not_coerced",
+      "single_push_activation_register_and_pool_objects_keep_movieclip_wrapping",
+      "single_push_activation_removed_clip_reference_path_is_unchanged",
+      "single_push_activation_store_register_then_push_observes_instruction_order",
+      "single_push_activation_strings_keep_original_swf_encoding_path",
+      "single_push_all_fixed_tags_match_original_reader",
+      "single_push_constant16_preserves_every_index",
+      "single_push_debug_and_other_opcodes_leave_reader_untouched",
+      "single_push_every_truncated_fixed_form_keeps_fallback_cursor",
+      "single_push_fallback_preserves_parser_error_and_resynchronization",
+      "single_push_ieee_bits_and_middle_endian_doubles_match_reader",
+      "single_push_invalid_tags_and_multi_values_keep_original_lenience",
+      "single_push_u8_payloads_match_all_bool_register_constant_values",
+      "single_push_wrong_lengths_and_strings_are_immutable_fallbacks"
+    ],
+    "fullNames": [
+      "avm1::activation::boxhead_single_push::tests::single_push_accepted_decoding_leaves_following_actions_untouched",
+      "avm1::activation::boxhead_single_push::tests::single_push_all_fixed_tags_match_original_reader",
+      "avm1::activation::boxhead_single_push::tests::single_push_constant16_preserves_every_index",
+      "avm1::activation::boxhead_single_push::tests::single_push_debug_and_other_opcodes_leave_reader_untouched",
+      "avm1::activation::boxhead_single_push::tests::single_push_every_truncated_fixed_form_keeps_fallback_cursor",
+      "avm1::activation::boxhead_single_push::tests::single_push_fallback_preserves_parser_error_and_resynchronization",
+      "avm1::activation::boxhead_single_push::tests::single_push_ieee_bits_and_middle_endian_doubles_match_reader",
+      "avm1::activation::boxhead_single_push::tests::single_push_invalid_tags_and_multi_values_keep_original_lenience",
+      "avm1::activation::boxhead_single_push::tests::single_push_u8_payloads_match_all_bool_register_constant_values",
+      "avm1::activation::boxhead_single_push::tests::single_push_wrong_lengths_and_strings_are_immutable_fallbacks",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_action_count_and_timeout_precede_decoding",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_constant_pool_reads_are_fresh_and_keep_invalid_indices",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_debug_mode_keeps_parser_route",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_fixed_values_match_frozen_execution",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_function_end_precedes_opcode_but_does_not_bound_operand",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_local_and_global_register_rules_match_player_versions",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_malformed_lengths_keep_return_stack_and_cursor",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_mixed_program_keeps_stack_registers_pool_and_jumps",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_multi_push_parse_errors_do_not_partially_mutate_stack",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_plain_objects_are_not_coerced",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_register_and_pool_objects_keep_movieclip_wrapping",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_removed_clip_reference_path_is_unchanged",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_store_register_then_push_observes_instruction_order",
+      "avm1::activation::boxhead_single_push_tests::single_push_activation_strings_keep_original_swf_encoding_path"
+    ]
+  },
+  "retainedRequiredRustTests": 294,
+  "totalRequiredRustTestsWithOnlyThisCandidate": 318,
+  "totalRequiredRustTestsWithReviewedAnchorInline": 324,
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-single-push/source-integrity.test.mjs",
+    "executedExpected": 4
+  },
+  "rustCommand": "cargo test -p ruffle_core --lib single_push_ -- --nocapture",
+  "optionalDebugFeatureCommand": "cargo test -p ruffle_core --lib --features avm_debug single_push_ -- --nocapture",
+  "newGlobalRegistrations": 0,
+  "newPersistentCacheEntries": 0,
+  "productionDiagnosticCounters": 0,
+  "supportFiles": [
+    {
+      "path": "SINGLE_PUSH.md",
+      "bytes": 7764,
+      "sha256": "cf77c586067b2f952a64ac9b0867d892cb89cebe9266aee3ea0ff7992c2480d7"
+    },
+    {
+      "path": "predecessor-identities.json",
+      "bytes": 1662,
+      "sha256": "62d0414559d0911622929c5364ff12ae475f53863aa91c6d29a833a427313468"
+    },
+    {
+      "path": "source-delta.json",
+      "bytes": 2058,
+      "sha256": "d29581c24b29cde6d1ec6fd505fa91cc240a398b990b6881eec0138525f545ea"
+    },
+    {
+      "path": "source-normalization.mjs",
+      "bytes": 1852,
+      "sha256": "d5aa4c00845a0ee086ff3a4683fd5d281e2305f2ab023455f449abbbd5e544d8"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 9082,
+      "sha256": "4221cd98d62d72eac41ba35807d6a6f475036338c8b12ded397415d5c7c3b3d3"
+    },
+    {
+      "path": "oracles/avm1-read-v13.rs",
+      "bytes": 20216,
+      "sha256": "a49a966a836277bb6c514aedbfa21d2ccd8e01852a872dcaa4efd9503837af32"
+    }
+  ],
+  "testsExecutedLocally": false
+}

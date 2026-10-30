@@ -1,0 +1,354 @@
+   // Diagnostic-only members. Run at the original menu on private objects;
+   // the compiled unchanged BH_Project is the reference implementation.
+   static function BH_NativeProjectProbeRequire(report, name, pass)
+   {
+      report.checks.push({name:name,passed:pass === true});
+      if(pass !== true) throw new Error("native project probe: " + name);
+   }
+
+   static function BH_NativeProjectProbeShape(value, depth)
+   {
+      if(depth > 100) throw new Error("private projected output is cyclic or excessive");
+      var kind = typeof value;
+      if(value === undefined) return "undefined";
+      if(value === null) return "null";
+      if(kind != "object")
+      {
+         var text = String(value);
+         if(kind == "number" && value == 0) text = "zero:" + String(1 / value);
+         return kind + ":" + text.length + ":" + text;
+      }
+      var keys = new Array();
+      for(var key in value) if(Object.prototype.hasOwnProperty.call(value,key)) keys.push(key);
+      keys.sort();
+      var parts = new Array();
+      for(var index = 0; index < keys.length; index++)
+      {
+         key = keys[index];
+         parts.push(key.length + ":" + key + "=" + CMain.BH_NativeProjectProbeShape(value[key],depth + 1));
+      }
+      return (value instanceof Array ? "array" : "object") + "{" + parts.join(";") + "}";
+   }
+
+   static function BH_NativeProjectProbeGetter(state, name, value)
+   {
+      return function()
+      {
+         state.log.push("get:" + name);
+         if(name == "alpha")
+         {
+            state.childReads++;
+            if(state.kind == "deferred-getter-change" && state.childReads > 1) return state.second;
+            if(state.kind == "deferred-getter-throw" && state.childReads > 1) throw state.sentinel;
+         }
+         if(state.kind == "getter-throw" && name == "scalar") throw state.sentinel;
+         if(state.kind == "getter-mutation" && name == "scalar")
+         {
+            delete state.source.later;
+            state.source.insertedDuringScan = 91;
+         }
+         if(state.kind == "policy-replacement" && name == "scalar")
+            CMain.BH_SkipField = function(key)
+            {
+               state.log.push("policy2:" + key);
+               return state.policy(key);
+            };
+         return value;
+      };
+   }
+
+   static function BH_NativeProjectProbeFixture(kind)
+   {
+      var state = {kind:kind,log:new Array(),childReads:0,sentinel:{privateProjectSentinel:true}};
+      var source = state.source = new Object();
+      var first = {n:17};
+      var second = state.second = {n:23};
+      first.back = source;
+      source.addProperty("alpha",CMain.BH_NativeProjectProbeGetter(state,"alpha",first),null);
+      source.addProperty("zeta",CMain.BH_NativeProjectProbeGetter(state,"zeta",first),null);
+      source.addProperty("scalar",CMain.BH_NativeProjectProbeGetter(state,"scalar",7),null);
+      source.addProperty("later",CMain.BH_NativeProjectProbeGetter(state,"later",11),null);
+      source.addProperty("mcExcluded",CMain.BH_NativeProjectProbeGetter(state,"mcExcluded",{}),null);
+      source.undefinedValue = undefined;
+      source.nullValue = null;
+      source.negativeZero = -1 / Infinity;
+      source.nan = NaN;
+      source.infinity = Infinity;
+      var sparse = new Array(1,2,3); delete sparse[1]; source.sparse = sparse;
+      var proto = new Object();
+      proto.addProperty("inherited",function() { state.log.push("FORBIDDEN_INHERITED"); throw state.sentinel; },null);
+      source.__proto__ = proto;
+      source.hasOwnProperty = function(key)
+      {
+         state.log.push("own:" + key);
+         return Object.prototype.hasOwnProperty.call(this,key);
+      };
+      ASSetPropFlags(source,"hasOwnProperty",1,0);
+      if(kind == "marker-collision") source.__bhSnapshotRef = 99;
+      if(kind == "key-coercion-order")
+      {
+         source = state.source = new Object();
+         source.addProperty("alpha",CMain.BH_NativeProjectProbeGetter(state,"alpha",first),null);
+         source.addProperty("zeta",CMain.BH_NativeProjectProbeGetter(state,"zeta",first),null);
+         first.back = source;
+         var special = state.specialKey = new Object();
+         special.addProperty("length",function() { state.log.push("key:length"); return 5; },null);
+         special.valueOf = function() { state.log.push("key:valueOf"); return "alpha"; };
+         special.toString = function() { state.log.push("key:toString"); return "alpha"; };
+      }
+      if(kind == "map-getter-order" || kind == "cell-getter-order")
+      {
+         source = state.source = new Object();
+         source._CLASSID_ = kind == "map-getter-order" ? "CMap" : "CMap_Cell";
+         var position = new Object();
+         position.addProperty("x",CMain.BH_NativeProjectProbeGetter(state,"x",3),null);
+         position.addProperty("y",CMain.BH_NativeProjectProbeGetter(state,"y",5),null);
+         source.addProperty("mPosition",CMain.BH_NativeProjectProbeGetter(state,"mPosition",position),null);
+         source.addProperty("mSize",CMain.BH_NativeProjectProbeGetter(state,"mSize",position),null);
+         source.addProperty("mFirstTime",CMain.BH_NativeProjectProbeGetter(state,"mFirstTime",true),null);
+         var collide = new Object();
+         collide.addProperty("mCollideFlag",CMain.BH_NativeProjectProbeGetter(state,"mCollideFlag",1),null);
+         source.addProperty("mCollide",CMain.BH_NativeProjectProbeGetter(state,"mCollide",collide),null);
+      }
+      if(kind == "animation" || kind == "animation-shadow")
+      {
+         source = state.source = new Object();
+         var muzzle = {x:2,y:3};
+         var target = new Object();
+         var items = new Object();
+         items.__proto__ = {inheritedAnimation:{mAnimationObject:target}};
+         var anim = {mCollection:{mItems:items},mAnimationObject:target};
+         anim.addProperty("mCurrentFrameID",CMain.BH_NativeProjectProbeGetter(state,"frame",4),null);
+         anim.addProperty("mFrameCount",CMain.BH_NativeProjectProbeGetter(state,"count",9),null);
+         anim.addProperty("mAnimEnd",CMain.BH_NativeProjectProbeGetter(state,"ended",false),null);
+         anim.addProperty("mPreUpdate",CMain.BH_NativeProjectProbeGetter(state,"preUpdate",true),null);
+         anim.addProperty("mCurrentFrame",CMain.BH_NativeProjectProbeGetter(state,"currentFrame",{XSI_Info:{XSI_Model_GunPosition_Right:{nPosition:muzzle}}}),null);
+         source.addProperty("mXSI_Animation",CMain.BH_NativeProjectProbeGetter(state,"animation",anim),null);
+         source.addProperty("Process",CMain.BH_NativeProjectProbeGetter(state,"Process",function() {}),null);
+         source.mParent = {mUniqueID:41};
+         source.laterMuzzle = muzzle;
+         if(kind == "animation-shadow")
+         {
+            source.$animation = 88; source.$process = "source"; source.$parentID = 99;
+         }
+      }
+      if(kind == "upgrades")
+         state.source = {_CLASSID_:"CUpgrades",mLevels:{excludedDefinition:1},
+            mMultipliers:[[{mActive:false},{mActive:1}],[{mActive:"1"},{mActive:"true"}]]};
+      // A deferred key.length legitimately boxes the key through String.
+      // This case isolates the pinned ToString opcode on scalar-only leaves.
+      if(kind == "string-opcode")
+         state.source = {negativeZero:-1 / Infinity,nan:NaN,infinity:Infinity};
+      if(kind == "active-scan-envelope-mutation" || kind == "active-scan-unsupported")
+         state.source = {n:1};
+      return state;
+   }
+
+   static function BH_NativeProjectProbeArm(kind, kernel, nativeRun)
+   {
+      var state = CMain.BH_NativeProjectProbeFixture(kind);
+      var policy = CMain.BH_SkipField;
+      var process = CMain.BH_ProcessName;
+      var integer = CMain.BH_Integer;
+      var scalarString = CMain.BH_NativeScalarString;
+      var owns = Object.prototype.hasOwnProperty;
+      var sort = Array.prototype.sort;
+      var string = _global.String;
+      var activeScan = kind.indexOf("active-scan") == 0;
+      var frozenScan = _global.boxheadNativeProjectionScanV1;
+      state.policy = policy;
+      CMain.mBHFieldCache = Object(); CMain.mBHFieldCacheCount = 0;
+      if(kind == "cache-reset") for(var primed = 0; primed < 1023; primed++) policy("probePrimed" + primed);
+      // BH_SkipField uses String boxing for substr/indexOf. Prime its policy
+      // before replacing String so this case isolates only ActionToString.
+      if(kind == "string-opcode") { policy("negativeZero"); policy("nan"); policy("infinity"); }
+      if(kind == "active-scan-unsupported") CMain.mBHFieldCache = 7;
+      var initialCache = CMain.mBHFieldCache;
+      var context = {objects:new Array(),fields:kind == "field-budget" ? 1000001 : 0,errorPath:new Array(),
+         projectionKernel:activeScan ? frozenScan : undefined,nativeProjectOwner:CMain,nativeProjectFunction:CMain.BH_Project};
+      var before = CMain.BH_NativeProjectInfo(kernel);
+      var scanBefore = CMain.BH_NativeProjectionInfo(frozenScan);
+      var threw = false;
+      var error = "";
+      var output;
+      var envelope;
+      CMain.BH_SkipField = function(key)
+      {
+         state.log.push("policy:" + key);
+         return policy(key);
+      };
+      CMain.BH_ProcessName = function(value)
+      {
+         state.log.push("process-name");
+         var current = value.Process;
+         return "Process_probe";
+      };
+      if(activeScan && kind != "active-scan")
+      {
+         CMain.BH_Integer = function(value,low,high)
+         {
+            state.log.push("integer:" + value);
+            if(kind == "active-scan-integer-throw") throw state.sentinel;
+            return integer(value,low,high);
+         };
+         CMain.BH_NativeScalarString = function(value)
+         {
+            state.log.push("nonfinite:" + String(value));
+            if(kind == "active-scan-nonfinite-throw") throw state.sentinel;
+            return scalarString(value);
+         };
+         Object.prototype.hasOwnProperty = function(key)
+         {
+            var envelope = key == "keys" && owns.call(this,"scalarFields") && owns.call(this,"version");
+            state.log.push(envelope ? "envelope-own" : "prototype-own:" + key);
+            if(envelope && kind == "active-scan-own-throw") throw state.sentinel;
+            if(envelope && kind == "active-scan-envelope-mutation") this.scalarFields = "4";
+            return owns.call(this,key);
+         };
+      }
+      if(kind == "key-coercion-order") Array.prototype.sort = function()
+      {
+         state.log.push("sort:" + this.length);
+         var result = sort.apply(this,arguments);
+         if(this.length == 2 && this[0] == "alpha" && this[1] == "zeta") this[0] = state.specialKey;
+         return result;
+      };
+      if(kind == "string-opcode") _global.String = function()
+      {
+         state.log.push("FORBIDDEN_GLOBAL_STRING"); throw state.sentinel;
+      };
+      try
+      {
+         if(nativeRun)
+         {
+            envelope = kernel("run",state.source,context,CMain);
+            if(envelope === false || envelope.version !== 1 || !owns.call(envelope,"value"))
+               throw new Error("native fixture did not complete the native path");
+            output = envelope.value;
+         }
+         else output = CMain.BH_Project(state.source,context,"root",0);
+      }
+      catch(e) { threw = true; error = e === state.sentinel ? "private-project-sentinel" : String(e); }
+      finally
+      {
+         CMain.BH_SkipField = policy;
+         CMain.BH_ProcessName = process;
+         CMain.BH_Integer = integer;
+         CMain.BH_NativeScalarString = scalarString;
+         Object.prototype.hasOwnProperty = owns;
+         Array.prototype.sort = sort;
+         _global.String = string;
+      }
+      var log = state.log.slice();
+      var after = CMain.BH_NativeProjectInfo(kernel);
+      var scanAfter = CMain.BH_NativeProjectionInfo(frozenScan);
+      var cleanup = true;
+      for(var index = 0; index < context.objects.length; index++)
+      {
+         var marked = context.objects[index];
+         if(marked.__bhSnapshotRef !== index) cleanup = false;
+         delete marked.__bhSnapshotRef;
+         if(marked.hasOwnProperty("__bhSnapshotRef")) cleanup = false;
+      }
+      return {kind:kind,nativeRun:nativeRun,threw:threw,error:error,log:log,
+         shape:CMain.BH_NativeProjectProbeShape(output,0),objects:context.objects.length,fields:context.fields,
+         cleanup:cleanup,cacheCount:CMain.mBHFieldCacheCount,cacheReplaced:CMain.mBHFieldCache !== initialCache,
+         counterDelta:{calls:after.calls-before.calls,completed:after.completed-before.completed,
+            unsupported:after.unsupported-before.unsupported,nodes:after.nodes-before.nodes,
+            keys:after.keys-before.keys,ownReads:after.ownReads-before.ownReads},
+         scanCounterDelta:{calls:scanAfter.calls-scanBefore.calls,completed:scanAfter.completed-scanBefore.completed,
+            unsupported:scanAfter.unsupported-scanBefore.unsupported,keys:scanAfter.keys-scanBefore.keys,
+            ownReads:scanAfter.ownReads-scanBefore.ownReads}};
+   }
+
+   function BH_NativeProjectProbe()
+   {
+      var b = this.mBH;
+      var world = this.mcWorld;
+      var cache = CMain.mBHFieldCache;
+      var cacheCount = CMain.mBHFieldCacheCount;
+      var policy = CMain.BH_SkipField;
+      var process = CMain.BH_ProcessName;
+      var integer = CMain.BH_Integer;
+      var scalarString = CMain.BH_NativeScalarString;
+      var owns = Object.prototype.hasOwnProperty;
+      var projector = CMain.BH_Project;
+      var sort = Array.prototype.sort;
+      var string = _global.String;
+      var kernel = b.nativeProjectKernel;
+      var snapshot = b.snapshot;
+      var before = {active:String(b.active),stepping:String(b.stepping),state:String(b.state),tick:String(b.tick),
+         clock:String(b.clock),seed:String(b.seed),rng:String(b.rng),rngCalls:String(b.rngCalls),
+         cacheRng:String(b.cacheRng),cacheCalls:String(b.cacheCalls),worldPresent:world !== undefined};
+      var report = {schema:"original-native-project-private-probe-v1",pass:false,checks:new Array(),pairs:new Array(),
+         before:before,engineBoundaryFixturesRequired:true,gameplayPassClaimed:false};
+      try
+      {
+         CMain.BH_NativeProjectProbeRequire(report,"menu_only",b.active === false && b.stepping === false
+            && b.state == "menu" && b.tick === 0 && world === undefined && b.snapshotReceiptBusy !== true);
+         CMain.BH_NativeProjectProbeRequire(report,"native_capability",typeof kernel == "function"
+            && kernel === _global.boxheadNativeProjectV1 && b.nativeProjectOwner === CMain
+            && b.nativeProjectFunction === projector);
+         report.nativeBefore = CMain.BH_NativeProjectInfo(kernel);
+         report.scanBefore = CMain.BH_NativeProjectionInfo(_global.boxheadNativeProjectionScanV1);
+         var cases = ["graph","deferred-getter-change","getter-mutation","policy-replacement","cache-reset",
+            "key-coercion-order","map-getter-order","cell-getter-order","animation","animation-shadow",
+            "upgrades","string-opcode","getter-throw","deferred-getter-throw","marker-collision","field-budget",
+            "active-scan","active-scan-validation","active-scan-integer-throw","active-scan-own-throw",
+            "active-scan-nonfinite-throw","active-scan-envelope-mutation","active-scan-unsupported"];
+         for(var index = 0; index < cases.length; index++)
+         {
+            var kind = cases[index];
+            var original = CMain.BH_NativeProjectProbeArm(kind,kernel,false);
+            var actual = CMain.BH_NativeProjectProbeArm(kind,kernel,true);
+            report.pairs.push({name:kind,original:original,native:actual});
+            CMain.BH_NativeProjectProbeRequire(report,"pair_log_" + kind,original.log.join("\n") === actual.log.join("\n"));
+            CMain.BH_NativeProjectProbeRequire(report,"pair_output_" + kind,original.shape === actual.shape);
+            var expectedThrow = kind == "getter-throw" || kind == "deferred-getter-throw" || kind == "marker-collision"
+               || kind == "field-budget" || kind == "active-scan-integer-throw" || kind == "active-scan-own-throw"
+               || kind == "active-scan-nonfinite-throw";
+            CMain.BH_NativeProjectProbeRequire(report,"pair_error_" + kind,original.threw === expectedThrow
+               && actual.threw === expectedThrow && original.error === actual.error);
+            CMain.BH_NativeProjectProbeRequire(report,"pair_accounting_" + kind,original.objects === actual.objects && original.fields === actual.fields);
+            CMain.BH_NativeProjectProbeRequire(report,"pair_cache_" + kind,original.cacheCount === actual.cacheCount && original.cacheReplaced === actual.cacheReplaced);
+            CMain.BH_NativeProjectProbeRequire(report,"cleanup_" + kind,original.cleanup && actual.cleanup);
+            CMain.BH_NativeProjectProbeRequire(report,"native_path_" + kind,actual.counterDelta.calls === 1
+               && actual.counterDelta.unsupported === 0 && actual.counterDelta.completed === (actual.threw ? 0 : 1));
+            CMain.BH_NativeProjectProbeRequire(report,"pair_scan_" + kind,
+               original.scanCounterDelta.calls === actual.scanCounterDelta.calls
+               && original.scanCounterDelta.completed === actual.scanCounterDelta.completed
+               && original.scanCounterDelta.unsupported === actual.scanCounterDelta.unsupported
+               && original.scanCounterDelta.keys === actual.scanCounterDelta.keys
+               && original.scanCounterDelta.ownReads === actual.scanCounterDelta.ownReads);
+         }
+         report.nativeAfter = CMain.BH_NativeProjectInfo(kernel);
+         report.scanAfter = CMain.BH_NativeProjectionInfo(_global.boxheadNativeProjectionScanV1);
+         report.pass = true;
+      }
+      catch(e) { report.error = String(e); }
+      finally
+      {
+         CMain.mBHFieldCache = cache;
+         CMain.mBHFieldCacheCount = cacheCount;
+         CMain.BH_SkipField = policy;
+         CMain.BH_ProcessName = process;
+         CMain.BH_Integer = integer;
+         CMain.BH_NativeScalarString = scalarString;
+         Object.prototype.hasOwnProperty = owns;
+         Array.prototype.sort = sort;
+         _global.String = string;
+         report.restored = {cacheIdentity:CMain.mBHFieldCache === cache,cacheCount:CMain.mBHFieldCacheCount === cacheCount,
+            policyIdentity:CMain.BH_SkipField === policy,processIdentity:CMain.BH_ProcessName === process,
+            integerIdentity:CMain.BH_Integer === integer,scalarStringIdentity:CMain.BH_NativeScalarString === scalarString,
+            ownIdentity:Object.prototype.hasOwnProperty === owns,
+            projectorIdentity:CMain.BH_Project === projector,sortIdentity:Array.prototype.sort === sort,stringIdentity:_global.String === string,
+            bridgeIdentity:this.mBH === b,worldIdentity:this.mcWorld === world,snapshotIdentity:b.snapshot === snapshot,
+            kernelIdentity:b.nativeProjectKernel === kernel && _global.boxheadNativeProjectV1 === kernel};
+         report.after = {active:String(b.active),stepping:String(b.stepping),state:String(b.state),tick:String(b.tick),
+            clock:String(b.clock),seed:String(b.seed),rng:String(b.rng),rngCalls:String(b.rngCalls),
+            cacheRng:String(b.cacheRng),cacheCalls:String(b.cacheCalls),worldPresent:this.mcWorld !== undefined};
+         for(var key in report.restored) if(report.restored[key] !== true) report.pass = false;
+         for(key in before) if(report.after[key] !== before[key]) report.pass = false;
+      }
+      return report;
+   }

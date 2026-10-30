@@ -1,0 +1,1192 @@
+{
+  "schema": "boxhead-native-v12-integration-review-v1",
+  "status": "plan-only-not-applied",
+  "generatedFrom": "pinned v10 integrated source plus isolated lookup-v2 and packed-blit packages",
+  "currentSourceUnmodified": true,
+  "testsExecutedLocally": false,
+  "runtimeBuiltHere": false,
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false,
+  "inputs": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 44549,
+      "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 49365,
+      "sha256": "f1e95d86a899b08703f041c9edf518c92ca843d6512f5534a0c52b6bb2df9c6f"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 35773,
+      "sha256": "44d1d4f424922439ed573d6e3f11e9680c651a6d9729df68d200d7f2854f6773"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 15411,
+      "sha256": "7214fc10be4bd3a586c63b005b0157d52df2843ebc5321d23ca2df6acf9de6c0"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/apply-overlay.py",
+      "bytes": 3524,
+      "sha256": "eb03f0165f7d6297d87ee71eb1d7a43b538efa19ab1454149cae7f73e28e25c6"
+    },
+    {
+      "path": "tools/ruffle-native-projector/engine/manifest.json",
+      "bytes": 13405,
+      "sha256": "47d7f4e40bdf3b348d8dd21ad2c8b8cfbbe613b026a68772d72977794691b430"
+    },
+    {
+      "path": "tools/ruffle-native-lookup-v2/source-inventory.json",
+      "bytes": 5471,
+      "sha256": "e3eea3caed2bf2fe9ce479ef39a62d571dd5d04418595c56d98c316554c64021"
+    },
+    {
+      "path": "tools/ruffle-native-packed-blit/source-inventory.json",
+      "bytes": 4400,
+      "sha256": "91f76118bf140ed8c5ea60bb8b1b17b88a26002e7bf3498c43e5d713286273ee"
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+      "bytes": 4298,
+      "sha256": "0997f7816892f6872353630a2c04453836fb9a89e9a8aaad44c18706d3d0a3bd"
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+      "bytes": 4186,
+      "sha256": "09b50a66bf5d21468c50db90f3cf2d7c6e30b2e05813e31e82258cc8d730d1c9"
+    },
+    {
+      "path": "tools/ruffle-native-property-equality/source-inventory.json",
+      "bytes": 2767,
+      "sha256": "b6ae1deb326366019e7412f4a5feb62fee52c2906871b6e5b313445d54137428"
+    },
+    {
+      "path": "tools/ruffle-native-property-equality/source-integrity.test.mjs",
+      "bytes": 4144,
+      "sha256": "03d24e3cc6a88b51be9a753906c9826c5d80d9523ef87aaaf7e6183f41635dc3"
+    },
+    {
+      "path": "tools/ruffle-native-anchor-hotpath/source-inventory.json",
+      "bytes": 5692,
+      "sha256": "043376ede6adbeab4ac1aefa8141fbe5d48d1e99ed6b0a6a25cd0281c4504208"
+    },
+    {
+      "path": "tools/ruffle-native-anchor-hotpath/source-integrity.test.mjs",
+      "bytes": 3329,
+      "sha256": "a2be71dc45ba644cbce04f489dcda6cd8ee19ad4a30a74ddeb8949ebb9c09b5c"
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-inventory.json",
+      "bytes": 7436,
+      "sha256": "7676461e8a801e9b49464fe157ac23c7d1563bcc1fc2001109870f0a49288d7f"
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+      "bytes": 5097,
+      "sha256": "e73868e27083069177daaa13e5de7eccb014edb202f420cb4579d3bb48473745"
+    },
+    {
+      "path": "tools/ruffle-native-lookup-v2/source-integrity.test.mjs",
+      "bytes": 6507,
+      "sha256": "07080f09392cbd2e974688f9cb05eb616eac7c271e1c2e3d5e1521bcdab27ae5"
+    },
+    {
+      "path": "tools/ruffle-native-packed-blit/source-integrity.test.mjs",
+      "bytes": 7668,
+      "sha256": "6393f1b08e2059edf8ca6959ff817ae0b7e9ec69efd8847e92158ef1f5322573"
+    }
+  ],
+  "variants": [
+    {
+      "id": "lookup-only",
+      "manifest": {
+        "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/lookup-only.engine-manifest.json",
+        "bytes": 48806,
+        "sha256": "f5f85c82f0b963579a00c6dc2710fb9d1236e25206b34ac61af6569a73b0a360"
+      },
+      "overlayFiles": 38,
+      "baselineAbsentFiles": 21,
+      "upstreamBaselineCount": 10,
+      "rustGroups": 12,
+      "requiredRustTests": 260,
+      "ignoredRustTests": 1,
+      "buildStages": 14,
+      "buildStageLabels": [
+        "graph",
+        "scalar",
+        "projection",
+        "project",
+        "bitmap",
+        "hash",
+        "property",
+        "fence",
+        "equality",
+        "overwrite",
+        "compact",
+        "lookup",
+        "wasm",
+        "selfhosted"
+      ],
+      "changes": [
+        {
+          "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+            "bytes": 9025,
+            "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+            "bytes": 9025,
+            "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/globals/boxhead_native_project.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 33798,
+            "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778"
+          },
+          "before": {
+            "path": "core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 32804,
+            "sha256": "73f9240d39fd9c179963acd201cfb2dea7019ae14b1d6f7d7c2ca31098b4efb3",
+            "baselineAbsent": true
+          },
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 33798,
+            "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12779,
+            "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a"
+          },
+          "before": {
+            "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12637,
+            "sha256": "11451ab0d11b1617f9859164888a6077fb34173c11ec7e8cc85575ab0394bbc0",
+            "baselineBytes": 12289,
+            "baselineSha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1"
+          },
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12779,
+            "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a",
+            "baselineBytes": 12289,
+            "baselineSha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1"
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/object/script_object.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/object/script_object.rs",
+            "bytes": 43753,
+            "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+          },
+          "before": {
+            "path": "core/src/avm1/object/script_object.rs",
+            "bytes": 42307,
+            "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f",
+            "baselineBytes": 37891,
+            "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+          },
+          "after": {
+            "path": "core/src/avm1/object/script_object.rs",
+            "bytes": 43753,
+            "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399",
+            "baselineBytes": 37891,
+            "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+            "bytes": 34028,
+            "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+            "bytes": 34028,
+            "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/scope/frozen_v10.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope/frozen_v10.rs",
+            "bytes": 9350,
+            "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope/frozen_v10.rs",
+            "bytes": 9350,
+            "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/scope.rs",
+          "operation": "add-upstream-replacement",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope.rs",
+            "bytes": 10718,
+            "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope.rs",
+            "bytes": 10718,
+            "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264",
+            "baselineBytes": 9350,
+            "baselineSha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+          },
+          "installationBaseline": "pinned-upstream-scope-not-absent"
+        }
+      ],
+      "appendRustGroups": [
+        {
+          "label": "lookup",
+          "filter": "lookup_v2_",
+          "expectedExecuted": 23,
+          "expectedPassed": 23,
+          "expectedFailed": 0,
+          "expectedIgnored": 0,
+          "exactNames": [
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_keep_case_utf16_and_enumeration_contents",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_preserve_literals_and_lazy_identity",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_reobserve_values_getters_and_prototypes",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_actual_activation_resolves_fresh_values_and_special_this",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_arrays_and_functions_keep_ordinary_fields",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_case_collision_winners_match_frozen_after_mutations",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_deep_parent_chains_preserve_shadowing_and_receiver",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_empty_and_utf16_names_keep_exact_membership",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_fresh_reads_observe_reparenting_own_writes_and_watchers",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_getter_reentry_observes_new_slot_and_keeps_outer_result",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_stored_membership_keeps_original_get_path",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_virtual_slots_do_not_run_the_hidden_getter",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_inherited_getters_keep_original_receiver",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_missing_slots_follow_parent_without_resolver_calls",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_native_display_boxed_and_super_paths_match_frozen",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_positive_membership_keeps_get_prototype_recursion_error",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_raw_proto_keeps_case_visibility_and_virtual_data",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_recursive_getter_error_reobserves_mutated_descriptor",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_removed_clip_fallback_keeps_root_and_callable_undefined",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_resolver_requires_positive_raw_membership",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_getter_undefined_and_error_precedence_match_frozen",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_own_values_keep_callable_receiver_and_flags",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_with_local_global_calls_keep_exact_this_owner"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lookup-packed",
+      "manifest": {
+        "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/lookup-packed.engine-manifest.json",
+        "bytes": 51220,
+        "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+      },
+      "overlayFiles": 41,
+      "baselineAbsentFiles": 24,
+      "upstreamBaselineCount": 10,
+      "rustGroups": 13,
+      "requiredRustTests": 270,
+      "ignoredRustTests": 1,
+      "buildStages": 15,
+      "buildStageLabels": [
+        "graph",
+        "scalar",
+        "projection",
+        "project",
+        "bitmap",
+        "hash",
+        "property",
+        "fence",
+        "equality",
+        "overwrite",
+        "compact",
+        "lookup",
+        "packed",
+        "wasm",
+        "selfhosted"
+      ],
+      "changes": [
+        {
+          "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+            "bytes": 9025,
+            "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+            "bytes": 9025,
+            "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/globals/boxhead_native_project.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 33798,
+            "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778"
+          },
+          "before": {
+            "path": "core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 32804,
+            "sha256": "73f9240d39fd9c179963acd201cfb2dea7019ae14b1d6f7d7c2ca31098b4efb3",
+            "baselineAbsent": true
+          },
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_project.rs",
+            "bytes": 33798,
+            "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12779,
+            "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a"
+          },
+          "before": {
+            "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12637,
+            "sha256": "11451ab0d11b1617f9859164888a6077fb34173c11ec7e8cc85575ab0394bbc0",
+            "baselineBytes": 12289,
+            "baselineSha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1"
+          },
+          "after": {
+            "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+            "bytes": 12779,
+            "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a",
+            "baselineBytes": 12289,
+            "baselineSha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1"
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/object/script_object.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/object/script_object.rs",
+            "bytes": 43753,
+            "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+          },
+          "before": {
+            "path": "core/src/avm1/object/script_object.rs",
+            "bytes": 42307,
+            "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f",
+            "baselineBytes": 37891,
+            "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+          },
+          "after": {
+            "path": "core/src/avm1/object/script_object.rs",
+            "bytes": 43753,
+            "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399",
+            "baselineBytes": 37891,
+            "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        },
+        {
+          "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+            "bytes": 34028,
+            "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+            "bytes": 34028,
+            "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/scope/frozen_v10.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope/frozen_v10.rs",
+            "bytes": 9350,
+            "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope/frozen_v10.rs",
+            "bytes": 9350,
+            "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/avm1/scope.rs",
+          "operation": "add-upstream-replacement",
+          "source": {
+            "path": "tools/ruffle-native-lookup-v2/engine/core/src/avm1/scope.rs",
+            "bytes": 10718,
+            "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/avm1/scope.rs",
+            "bytes": 10718,
+            "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264",
+            "baselineBytes": 9350,
+            "baselineSha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+          },
+          "installationBaseline": "pinned-upstream-scope-not-absent"
+        },
+        {
+          "path": "core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-packed-blit/engine/core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+            "bytes": 3118,
+            "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+            "bytes": 3118,
+            "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/bitmap/operations/boxhead_blit/packed.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-packed-blit/engine/core/src/bitmap/operations/boxhead_blit/packed.rs",
+            "bytes": 2645,
+            "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/bitmap/operations/boxhead_blit/packed.rs",
+            "bytes": 2645,
+            "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+          "operation": "add-new-file",
+          "source": {
+            "path": "tools/ruffle-native-packed-blit/engine/core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+            "bytes": 8783,
+            "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14"
+          },
+          "before": null,
+          "after": {
+            "path": "core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+            "bytes": 8783,
+            "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "original-source-file-absent"
+        },
+        {
+          "path": "core/src/bitmap/operations/boxhead_blit.rs",
+          "operation": "replace-existing-overlay",
+          "source": {
+            "path": "tools/ruffle-native-packed-blit/engine/core/src/bitmap/operations/boxhead_blit.rs",
+            "bytes": 14725,
+            "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c"
+          },
+          "before": {
+            "path": "core/src/bitmap/operations/boxhead_blit.rs",
+            "bytes": 14782,
+            "sha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8",
+            "baselineAbsent": true
+          },
+          "after": {
+            "path": "core/src/bitmap/operations/boxhead_blit.rs",
+            "bytes": 14725,
+            "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c",
+            "baselineAbsent": true
+          },
+          "installationBaseline": "retain-all-original-baseline-keys"
+        }
+      ],
+      "appendRustGroups": [
+        {
+          "label": "lookup",
+          "filter": "lookup_v2_",
+          "expectedExecuted": 23,
+          "expectedPassed": 23,
+          "expectedFailed": 0,
+          "expectedIgnored": 0,
+          "exactNames": [
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_keep_case_utf16_and_enumeration_contents",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_preserve_literals_and_lazy_identity",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_reobserve_values_getters_and_prototypes",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_actual_activation_resolves_fresh_values_and_special_this",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_arrays_and_functions_keep_ordinary_fields",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_case_collision_winners_match_frozen_after_mutations",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_deep_parent_chains_preserve_shadowing_and_receiver",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_empty_and_utf16_names_keep_exact_membership",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_fresh_reads_observe_reparenting_own_writes_and_watchers",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_getter_reentry_observes_new_slot_and_keeps_outer_result",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_stored_membership_keeps_original_get_path",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_virtual_slots_do_not_run_the_hidden_getter",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_inherited_getters_keep_original_receiver",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_missing_slots_follow_parent_without_resolver_calls",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_native_display_boxed_and_super_paths_match_frozen",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_positive_membership_keeps_get_prototype_recursion_error",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_raw_proto_keeps_case_visibility_and_virtual_data",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_recursive_getter_error_reobserves_mutated_descriptor",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_removed_clip_fallback_keeps_root_and_callable_undefined",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_resolver_requires_positive_raw_membership",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_getter_undefined_and_error_precedence_match_frozen",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_own_values_keep_callable_receiver_and_flags",
+            "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_with_local_global_calls_keep_exact_this_owner"
+          ]
+        },
+        {
+          "label": "packed",
+          "filter": "bitmap_packed_",
+          "expectedExecuted": 10,
+          "expectedPassed": 10,
+          "expectedFailed": 0,
+          "expectedIgnored": 0,
+          "exactNames": [
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_all_source_destination_alpha_pairs_match_frozen_v10",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_alpha_zero_nonzero_rgb_is_never_treated_as_black",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_both_word_orders_scale_the_same_rgba_bytes",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_div255_exhaustive_product_domain",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_homogeneous_v10_fastpaths_keep_raw_opaque_destination_alpha_rules",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_independent_lane_carries_and_floor_boundaries",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_partial_row_before_overflow_is_identical_to_frozen_v10",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_public_copy_pixels_clips_real_short_rows_and_preserves_dirty_output",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_raw_source_channels_keep_actual_checked_or_wrapping_semantics",
+            "bitmap::operations::boxhead_blit::packed_tests::bitmap_packed_short_rows_blocks_and_all_tail_boundaries_match_v10"
+          ]
+        }
+      ]
+    }
+  ],
+  "historicalNormalization": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/historical-normalization.json",
+    "bytes": 60861,
+    "sha256": "e1c80508c711954b9f58d6e4cdc43178e951bb6e897e3e56257e73bc4138ce92"
+  },
+  "retainedOldRustGroups": {
+    "count": 11,
+    "requiredTests": 237,
+    "ignoredTests": 1,
+    "canonicalJsonIdentity": {
+      "bytes": 31482,
+      "sha256": "72f5b54d0b4b356f8b871bdfdbcd29fddc6c5bcd4b29612ce8b34cfc0b0cf429"
+    },
+    "groups": [
+      {
+        "label": "graph",
+        "filter": "native_graph",
+        "expectedExecuted": 37,
+        "expectedPassed": 37,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_numeric_payload_keeps_exact_object_paths_and_aliases",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_alias_keeps_exact_path_limit_rejection",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_filter_never_hides_unsupported_virtual_fields",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_match_frozen_v4_bytes_and_bfs_names",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_frozen_v4_error_precedence",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_raw_anchor_edges_match_complete_property_count_and_validation",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_exact_capacity_and_duplicate_rules",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_pruned_anchor_queue_keeps_raw_field_and_timeout_bounds",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_preserve_explicit_generated_collisions_and_segment_boundaries",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_compare_forced_hash_collisions_without_aliasing",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_retain_utf16_empty_segments_and_exact_2048_limit",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_rebind_fresh_receiving_assets_and_keep_packet_bytes",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_keep_unemitted_geometry_paths_lazy_and_iterative",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_dense_schedule_preserves_first_deep_alias_across_words",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_fresh_calls_observe_replaced_edges_kinds_and_flags",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_keeps_utf16_path_and_timeout_errors_before_alias_pruning",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_packets_for_mixed_aliases_and_variants",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_rejection_precedence",
+          "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_reuses_buffer_without_retaining_prior_object_edges"
+        ]
+      },
+      {
+        "label": "scalar",
+        "filter": "native_scalar",
+        "expectedExecuted": 14,
+        "expectedPassed": 14,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_native_scalars::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+          "avm1::globals::boxhead_native_scalars::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+          "avm1::globals::boxhead_native_scalars::tests::own_method_is_resolved_live_for_every_collected_key",
+          "avm1::globals::boxhead_native_scalars::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+          "avm1::globals::boxhead_native_scalars::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+          "avm1::globals::boxhead_native_scalars::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+          "avm1::globals::boxhead_native_scalars::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+          "avm1::globals::boxhead_native_scalars::tests::output_writes_use_the_original_prototype_setter_semantics",
+          "avm1::globals::boxhead_native_scalars::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+          "avm1::globals::boxhead_native_scalars::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+          "avm1::globals::boxhead_native_scalars::tests::removal_in_has_own_stops_before_the_source_getter",
+          "avm1::globals::boxhead_native_scalars::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+          "avm1::globals::boxhead_native_scalars::tests::removal_in_string_stops_before_constructing_the_number_tag",
+          "avm1::activation::native_scalar_boundary_tests::native_scalar_undefined_after_removal_ends_the_actual_caller_activation"
+        ]
+      },
+      {
+        "label": "projection",
+        "filter": "native_projection_scan",
+        "expectedExecuted": 30,
+        "expectedPassed": 30,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_native_projection_scan::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+          "avm1::globals::boxhead_native_projection_scan::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+          "avm1::globals::boxhead_native_projection_scan::tests::own_method_is_resolved_live_for_every_collected_key",
+          "avm1::globals::boxhead_native_projection_scan::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+          "avm1::globals::boxhead_native_projection_scan::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+          "avm1::globals::boxhead_native_projection_scan::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+          "avm1::globals::boxhead_native_projection_scan::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+          "avm1::globals::boxhead_native_projection_scan::tests::output_writes_use_the_original_prototype_setter_semantics",
+          "avm1::globals::boxhead_native_projection_scan::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+          "avm1::globals::boxhead_native_projection_scan::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+          "avm1::globals::boxhead_native_projection_scan::tests::removal_in_has_own_stops_before_the_source_getter",
+          "avm1::globals::boxhead_native_projection_scan::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+          "avm1::globals::boxhead_native_projection_scan::tests::removal_in_string_stops_before_constructing_the_number_tag",
+          "avm1::globals::boxhead_native_projection_scan::tests::undefined_tags_null_and_primitive_only_records_do_not_allocate_deferred_arrays",
+          "avm1::globals::boxhead_native_projection_scan::tests::deferred_keys_keep_enumeration_order_without_a_second_source_read_or_recursive_visit",
+          "avm1::globals::boxhead_native_projection_scan::tests::functions_are_read_once_but_omitted_before_field_policy_and_upgrade_handling",
+          "avm1::globals::boxhead_native_projection_scan::tests::upgrades_omit_levels_and_defer_multipliers_before_leaf_type_or_null_coercion",
+          "avm1::globals::boxhead_native_projection_scan::tests::sparse_array_own_fields_preserve_holes_and_leave_length_metadata_to_as2",
+          "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_policy_and_loose_null_leaf_comparisons_are_not_discriminant_tests",
+          "avm1::globals::boxhead_native_projection_scan::tests::getter_policy_cache_refresh_valueof_and_output_setter_have_original_order",
+          "avm1::globals::boxhead_native_projection_scan::tests::leaf_valueof_exceptions_propagate_without_defer_or_completed_result",
+          "avm1::globals::boxhead_native_projection_scan::tests::undefined_tag_uses_live_object_prototype_setter_semantics",
+          "avm1::globals::boxhead_native_projection_scan::tests::deferred_array_constructor_prototype_and_push_overrides_are_resolved_live",
+          "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_on_existing_keys_can_reconstruct_the_array_for_each_deferred_field",
+          "avm1::globals::boxhead_native_projection_scan::tests::unusual_native_constructor_return_values_keep_original_null_method_and_coercion_behavior",
+          "avm1::globals::boxhead_native_projection_scan::tests::constructor_and_push_exceptions_are_not_retried_or_reported_as_completed",
+          "avm1::globals::boxhead_native_projection_scan::tests::removal_in_array_construction_or_push_stops_before_the_next_source_read",
+          "avm1::globals::boxhead_native_projection_scan::tests::policy_cache_replacement_with_primitive_uses_getmember_coercion_on_later_fields",
+          "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_undefined_after_removal_ends_the_actual_caller_activation",
+          "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_defer_matches_real_equality_newobject_and_callmethod_opcodes"
+        ]
+      },
+      {
+        "label": "project",
+        "filter": "boxhead_native_project::",
+        "expectedExecuted": 27,
+        "expectedPassed": 27,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_native_project::tests::capability_is_registered_fresh_hidden_and_readonly",
+          "avm1::globals::boxhead_native_project::tests::unsupported_roots_and_malformed_calls_do_not_touch_source",
+          "avm1::globals::boxhead_native_project::tests::recursive_sorted_graph_preserves_shared_references_cycles_and_field_count",
+          "avm1::globals::boxhead_native_project::tests::scalar_values_include_undefined_nonfinite_negative_zero_and_own_only_policy",
+          "avm1::globals::boxhead_native_project::tests::sparse_arrays_keep_original_length_and_scalar_metadata_overrides",
+          "avm1::globals::boxhead_native_project::tests::map_and_cell_specialcases_do_not_allocate_reference_ids",
+          "avm1::globals::boxhead_native_project::tests::upgrade_definitions_are_read_but_only_original_active_indices_are_projected",
+          "avm1::globals::boxhead_native_project::tests::deferred_getter_is_read_again_at_recursive_traversal_position",
+          "avm1::globals::boxhead_native_project::tests::enumeration_is_captured_once_and_does_not_admit_later_keys",
+          "avm1::globals::boxhead_native_project::tests::actual_array_sort_override_determines_recursive_reference_order",
+          "avm1::globals::boxhead_native_project::tests::collisions_budget_and_getter_failures_never_fall_back_after_partial_work",
+          "avm1::globals::boxhead_native_project::tests::recursion_budget_stops_before_marking_depth_65_and_keeps_cleanup_list",
+          "avm1::globals::boxhead_native_project::tests::execution_timeout_is_checked_before_source_reads",
+          "avm1::globals::boxhead_native_project::tests::no_world_values_or_shapes_survive_between_projections",
+          "avm1::globals::boxhead_native_project::tests::synthetic_metadata_preserves_live_reads_inherited_animation_names_and_reference_order",
+          "avm1::globals::boxhead_native_project::tests::scalar_metadata_shadows_output_but_animation_still_allocates_its_reference_ids",
+          "avm1::globals::boxhead_native_project::tests::virtual_or_replaced_code_identity_is_rejected_without_reading_the_getter_or_world",
+          "avm1::globals::boxhead_native_project::tests::code_mutation_after_source_reads_is_fatal_and_retains_the_outer_cleanup_list",
+          "avm1::globals::boxhead_native_project::tests::custom_or_virtual_scan_callbacks_fall_back_before_any_world_read",
+          "avm1::globals::boxhead_native_project::tests::scan_callback_mutation_during_projection_is_fatal_without_restarting_the_graph",
+          "avm1::globals::boxhead_native_project::tests::pinned_to_string_opcodes_do_not_resolve_the_replaceable_global_string_function",
+          "avm1::globals::boxhead_native_project::tests::active_frozen_scan_keeps_nonfinite_helper_validation_calls_and_actual_counter_deltas",
+          "avm1::globals::boxhead_native_project::tests::active_scan_envelope_fields_are_reread_after_has_own_property_mutates_them",
+          "avm1::globals::boxhead_native_project::tests::active_scan_helper_and_validation_errors_preserve_their_boundary_without_fallback",
+          "avm1::globals::boxhead_native_project::tests::active_scan_strict_false_reuses_the_captured_cache_and_runs_the_inline_scan_once",
+          "avm1::activation::boxhead_native_project::native_project_removal_returns_through_the_real_action_call_method_boundary",
+          "avm1::activation::boxhead_native_project::active_scan_nonfinite_helper_keeps_its_real_removal_boundary_before_result_validation"
+        ],
+        "exactIgnoredNames": []
+      },
+      {
+        "label": "bitmap",
+        "filter": "bitmap_blit_",
+        "expectedExecuted": 6,
+        "expectedPassed": 6,
+        "expectedFailed": 0,
+        "expectedIgnored": 1,
+        "exactNames": [
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_exhaustive_source_destination_alpha_pairs",
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_transparent_black_preserves_rgb_and_forces_opaque_alpha",
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_opaque_mixed_blocks_and_every_tail_boundary",
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_alpha_zero_with_nonzero_rgb_is_not_a_noop",
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_clipped_rows_and_destination_transparency",
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_self_overlap_keeps_original_forward_order"
+        ],
+        "exactIgnoredNames": [
+          "bitmap::operations::boxhead_blit::tests::bitmap_blit_row_microbenchmark"
+        ]
+      },
+      {
+        "label": "hash",
+        "filter": "avm1::property_map::boxhead_hash_tests",
+        "expectedExecuted": 9,
+        "expectedPassed": 9,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::property_map::boxhead_hash_tests::property_hash_exhaustive_utf16_units_match_original_fnv",
+          "avm1::property_map::boxhead_hash_tests::property_hash_narrow_and_wide_inputs_keep_original_stream",
+          "avm1::property_map::boxhead_hash_tests::property_hash_cache_is_independent_for_slices_and_inline_concat",
+          "avm1::property_map::boxhead_hash_tests::property_hash_static_interned_and_owned_strings_share_exact_hash",
+          "avm1::property_map::boxhead_hash_tests::property_hash_mixed_case_queries_and_mutations_match_original_map",
+          "avm1::property_map::boxhead_hash_tests::property_hash_clone_borrowed_mutation_and_entry_removal_preserve_order",
+          "avm1::property_map::boxhead_hash_tests::property_hash_cached_misses_observe_new_own_and_inherited_properties",
+          "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_preserve_swf_case_and_attribute_rules",
+          "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_still_run_getters_setters_and_watchers"
+        ]
+      },
+      {
+        "label": "property",
+        "filter": "avm1::object::boxhead_property_tests",
+        "expectedExecuted": 28,
+        "expectedPassed": 28,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::object::boxhead_property_tests::ordinary_data_and_inherited_depth_match_the_original_lookup",
+          "avm1::object::boxhead_property_tests::stored_undefined_shadows_parent_getters_and_resolvers",
+          "avm1::object::boxhead_property_tests::getter_returning_undefined_stops_at_its_original_depth_and_receiver",
+          "avm1::object::boxhead_property_tests::getter_throws_and_nonfatal_error_handling_match_original",
+          "avm1::object::boxhead_property_tests::recursive_getter_error_reads_the_descriptor_again_after_replacement",
+          "avm1::object::boxhead_property_tests::getter_deletion_and_prototype_mutation_preserve_live_continuation",
+          "avm1::object::boxhead_property_tests::version_hidden_stored_and_virtual_descriptors_follow_the_parent",
+          "avm1::object::boxhead_property_tests::mixed_case_stored_names_use_the_same_runtime_collision_choice",
+          "avm1::object::boxhead_property_tests::own_watchers_do_not_change_read_semantics",
+          "avm1::object::boxhead_property_tests::unresolved_lookup_retains_resolver_switch_receiver_and_arguments",
+          "avm1::object::boxhead_property_tests::special_native_and_super_objects_keep_the_original_lookup_path",
+          "avm1::object::boxhead_property_tests::prototype_cycle_reaches_the_original_recursion_limit",
+          "avm1::object::boxhead_property_tests::own_data_writes_preserve_flags_order_and_version_clearing",
+          "avm1::object::boxhead_property_tests::own_data_shadows_inherited_virtual_setters_even_when_initially_hidden",
+          "avm1::object::boxhead_property_tests::watchers_and_own_virtual_setters_still_receive_every_write",
+          "avm1::object::boxhead_property_tests::missing_write_falls_back_without_insertion_and_preserves_inherited_setter",
+          "avm1::object::boxhead_property_tests::native_arrays_display_super_and_functions_never_use_the_write_fast_path",
+          "avm1::object::boxhead_property_tests::empty_property_name_keeps_its_original_early_return",
+          "avm1::object::boxhead_property_tests::stored_proto_write_changes_subsequent_lookup_without_any_cached_shape",
+          "avm1::object::boxhead_property_tests::mixed_case_writes_retain_collision_selection_and_enumeration_order",
+          "avm1::object::boxhead_property_tests::missing_write_searches_past_inherited_stored_slots_for_a_deeper_setter",
+          "avm1::object::boxhead_property_tests::missing_write_keeps_visible_getter_only_and_hidden_virtual_stopping_rules",
+          "avm1::object::boxhead_property_tests::missing_write_preserves_inherited_setter_mutations_and_error_precedence",
+          "avm1::object::boxhead_property_tests::missing_write_watchers_keep_slot_creation_reparenting_and_thrown_value_rules",
+          "avm1::object::boxhead_property_tests::missing_write_reads_proto_data_with_original_case_and_attribute_rules",
+          "avm1::object::boxhead_property_tests::missing_ordinary_write_retains_native_and_super_prototype_setter_paths",
+          "avm1::object::boxhead_property_tests::missing_write_keeps_new_field_case_flags_order_and_raw_proto_insertion",
+          "avm1::object::boxhead_property_tests::missing_write_rechecks_prototypes_watchers_and_native_kind_between_writes"
+        ]
+      },
+      {
+        "label": "fence",
+        "filter": "step_fence_",
+        "expectedExecuted": 35,
+        "expectedPassed": 35,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_step_fence::tests::step_fence_argument_marshalling_cannot_begin_or_execute_game_after_poison",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_begin_reentry_from_an_ambient_player_update_is_rejected",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_capability_has_only_the_two_declared_fields",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_cleanup_failure_keeps_terminal_native_poison",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_committed_rng_is_the_original_record_not_a_scalar",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_abort_and_phase_catch_abort_never_resume",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_causal_action_drain_remains_inside_entered_original_phase",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_full_chain_keeps_game_once_and_releases_only_after_serialized_receipt",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_info_and_receipt_cannot_precede_complete_commit",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_invalid_begin_arguments_never_execute_original_game",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_malformed_receipt_after_finish_stays_poisoned",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_missing_duplicate_and_malformed_phase_returns_poison",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_native_transition_requires_exact_phase_body_callee",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_nested_present_is_rejected_even_if_caught_by_phase_body",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_new_round_same_owner_accepts_reset_tick_with_fresh_epoch_and_world",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_pinned_registration_and_world_replacement_are_terminal",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_poisoned_player_disposal_does_not_flush_or_execute_queued_actions",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_present_is_not_admitted_after_commit_before_info_or_receipt",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_receipt_serialization_caught_reentry_prevents_release",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_stage_calls_cannot_skip_prepare",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_stale_token_epoch_and_tick_are_rejected_before_body",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_successful_receipt_does_not_reuse_prior_epoch",
+          "avm1::globals::boxhead_step_fence::tests::step_fence_unknown_callback_is_rejected_and_cleanup_runs_once",
+          "player::boxhead_step_fence::tests::step_fence_clipboard_retains_each_payload_before_its_paste_and_counts_bytes",
+          "player::boxhead_step_fence::tests::step_fence_context_menu_suppresses_transient_popup_and_runs_original_select_once",
+          "player::boxhead_step_fence::tests::step_fence_fifo_limits_account_for_ime_bytes_time_and_each_exact_entry",
+          "player::boxhead_step_fence::tests::step_fence_player_ambient_fifo_matches_unfenced_entry_order_and_timer_time",
+          "player::boxhead_step_fence::tests::step_fence_player_event_capacity_overflow_poison_cleans_and_never_drains",
+          "player::boxhead_step_fence::tests::step_fence_player_explicit_run_state_and_resize_wait_in_original_order",
+          "player::boxhead_step_fence::tests::step_fence_player_next_ei_drains_earlier_ambient_work_before_new_body",
+          "player::boxhead_step_fence::tests::step_fence_player_opaque_async_mutation_fails_before_executing_closure",
+          "player::boxhead_step_fence::tests::step_fence_player_readonly_api_does_not_poison_or_dispatch_vm_work",
+          "player::boxhead_step_fence::tests::step_fence_player_render_keeps_pure_paint_and_defers_broadcast_actions",
+          "player::boxhead_step_fence::tests::step_fence_player_slow_original_handler_keeps_fifo_tail_before_next_body",
+          "player::boxhead_step_fence::tests::step_fence_player_uninstalled_local_game_keeps_ordinary_input_and_frame_order"
+        ]
+      },
+      {
+        "label": "equality",
+        "filter": "property_equality_",
+        "expectedExecuted": 8,
+        "expectedPassed": 8,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::property_map::boxhead_equality_tests::property_equality_actual_case_collisions_and_readonly_flags_match_frozen_table",
+          "avm1::property_map::boxhead_equality_tests::property_equality_actual_interned_reads_keep_getter_setter_and_watcher_calls",
+          "avm1::property_map::boxhead_equality_tests::property_equality_actual_swf6_and_7_reads_reobserve_own_and_prototype_slots",
+          "avm1::property_map::boxhead_equality_tests::property_equality_interned_names_keep_sensitive_and_folded_collision_choices",
+          "avm1::property_map::boxhead_equality_tests::property_equality_interning_after_insertion_does_not_change_membership",
+          "avm1::property_map::boxhead_equality_tests::property_equality_mixed_mutations_clone_entries_and_order_match_frozen_map",
+          "avm1::property_map::boxhead_equality_tests::property_equality_owned_identity_and_equal_allocations_match_frozen_queries",
+          "avm1::property_map::boxhead_equality_tests::property_equality_utf16_widths_and_dependent_ranges_keep_exact_contents"
+        ]
+      },
+      {
+        "label": "overwrite",
+        "filter": "bitmap_overwrite_",
+        "expectedExecuted": 15,
+        "expectedPassed": 15,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_cancels_only_destination_and_reads_fresh_dirty_source",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clean_and_cpu_dirty_targets_keep_upload_bytes_and_dirty_union",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clipping_can_still_cover_the_whole_destination_from_an_offset_source",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_empty_public_copy_does_not_cancel_or_resolve_any_handle",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_existing_cpu_draw_caller_keeps_opaque_pixels_and_no_readback",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_destination_cancels_partial_gpu_dirty_region_with_padded_rows",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_nonblend_matches_frozen_pixels_for_all_transparency_pairs",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_transparent_blend_still_reads_destination",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_opaque_source_normalizes_requested_blend_before_guard",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_partial_and_source_clipped_destinations_keep_original_gpu_pixels",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_self_noop_and_overlap_keep_frozen_sync_and_forward_order",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_separate_alpha_mask_retains_original_three_handle_reads",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_source_read_area_does_not_resolve_unrelated_gpu_dirty_pixels",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_transparent_to_opaque_unmultiplied_branch_keeps_raw_alpha_edges",
+          "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_unsupported_filter_copy_uses_the_same_frozen_full_overwrite"
+        ]
+      },
+      {
+        "label": "compact",
+        "filter": "compact_fence_",
+        "expectedExecuted": 28,
+        "expectedPassed": 28,
+        "expectedFailed": 0,
+        "expectedIgnored": 0,
+        "exactNames": [
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_accepts_exact_join_record_without_changing_the_phase_contract",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_ambient_reentry_is_rejected_before_game_and_disposal_never_drains",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_argument_setter_cannot_begin_before_the_pinned_body_or_hide_poison",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_callback_world_and_raw_body_replacement_are_terminal",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_capability_is_exact_and_leaves_full_capability_unchanged",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_caught_receipt_serialization_reentry_stays_poisoned_after_finish",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_causal_action_drain_is_allowed_only_inside_entered_body",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_commit_rng_and_world_tick_keep_the_original_result_contract",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_cross_family_external_callbacks_never_switch_the_open_transaction",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_explicit_and_catch_abort_clean_both_abilities_once",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_full_and_compact_transactions_share_one_monotonic_epoch",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_info_receipt_and_present_obey_exact_phase_order",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_install_requires_full_owner_and_cannot_repeat",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_missing_duplicate_or_malformed_begin_never_releases_the_owner",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_native_callee_and_protocol_are_authenticated_independently",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_new_round_can_reset_tick_only_with_a_fresh_epoch",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_present_cannot_reenter_an_entered_phase_even_when_rejection_is_caught",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_receipt_scope_header_and_finish_must_all_match_the_commit",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_rejects_full_tick_numbers_and_malformed_begin_before_game",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_shared_callback_identity_cannot_be_replaced_at_install",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_stale_tuple_and_duplicate_commit_are_rejected_before_another_body",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_terminal_begin_can_paint_nothing_and_still_return_the_verified_receipt",
+          "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_two_phase_chain_keeps_game_once_and_releases_after_frame_receipt_serialization",
+          "player::boxhead_step_fence::compact_tests::compact_fence_player_fifo_matches_unfenced_input_timer_clipboard_and_frame_order",
+          "player::boxhead_step_fence::compact_tests::compact_fence_player_opaque_loader_mutation_fails_before_its_closure",
+          "player::boxhead_step_fence::compact_tests::compact_fence_player_paints_without_timeline_or_render_broadcast_during_the_split",
+          "player::boxhead_step_fence::compact_tests::compact_fence_player_queue_overload_cleans_once_and_never_resumes_partial_game",
+          "player::boxhead_step_fence::compact_tests::compact_fence_player_receipt_never_drains_and_next_external_entry_cannot_overtake_fifo"
+        ]
+      }
+    ]
+  },
+  "newUpstreamBaseline": {
+    "path": "core/src/avm1/scope.rs",
+    "bytes": 9350,
+    "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+  },
+  "binderChangePlan": {
+    "file": "scripts/lib/native-smooth-runtime-binding.mjs",
+    "selectExactlyOneManifestPin": true,
+    "retainPins": [
+      "sourceCommit",
+      "parentRuntimeManifest",
+      "parentBuildResult",
+      "parentEngineManifest",
+      "imageId"
+    ],
+    "appendUpstreamBaseline": {
+      "path": "core/src/avm1/scope.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+    },
+    "appendOverlayPaths": {
+      "lookup-only": [
+        "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+        "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+        "core/src/avm1/scope/frozen_v10.rs",
+        "core/src/avm1/scope.rs"
+      ],
+      "lookup-packed": [
+        "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+        "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+        "core/src/avm1/scope/frozen_v10.rs",
+        "core/src/avm1/scope.rs",
+        "core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+        "core/src/bitmap/operations/boxhead_blit/packed.rs",
+        "core/src/bitmap/operations/boxhead_blit/packed_tests.rs"
+      ]
+    },
+    "newExactNameConstants": [
+      "LOOKUP_TEST_NAMES",
+      "PACKED_TEST_NAMES (combined only)"
+    ],
+    "newGroupChecks": [
+      "index11 exact equality to independent LOOKUP_TEST_NAMES",
+      "index12 exact equality to independent PACKED_TEST_NAMES (combined only)"
+    ],
+    "retainValidation": [
+      "all old237 exact names and old ignored diagnostic",
+      "all original installation baselines",
+      "parent complete source-before inventory",
+      "source-before/source-after equality",
+      "all exact runtime12 file hashes",
+      "offline locked sequential commands and resource envelope",
+      "both WASM variants and selfhosted build",
+      "no inherited passes or gameplay/performance claims"
+    ],
+    "manifestSuppliedFixtureListsMayNotDefineConstants": true,
+    "additionalExactOldNameConstants": [
+      "PROJECT_TEST_NAMES (27 unchanged)",
+      "BITMAP_TEST_NAMES (6 unchanged)"
+    ]
+  },
+  "bindingTestChangePlan": {
+    "file": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+    "constantsByVariant": {
+      "lookup-only": {
+        "EXPECTED_TESTS": 260,
+        "EXPECTED_GROUPS": 12,
+        "overlayPaths": 38,
+        "baselineAbsent": 21,
+        "stageLabels": [
+          "graph",
+          "scalar",
+          "projection",
+          "project",
+          "bitmap",
+          "hash",
+          "property",
+          "fence",
+          "equality",
+          "overwrite",
+          "compact",
+          "lookup",
+          "wasm",
+          "selfhosted"
+        ]
+      },
+      "lookup-packed": {
+        "EXPECTED_TESTS": 270,
+        "EXPECTED_GROUPS": 13,
+        "overlayPaths": 41,
+        "baselineAbsent": 24,
+        "stageLabels": [
+          "graph",
+          "scalar",
+          "projection",
+          "project",
+          "bitmap",
+          "hash",
+          "property",
+          "fence",
+          "equality",
+          "overwrite",
+          "compact",
+          "lookup",
+          "packed",
+          "wasm",
+          "selfhosted"
+        ]
+      }
+    },
+    "timingFix": "Derive synthetic capture.finishedAt from stageCount*2+1 and sourceAfter.recordedAt from stageCount*2+2. The old fixed time(27)/time(28) is insufficient for new stages; preserve all ordering rejection cases.",
+    "keepAllOldCases": true,
+    "addCases": [
+      "new exact package inventory pins and every integrated file equal to packaged bytes",
+      "all11 original groups JSON-equal to pinned predecessor group list",
+      "origin baseline preserved on project/scanner/ScriptObject/helper replacements",
+      "scope baseline is upstream/tracked, not absent or inherited; mutated/omitted/forged parent capture rejected",
+      "new group omitted/renamed/reordered/duplicated/ignored/reduced rejected",
+      "237 old total rejected; combined additionally rejects260",
+      "new filter replacement with old filter rejected",
+      "new group log/resource mismatch and duplicate/absent exact fixture rejected",
+      "new historical normalizer rejects altered input/delta/path/extra hunk and preserves original hash",
+      "for combined, overwrite support-test/inventory exact two-hook reversal to its original immutable identities"
+    ],
+    "newPackagePins": {
+      "lookup": {
+        "path": "tools/ruffle-native-lookup-v2/source-inventory.json",
+        "bytes": 5471,
+        "sha256": "e3eea3caed2bf2fe9ce479ef39a62d571dd5d04418595c56d98c316554c64021"
+      },
+      "packed": {
+        "path": "tools/ruffle-native-packed-blit/source-inventory.json",
+        "bytes": 4400,
+        "sha256": "91f76118bf140ed8c5ea60bb8b1b17b88a26002e7bf3498c43e5d713286273ee"
+      }
+    },
+    "implementedCombinedProposal": true,
+    "newNormalizationTestDeclarations": 5,
+    "newOverwriteSupportInventoryPin": "ab0ca489efe3dc3d281b307f421c4af98ac134ff19cb1c9500893af78e19eeb5"
+  },
+  "historicalSuitePlan": [
+    {
+      "path": "tools/ruffle-native-lookup-v2/source-integrity.test.mjs",
+      "action": "unchanged",
+      "reason": "Reads own candidate and frozen four-file delta; bind exact package and run all4 cases again."
+    },
+    {
+      "path": "tools/ruffle-native-packed-blit/source-integrity.test.mjs",
+      "action": "unchanged",
+      "reason": "Reads own helper/oracle/10fixtures and unchanged integrated operations.rs; all4 cases remain exact."
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+      "action": "combined-only precise two-hook update",
+      "reason": "Only direct conflict: integrated helper is now packed. Import a strict historical test normalizer and wrap only the kernel read. Keep its original434b80 hash assertion, frozen old copy oracle and all15 fixture assertions.",
+      "reverseProof": "Remove only the exact new import and exact call wrapper to recover4186 bytes/09b50a66bf5d21468c50db90f3cf2d7c6e30b2e05813e31e82258cc8d730d1c9. New normalizer must enforce8fcfbc6d candidate before the8 exact reverse steps. Then refresh only this supportFiles identity in overwrite source-inventory; preserve3 overlay records/15 names/old historical hashes and bind new inventory explicitly in binding test."
+    },
+    {
+      "path": "tools/ruffle-native-anchor-hotpath/source-integrity.test.mjs",
+      "action": "unchanged",
+      "reason": "Reads its own historical ScriptObject67cf..., not integrated replacement. New integration proof restores only lookup helper from integrated2189... to exact67cf... before comparing to this frozen package."
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+      "action": "unchanged",
+      "reason": "Integrated retained full-fence tests, Player/external/web sources are unchanged. Keep all4 cases and original35 exact fixture bodies."
+    },
+    {
+      "path": "tools/ruffle-native-property-equality/source-integrity.test.mjs",
+      "action": "unchanged",
+      "reason": "Own property map/oracle/8fixtures and integrated equality sources are unchanged."
+    }
+  ],
+  "driverChangePlan": {
+    "build.py": "no change; groups, exact names and stage sequencing are manifest-driven",
+    "apply-overlay.py": "no change; apply only to a fresh original parent source tree, not an already-v10/v11 tree",
+    "newGlobalOrActivationHooks": 0,
+    "browserHarnessSourceChanges": 0,
+    "application": "Root creates a separate private Boxhead checkout, checks all proposal destination preconditions, applies these20 files there, then uses unchanged drivers on a separate fresh parent Ruffle tree."
+  },
+  "ciExecutionPlan": {
+    "sourceSuites": [
+      "node --test tests/scripts/native-smooth-runtime-binding.test.mjs tests/scripts/native-v12-normalization.test.mjs tools/ruffle-native-lookup-v2/source-integrity.test.mjs tools/ruffle-native-packed-blit/source-integrity.test.mjs tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs tools/ruffle-native-property-equality/source-integrity.test.mjs tools/ruffle-native-anchor-hotpath/source-integrity.test.mjs tools/ruffle-native-compact-fence/source-integrity.test.mjs"
+    ],
+    "build": "Use unchanged reviewed build.py in a separate output/source tree; each manifest group executes freshly and separately with the bounded offline locked cargo command, then both WASM variants and selfhosted.",
+    "hardware": "Only after new runtime closure: actual compiled private probes, real native/pixel mixed400 A/B, actual two-browser gameplay paint/pose timing, checkpoint pause. Native benchmark success alone does not qualify WASM performance or stable60.",
+    "noConcurrentGpuDuringCompiler": true,
+    "parentHandlesAllExecution": true,
+    "staticSourceTestDeclarations": 40
+  },
+  "staticReviewFacts": {
+    "allCandidateFilesMatchIsolatedInventories": true,
+    "allOld11GroupsCopiedWithoutChange": true,
+    "allOriginalBaselineKeysRetained": true,
+    "normalizerRestoresAllFivePredecessorsByteExactly": true,
+    "integratedSourceWasNotWritten": true
+  },
+  "selectedImplementation": "combined proposal in a separate private checkout with identical relative paths; working engine and binder remain v10",
+  "proposalInventory": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal-inventory.json",
+    "bytes": 11435,
+    "sha256": "5d4c0c7383cde41f3b9d3779fb7d23b206dc704f38226540fec46c67fbe70d65"
+  },
+  "proposalSupportDelta": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal-source-delta.json",
+    "bytes": 45196,
+    "sha256": "1f469c8d48545f8d8328bc6df236da022cbd741182e9579dc076803db493e419"
+  },
+  "overwriteSupportProposal": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/overwrite-support-proposal.json",
+    "bytes": 2174,
+    "sha256": "02608b353a015044b807ccde0e20b78ef802e7576970ba3983ee76a35350f791"
+  }
+}

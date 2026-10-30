@@ -1,0 +1,48 @@
+{
+  "schema": "boxhead-v12-overwrite-support-review-v1",
+  "status": "candidate-copy-not-applied",
+  "originalTest": {
+    "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+    "bytes": 4186,
+    "sha256": "09b50a66bf5d21468c50db90f3cf2d7c6e30b2e05813e31e82258cc8d730d1c9"
+  },
+  "candidateTest": {
+    "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+    "bytes": 4303,
+    "sha256": "9352a1580ae778145af9be1ff2f9517e6f61f2f67078f2e98181b9b11cae4379"
+  },
+  "reverseSteps": [
+    {
+      "current": "import { restoreV10PackedHelper } from '../../tests/scripts/fixtures/native-v12-source.mjs';\n",
+      "previous": ""
+    },
+    {
+      "current": "  const kernel = restoreV10PackedHelper(read('../ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs'));",
+      "previous": "  const kernel = read('../ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs');"
+    }
+  ],
+  "originalInventory": {
+    "path": "tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+    "bytes": 4298,
+    "sha256": "0997f7816892f6872353630a2c04453836fb9a89e9a8aaad44c18706d3d0a3bd"
+  },
+  "candidateInventory": {
+    "path": "tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+    "bytes": 4298,
+    "sha256": "ab0ca489efe3dc3d281b307f421c4af98ac134ff19cb1c9500893af78e19eeb5"
+  },
+  "inventoryDelta": "Only supportFiles[path=source-integrity.test.mjs].bytes/sha256 change; all original engine files, fixture names/counts, old normalized SHA and qualification fields remain exact.",
+  "originalAllThreeSourceTestsRetained": true,
+  "compiledProductionSourceChangedByThisSupportPatch": false,
+  "rawIntegratedHelperMustBePackedCandidate": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c",
+  "normalizerModule": {
+    "path": "tests/scripts/fixtures/native-v12-source.mjs",
+    "bytes": 3366,
+    "sha256": "3de8a81cee3bf3739e2cca76bd2e76ee7a5426a8a71b643767b6d0b56690dc12"
+  },
+  "normalizerData": {
+    "path": "tests/scripts/fixtures/native-v12-source-delta.json",
+    "bytes": 60861,
+    "sha256": "e1c80508c711954b9f58d6e4cdc43178e951bb6e897e3e56257e73bc4138ce92"
+  }
+}

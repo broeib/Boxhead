@@ -1,0 +1,265 @@
+{
+  "schema": "boxhead-v12-private-checkout-proposal-v1",
+  "status": "review-ready-not-applied",
+  "application": "private checkout with identical repository-relative paths only",
+  "workingEngineMustRemain": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 44549,
+    "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+  },
+  "selectedEngine": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 51220,
+    "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+  },
+  "files": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/scripts/lib/native-smooth-runtime-binding.mjs",
+      "repositoryBefore": {
+        "bytes": 49365,
+        "sha256": "f1e95d86a899b08703f041c9edf518c92ca843d6512f5534a0c52b6bb2df9c6f"
+      },
+      "candidate": {
+        "bytes": 58381,
+        "sha256": "ab8435dc0ba52c68f7da27374417840a8aa681dc75607fccdadb6b87c6432cda"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v10-engine-manifest.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tests/scripts/fixtures/native-v10-engine-manifest.json",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 44549,
+        "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v12-source-delta.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tests/scripts/fixtures/native-v12-source-delta.json",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 60861,
+        "sha256": "e1c80508c711954b9f58d6e4cdc43178e951bb6e897e3e56257e73bc4138ce92"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v12-source.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tests/scripts/fixtures/native-v12-source.mjs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 3366,
+        "sha256": "3de8a81cee3bf3739e2cca76bd2e76ee7a5426a8a71b643767b6d0b56690dc12"
+      }
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "repositoryBefore": {
+        "bytes": 35773,
+        "sha256": "44d1d4f424922439ed573d6e3f11e9680c651a6d9729df68d200d7f2854f6773"
+      },
+      "candidate": {
+        "bytes": 42914,
+        "sha256": "27d4cdb0df9382b30b5a14db99154237c04bd1f91ea5f9d5eb34e198c396f2fa"
+      }
+    },
+    {
+      "path": "tests/scripts/native-v12-normalization.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tests/scripts/native-v12-normalization.test.mjs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 6358,
+        "sha256": "d45bc010b88a65931359f8dd8af7afa09a9bd5125a161b4ce4bec99f6fca3158"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+      "repositoryBefore": {
+        "bytes": 4186,
+        "sha256": "09b50a66bf5d21468c50db90f3cf2d7c6e30b2e05813e31e82258cc8d730d1c9"
+      },
+      "candidate": {
+        "bytes": 4303,
+        "sha256": "9352a1580ae778145af9be1ff2f9517e6f61f2f67078f2e98181b9b11cae4379"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+      "repositoryBefore": {
+        "bytes": 4298,
+        "sha256": "0997f7816892f6872353630a2c04453836fb9a89e9a8aaad44c18706d3d0a3bd"
+      },
+      "candidate": {
+        "bytes": 4298,
+        "sha256": "ab0ca489efe3dc3d281b307f421c4af98ac134ff19cb1c9500893af78e19eeb5"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 9025,
+        "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project.rs",
+      "repositoryBefore": {
+        "bytes": 32804,
+        "sha256": "73f9240d39fd9c179963acd201cfb2dea7019ae14b1d6f7d7c2ca31098b4efb3"
+      },
+      "candidate": {
+        "bytes": 33798,
+        "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "repositoryBefore": {
+        "bytes": 12637,
+        "sha256": "11451ab0d11b1617f9859164888a6077fb34173c11ec7e8cc85575ab0394bbc0"
+      },
+      "candidate": {
+        "bytes": 12779,
+        "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs",
+      "repositoryBefore": {
+        "bytes": 42307,
+        "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f"
+      },
+      "candidate": {
+        "bytes": 43753,
+        "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 34028,
+        "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/frozen_v10.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/scope/frozen_v10.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 9350,
+        "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/scope.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 10718,
+        "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 3118,
+        "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 2645,
+        "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 8783,
+        "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs",
+      "repositoryBefore": {
+        "bytes": 14782,
+        "sha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8"
+      },
+      "candidate": {
+        "bytes": 14725,
+        "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+      "repositoryBefore": {
+        "bytes": 44549,
+        "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+      },
+      "candidate": {
+        "bytes": 51220,
+        "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+      }
+    }
+  ],
+  "fileCount": 20,
+  "replacedRepositoryFiles": 9,
+  "addedRepositoryFiles": 11,
+  "overlayFiles": 41,
+  "baselineAbsentEngineFiles": 24,
+  "requiredRustTests": 270,
+  "retainedRequiredRustTests": 237,
+  "groups": 13,
+  "ignored": 1,
+  "buildStages": 15,
+  "sourceTestDeclarations": {
+    "binding": 14,
+    "normalization": 5,
+    "overwrite": 3,
+    "lookup": 4,
+    "packed": 4,
+    "equality": 3,
+    "anchor": 3,
+    "compact": 4,
+    "total": 40
+  },
+  "sourceExecutionPerformedLocally": false,
+  "buildPerformedLocally": false,
+  "hardwareQualificationClaimed": false,
+  "supportDelta": {
+    "path": "tools/ruffle-native-smooth/integration-plans/v12-lookup-packed/proposal-source-delta.json",
+    "bytes": 45196,
+    "sha256": "1f469c8d48545f8d8328bc6df236da022cbd741182e9579dc076803db493e419"
+  },
+  "unchangedDrivers": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 15411,
+      "sha256": "7214fc10be4bd3a586c63b005b0157d52df2843ebc5321d23ca2df6acf9de6c0"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/apply-overlay.py",
+      "bytes": 3524,
+      "sha256": "eb03f0165f7d6297d87ee71eb1d7a43b538efa19ab1454149cae7f73e28e25c6"
+    }
+  ]
+}

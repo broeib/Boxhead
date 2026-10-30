@@ -1,0 +1,201 @@
+{
+  "schema": "boxhead-v24-exact-v23-source-reversal-v1",
+  "purpose": "Test-only exact historical normalization; production validators read actual current sources.",
+  "files": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs",
+      "before": {
+        "bytes": 14725,
+        "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c"
+      },
+      "after": {
+        "bytes": 15451,
+        "sha256": "fcd8026f4f7c0bf98269eb908029b93e0279dce53dd7cbc5788c4a39eb7fa1ca"
+      },
+      "hunks": [
+        {
+          "before": "use crate::bitmap::bitmap_data::Color;\n\nmod packed;\n#[cfg(test)]\nmod frozen_v10;\n#[cfg(test)]\n",
+          "after": "use crate::bitmap::bitmap_data::Color;\n\nmod packed;\n#[cfg(all(target_arch = \"wasm32\", target_feature = \"simd128\"))]\nmod simd_classify;\n#[cfg(test)]\nmod frozen_v10;\n#[cfg(test)]\n"
+        },
+        {
+          "before": "        let words: &[u32] = bytemuck::cast_slice(source);\n        let first = words[0];\n        if first == 0 {\n            let mut any = 0u32;\n            for &word in words {\n                any |= word;\n            }\n            if any == 0 {\n                // Transparent black contributes no channel. Opaque destinations\n                // must still force A=255, even if their raw pixels had another A.\n                if opaque {\n",
+          "after": "        let words: &[u32] = bytemuck::cast_slice(source);\n        let first = words[0];\n        if first == 0 {\n            #[cfg(all(target_arch = \"wasm32\", target_feature = \"simd128\"))]\n            let transparent_black = simd_classify::all_zero(words);\n            #[cfg(not(all(target_arch = \"wasm32\", target_feature = \"simd128\")))]\n            let transparent_black = {\n                let mut any = 0u32;\n                for &word in words {\n                    any |= word;\n                }\n                any == 0\n            };\n            if transparent_black {\n                // Transparent black contributes no channel. Opaque destinations\n                // must still force A=255, even if their raw pixels had another A.\n                if opaque {\n"
+        },
+        {
+          "before": "                continue;\n            }\n        } else if first & ALPHA_MASK == ALPHA_MASK {\n            let mut all_alpha = ALPHA_MASK;\n            for &word in words {\n                all_alpha &= word;\n            }\n            if all_alpha == ALPHA_MASK {\n                // A=255 makes the destination multiplier exactly zero for every\n                // channel, irrespective of the destination's transparency flag.\n                dest.copy_from_slice(source);\n",
+          "after": "                continue;\n            }\n        } else if first & ALPHA_MASK == ALPHA_MASK {\n            #[cfg(all(target_arch = \"wasm32\", target_feature = \"simd128\"))]\n            let opaque_block = simd_classify::all_opaque(words);\n            #[cfg(not(all(target_arch = \"wasm32\", target_feature = \"simd128\")))]\n            let opaque_block = {\n                let mut all_alpha = ALPHA_MASK;\n                for &word in words {\n                    all_alpha &= word;\n                }\n                all_alpha == ALPHA_MASK\n            };\n            if opaque_block {\n                // A=255 makes the destination multiplier exactly zero for every\n                // channel, irrespective of the destination's transparency flag.\n                dest.copy_from_slice(source);\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "before": {
+        "bytes": 100027,
+        "sha256": "86bb0f6b79ac97cc8041e68b413b1176e85c59a76192af52a6772a24c28bd198"
+      },
+      "after": {
+        "bytes": 100913,
+        "sha256": "0458e8d25ac58b213093d6efabc97fc42a1ea06152ec284e78274129edcca16b"
+      },
+      "hunks": [
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/bitmap/operations/boxhead_blit.rs\",\n      \"bytes\": 14725,\n      \"sha256\": \"8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/bitmap/operations/boxhead_blit.rs\",\n      \"bytes\": 15451,\n      \"sha256\": \"fcd8026f4f7c0bf98269eb908029b93e0279dce53dd7cbc5788c4a39eb7fa1ca\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "      \"path\": \"core/src/bitmap/operations/boxhead_blit/packed_tests.rs\",\n      \"bytes\": 8783,\n      \"sha256\": \"9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "      \"path\": \"core/src/bitmap/operations/boxhead_blit/packed_tests.rs\",\n      \"bytes\": 8783,\n      \"sha256\": \"9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/bitmap/operations/boxhead_blit/simd_classify.rs\",\n      \"bytes\": 2752,\n      \"sha256\": \"2b7c927728633f311a4a093d07bc02a33803b889557b94ec8a8dee80fc2691ff\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "    \"assetIndexCapacity\": \"Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.\",\n    \"propertyMissFilter\": \"Negative-only two-u32 possible-membership mask in each AVM1 PropertyMap. The exact positive current-key slot hint stays first. Both case modes mark before returning a vacant entry; deletes retain bits, new/default are empty, and clones/moves retain the table and mask together. Only a missing bit can reject an own-table query; possible matches use the original IndexMap, casefold FNV, descriptor and enumeration paths. No prototype/getter/watcher/native-display result, object identity or mutation epoch is cached. Added scalar payload is 8 bytes per map; ObjectData has two maps. Target layout/RSS and unprofiled FPS remain unmeasured, with no qualification or performance claim.\",\n    \"shortActionDispatch\": \"Stateless direct dispatch for exactly 82 known AVM1 one-byte opcodes after the original action-count/timeout and function-end guards. Commit the same one-byte reader cursor before invoking each unchanged handler. Unknown bytes, every long action including Call 0x9e, empty input and debug output retain the original Reader, Action match and singleton-Push fallback. No bytecode cache, allocation, GC edge, object field, batching, value/prototype caching or reordered callback is added. Exact frozen v21 dispatcher plus independent Reader and stateful differential fixtures cover route, cursor, error, timeout, reentrancy and whole-movie branch semantics. Compiled code size and unprofiled performance remain unmeasured; this source package claims no runtime qualification or speedup.\",\n    \"propertyReadFastPath\": \"Read-only AVM1 PropertyMap::get_avm returns the current borrowed value from the same exact-key-validated positive hint slot. Index-based entry/get_mut/contains paths retain the original hint guard and share the byte-exact filter, original table lookup and positive-only hint update fallback. Case-insensitive lookup, borrowed-WStr lookup, fields, mutation paths, prototype/getter/watch/resolve/display semantics, all existing fixtures and resource bounds remain unchanged. No new state, GC edge, allocation, object/value/prototype cache or new opcode is introduced. Generated code size, inlining and performance effects require fresh measurement; no speedup or qualification is claimed.\"\n  }\n}\n",
+          "after": "    \"assetIndexCapacity\": \"Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.\",\n    \"propertyMissFilter\": \"Negative-only two-u32 possible-membership mask in each AVM1 PropertyMap. The exact positive current-key slot hint stays first. Both case modes mark before returning a vacant entry; deletes retain bits, new/default are empty, and clones/moves retain the table and mask together. Only a missing bit can reject an own-table query; possible matches use the original IndexMap, casefold FNV, descriptor and enumeration paths. No prototype/getter/watcher/native-display result, object identity or mutation epoch is cached. Added scalar payload is 8 bytes per map; ObjectData has two maps. Target layout/RSS and unprofiled FPS remain unmeasured, with no qualification or performance claim.\",\n    \"shortActionDispatch\": \"Stateless direct dispatch for exactly 82 known AVM1 one-byte opcodes after the original action-count/timeout and function-end guards. Commit the same one-byte reader cursor before invoking each unchanged handler. Unknown bytes, every long action including Call 0x9e, empty input and debug output retain the original Reader, Action match and singleton-Push fallback. No bytecode cache, allocation, GC edge, object field, batching, value/prototype caching or reordered callback is added. Exact frozen v21 dispatcher plus independent Reader and stateful differential fixtures cover route, cursor, error, timeout, reentrancy and whole-movie branch semantics. Compiled code size and unprofiled performance remain unmeasured; this source package claims no runtime qualification or speedup.\",\n    \"propertyReadFastPath\": \"Read-only AVM1 PropertyMap::get_avm returns the current borrowed value from the same exact-key-validated positive hint slot. Index-based entry/get_mut/contains paths retain the original hint guard and share the byte-exact filter, original table lookup and positive-only hint update fallback. Case-insensitive lookup, borrowed-WStr lookup, fields, mutation paths, prototype/getter/watch/resolve/display semantics, all existing fixtures and resource bounds remain unchanged. No new state, GC edge, allocation, object/value/prototype cache or new opcode is introduced. Generated code size, inlining and performance effects require fresh measurement; no speedup or qualification is claimed.\",\n    \"simdBlockClassifier\": \"Only wasm32+simd128 uses eight unaligned 128-bit loads for the existing 32-word transparent-black and all-alpha255 block predicates, after the unchanged first-word guards. Host and MVP retain the original scalar loops. The 128-pixel row threshold, mixed and tail arithmetic, writes, clipping, dirty/source synchronization and self-copy order are unchanged. No state, allocation, cache, new native fixture or resource limit is introduced. Exact helper correctness is a separate CI WASM proof; fresh native/browser qualification and measurement remain required. No runtime or performance qualification is claimed by this source package.\"\n  }\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "before": {
+        "bytes": 88763,
+        "sha256": "c27bfd51fa6bb67ed4989447ee1801d67732310d62ffb64e3b858229f67a4821"
+      },
+      "after": {
+        "bytes": 88825,
+        "sha256": "3c80446bad64698a3c9bfd3fca310d2251b8af8555495961b3ddde6c9e2606ca"
+      },
+      "hunks": [
+        {
+          "before": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '86bb0f6b79ac97cc8041e68b413b1176e85c59a76192af52a6772a24c28bd198',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n",
+          "after": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '0458e8d25ac58b213093d6efabc97fc42a1ea06152ec284e78274129edcca16b',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n"
+        },
+        {
+          "before": "  'core/src/bitmap/operations/boxhead_blit/frozen_v10.rs',\n  'core/src/bitmap/operations/boxhead_blit/packed.rs',\n  'core/src/bitmap/operations/boxhead_blit/packed_tests.rs',\n  'core/src/bitmap/operations/boxhead_overwrite_frozen.rs',\n  'core/src/bitmap/operations/boxhead_overwrite_tests.rs',\n  'core/common/src/avm_string.rs', 'core/common/src/avm_string/avm_string.rs',\n",
+          "after": "  'core/src/bitmap/operations/boxhead_blit/frozen_v10.rs',\n  'core/src/bitmap/operations/boxhead_blit/packed.rs',\n  'core/src/bitmap/operations/boxhead_blit/packed_tests.rs',\n  'core/src/bitmap/operations/boxhead_blit/simd_classify.rs',\n  'core/src/bitmap/operations/boxhead_overwrite_frozen.rs',\n  'core/src/bitmap/operations/boxhead_overwrite_tests.rs',\n  'core/common/src/avm_string.rs', 'core/common/src/avm_string/avm_string.rs',\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v23-property-read-integration.test.mjs",
+      "before": {
+        "bytes": 20664,
+        "sha256": "644a2696666232d827c8d04ee68567940f647911295978997bf7d864b7c3b698"
+      },
+      "after": {
+        "bytes": 21807,
+        "sha256": "ce136873ef058af8d1a599e598637bd6d7a833eef51e48b5a06b37d4470d543d"
+      },
+      "hunks": [
+        {
+          "before": "import { reviewedV19Paths, restoreV18Source } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE }\n  from '../../scripts/lib/native-smooth-runtime-binding.mjs';\n\n// Exact source/validator regression only. Native fixtures, compilation and\n// browser performance require fresh CI evidence; no prior pass is inherited.\nconst read = file => readFileSync(new URL('../../' + file, import.meta.url), 'utf8');\nconst identity = text => ({ bytes: Buffer.byteLength(text), sha256: createHash('sha256').update(text).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v23/';\n",
+          "after": "import { reviewedV19Paths, restoreV18Source } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { v24HistoricalSource } from './fixtures/native-v24-source.mjs';\n\n// Exact source/validator regression only. Native fixtures, compilation and\n// browser performance require fresh CI evidence; no prior pass is inherited.\nconst read = file => v24HistoricalSource(file, readFileSync(new URL('../../' + file, import.meta.url), 'utf8'));\nconst identity = text => ({ bytes: Buffer.byteLength(text), sha256: createHash('sha256').update(text).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v23/';\n"
+        },
+        {
+          "before": "const propertyPath = root + 'core/src/avm1/property_map.rs';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 6114,\n",
+          "after": "const propertyPath = root + 'core/src/avm1/property_map.rs';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\n\n// Exercise the sealed v23 validator and its original 121-path/440-case contract.\n// Only its three relative import URLs change for this test-only data module.\nconst historicalBinderSource = read(binderPath);\nassert.deepEqual(identity(historicalBinderSource), { bytes: 88763,\n  sha256: 'c27bfd51fa6bb67ed4989447ee1801d67732310d62ffb64e3b858229f67a4821' });\nconst binderURL = new URL('../../' + binderPath, import.meta.url);\nconst siblingImports = ['./native-runtime-bundle.mjs', './native-graph-runtime-binding.mjs', './native-projection-runtime-binding.mjs'];\nassert.deepEqual([...historicalBinderSource.matchAll(/from '(\\.\\/[^']+)'/g)].map(match => match[1]), siblingImports);\nlet historicalBinderModule = historicalBinderSource;\nfor (const specifier of siblingImports) {\n  const from = \"from '\" + specifier + \"'\";\n  assert.equal(historicalBinderModule.split(from).length, 2);\n  historicalBinderModule = historicalBinderModule.replace(from, \"from '\" + new URL(specifier, binderURL).href + \"'\");\n}\nconst { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE } =\n  await import('data:text/javascript;base64,' + Buffer.from(historicalBinderModule).toString('base64'));\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 6114,\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v23-source.mjs",
+      "before": {
+        "bytes": 2217,
+        "sha256": "ed4074cd445c3978d7292ea6b41d463cdf7c392601cc525455731366f292ad09"
+      },
+      "after": {
+        "bytes": 2326,
+        "sha256": "15c82882e9a004e4b686b1a06ce39ad95fa92bdb6ff4013726087a031fa9f963"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v23/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 20121, \"sha256\": \"de0b6fd0eddb374cf93f56c1d4d31ced81387f7c47b92fd04b964c2f95450792\"}, 'Unreviewed v23 exact source delta');\n",
+          "after": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { v24HistoricalSource } from './native-v24-source.mjs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v23/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 20121, \"sha256\": \"de0b6fd0eddb374cf93f56c1d4d31ced81387f7c47b92fd04b964c2f95450792\"}, 'Unreviewed v23 exact source delta');\n"
+        },
+        {
+          "before": "}\nexport function v23HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n",
+          "after": "}\nexport function v23HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  source = v24HistoricalSource(path, source);\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n"
+        }
+      ]
+    }
+  ],
+  "addedFiles": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/simd_classify.rs",
+      "beforeAbsent": true,
+      "after": {
+        "bytes": 2752,
+        "sha256": "2b7c927728633f311a4a093d07bc02a33803b889557b94ec8a8dee80fc2691ff"
+      }
+    }
+  ],
+  "historicalEndpoints": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 77023,
+      "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 78565,
+      "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 80552,
+      "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 84138,
+      "sha256": "9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 85125,
+      "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 86788,
+      "sha256": "3247035ec714816040b95f0d3b28edf3505e9cfeab3e19ce3e2a7a75fb2ecd0a"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 81095,
+      "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 83585,
+      "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 86545,
+      "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 91688,
+      "sha256": "0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 93496,
+      "sha256": "10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 96022,
+      "sha256": "34bed0818df9159ce54eb2c18cbcf5aea6d045bed07dd8cd9c4f1921b64ee201"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 99309,
+      "sha256": "f1376dd1ed5245d3e97a69e1071624a7cbefff0a105b6f0332a8484a92ec7f25"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 88763,
+      "sha256": "39ef4f53a8f11fc6d0664476b4d3665a3c8ec717a6cad0962f6881a34cb870b6"
+    }
+  ]
+}

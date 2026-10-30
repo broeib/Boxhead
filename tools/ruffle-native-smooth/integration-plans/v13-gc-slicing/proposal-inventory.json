@@ -1,0 +1,1196 @@
+{
+  "schema": "boxhead-v13-private-checkout-proposal-v1",
+  "status": "source-ready-not-applied",
+  "application": "private v12 checkout with identical repository-relative paths only",
+  "workingEngineMustRemain": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 44549,
+    "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+  },
+  "privateBaseEngine": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 51220,
+    "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+  },
+  "selectedEngine": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 65954,
+    "sha256": "487588b8c0d594705ef43a970a875591ba74d5b010756f525b7eab6c7e9d2189"
+  },
+  "files": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/scripts/lib/native-smooth-runtime-binding.mjs",
+      "repositoryBefore": {
+        "bytes": 58381,
+        "sha256": "ab8435dc0ba52c68f7da27374417840a8aa681dc75607fccdadb6b87c6432cda"
+      },
+      "candidate": {
+        "bytes": 66227,
+        "sha256": "65aa426db3376d32bb926a5606e77bb94374ca0a0b05b9006976fbf903a96adb"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-smooth-v12-manifest.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tests/scripts/fixtures/native-smooth-v12-manifest.json",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 51220,
+        "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v13-source-delta.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tests/scripts/fixtures/native-v13-source-delta.json",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 10093,
+        "sha256": "7f0e1da58fdcdd4fc38e1559bd60beb44df2b883b6ee6f2c22053a5264d09eb4"
+      }
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v13-source.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tests/scripts/fixtures/native-v13-source.mjs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1499,
+        "sha256": "e09e0b89e2acd53ee456511fbeb7d1e1cb224230e83b14e96d2cffac8b766126"
+      }
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "repositoryBefore": {
+        "bytes": 42914,
+        "sha256": "27d4cdb0df9382b30b5a14db99154237c04bd1f91ea5f9d5eb34e198c396f2fa"
+      },
+      "candidate": {
+        "bytes": 49492,
+        "sha256": "0098c3e54397a852e34eca354b81e5b1f4f63f725844ee5050f3d7832eaf4a11"
+      }
+    },
+    {
+      "path": "tests/scripts/native-v13-gc-integration.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tests/scripts/native-v13-gc-integration.test.mjs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 15895,
+        "sha256": "dfdc8835b89700c554a67e57fa98c6c13557d89b9fbe0230874660aa3fb8b940"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-compact-fence/source-integrity.test.mjs",
+      "repositoryBefore": {
+        "bytes": 5097,
+        "sha256": "e73868e27083069177daaa13e5de7eccb014edb202f420cb4579d3bb48473745"
+      },
+      "candidate": {
+        "bytes": 5295,
+        "sha256": "bc020dbfe0c4941d85d3a78f3985bd2de1351f4581b041e26f7651e2d87cbae6"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-compact-fence/source-inventory.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-compact-fence/source-inventory.json",
+      "repositoryBefore": {
+        "bytes": 7436,
+        "sha256": "7676461e8a801e9b49464fe157ac23c7d1563bcc1fc2001109870f0a49288d7f"
+      },
+      "candidate": {
+        "bytes": 7436,
+        "sha256": "57ea50cca0cdc64832a3f5d689f50c3ca3eaadb4362fe6623e0ca168bdea053c"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/build.py",
+      "repositoryBefore": {
+        "bytes": 15411,
+        "sha256": "7214fc10be4bd3a586c63b005b0157d52df2843ebc5321d23ca2df6acf9de6c0"
+      },
+      "candidate": {
+        "bytes": 16458,
+        "sha256": "e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/Cargo.lock",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/Cargo.lock",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 188526,
+        "sha256": "5d699d18c0eb06d9bf5350321c754ae5d98cfd3662b4103566c73f25354f0555"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/Cargo.toml",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/Cargo.toml",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 5957,
+        "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence.rs",
+      "repositoryBefore": {
+        "bytes": 38451,
+        "sha256": "fb0929bae8d3205d5d1df66588786856e2b38d5ac675950bff388afdad9f81c6"
+      },
+      "candidate": {
+        "bytes": 38949,
+        "sha256": "77d8417a5164590bae4055339f5633a4dbb150af2bd55469f7f7922e05813929"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc/tests.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc/tests.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 20830,
+        "sha256": "0a8c1be65ca74236f9032d5cbac959b42d604f524c4e4ad203aeb361808450a7"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/player/boxhead_gc.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 4180,
+        "sha256": "26e3958f73cbc57ff39e72d8971224c17cf372f153286e94291dcd55dc70bd4d"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/gc_tests.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/gc_tests.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 39742,
+        "sha256": "197907ace98a212f0d3bc1cd1e47e13261912cad451e9b94868e495020e96a71"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence.rs",
+      "repositoryBefore": {
+        "bytes": 7659,
+        "sha256": "66958cbdb35fd43bd8367f05d73879700df3de55fe0771988c138e76ddffdc5c"
+      },
+      "candidate": {
+        "bytes": 7770,
+        "sha256": "c64354477249b2af6b5f7d228deeb75ef0e6a26ab0d805afd396b1f07a603a01"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/core/src/player.rs",
+      "repositoryBefore": {
+        "bytes": 131004,
+        "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80"
+      },
+      "candidate": {
+        "bytes": 131902,
+        "sha256": "be71219d896c52fd186a5d4c42aa49c9a2977c8d82d354df03be4307af26e3c9"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/manifest.json",
+      "repositoryBefore": {
+        "bytes": 51220,
+        "sha256": "836f160125fc12c7004fea1c02e4ff27b7fedad795d470d7f03ccedbb3502e72"
+      },
+      "candidate": {
+        "bytes": 65954,
+        "sha256": "487588b8c0d594705ef43a970a875591ba74d5b010756f525b7eab6c7e9d2189"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.cargo_vcs_info.json",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.cargo_vcs_info.json",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 94,
+        "sha256": "4f58c43b655f0b03d1e0c16e41f6a4fc44225a63ec6a201cc5709fa3c077314a"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.circleci/config.yml",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.circleci/config.yml",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1604,
+        "sha256": "5b78a664d012d99fceb75c0c4b7f7968321c59d8f9dc6b9a30a4fdece8921be9"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.gitignore",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/.gitignore",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 106,
+        "sha256": "f671c5401a1b46b1491f8d07f5e5ec5ca1625c8fbdb17b18f7516da4ea4726cb"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/CHANGELOG.md",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/CHANGELOG.md",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 11788,
+        "sha256": "471d0db3a20b1aff8cf80831869add428cd1edd9dde6d01a261a7edfdb343638"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.lock",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.lock",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 16008,
+        "sha256": "aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1761,
+        "sha256": "29ccdc825e6ac5622a87bcb670710858462793258947849b76a9478c4225fa5b"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml.orig",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.toml.orig",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1167,
+        "sha256": "13497ba2b10ea88c8c9f7a8dcedf290ba3525155f5c9c0260f14fa57e753605f"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-CC0",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-CC0",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 7047,
+        "sha256": "6d489af6292662d9e36d34ce49423784984a5f6e41d7b58f49b01264df59fa03"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-MIT",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/LICENSE-MIT",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1024,
+        "sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/README.md",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/README.md",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 5467,
+        "sha256": "dcf3b0489dc13796d8a825cf7411edae06d4963040e39e0a3a2013571eaa3676"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/examples/linked_list.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/examples/linked_list.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 6119,
+        "sha256": "fa4e5a1d8191f402fc4fb5609b087fe5ed6b14792d92f76705153109422fc944"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/arena.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/arena.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 17808,
+        "sha256": "30baeedb410d2fd35c9df88815d4b68854282bc194b43b37c7e842a62df91a84"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/barrier.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/barrier.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 9437,
+        "sha256": "dfb55d737905b4877ab253ca83d7562bfc482e2e38f9ba38994b659342a6a7f0"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 7848,
+        "sha256": "6682ad4b4a550c5ad63bf764ea2c7a30eab7477a1bf49055ca8a2e5e089c4b47"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect_impl.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/collect_impl.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 8218,
+        "sha256": "719f742e35ac0e24e36c1ad4cefcd256e20ce519f48bdf75a6e1c5df05d97561"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/context.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/context.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 35311,
+        "sha256": "57414577ed6e866b482e11700bae8102bb2d5974b1d76e24ced1eb4c41175c5c"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/dynamic_roots.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/dynamic_roots.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 9861,
+        "sha256": "5c93c6e36303afcfc6e2f17b0deaf1be42c35aa37824b5db13e4b95aeeeb2af5"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/enum_map.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/enum_map.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 689,
+        "sha256": "967023479767760cea61a77e0bf5ef2cfb15f97dd5869d89ab2a6a048d578b10"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 8803,
+        "sha256": "f5231deff95cee0b81e2baf9e582da613acc5eb4a95f7f403d9ef5a1e1139274"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc_weak.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/gc_weak.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 6033,
+        "sha256": "5e525a6982dd4bdf5743655c0c2a50a1fd5649c579a26f698bc6a0c759a6c4c8"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/hashbrown.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/hashbrown.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1198,
+        "sha256": "64b93c1a5a3db7165da21b28e4e54052b1e5ce6f6d28e14bd035536b9e988f0d"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/indexmap.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/indexmap.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1440,
+        "sha256": "7e54c975c56ae42d118d8e156b25ba5c160e37b4394b7503f62a7f71225c692e"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lib.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lib.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 980,
+        "sha256": "f9fcf405fb8a322d5fa38334c27d3b581d853fe4230bc37101f22d8b68a1d139"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lock.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/lock.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 11393,
+        "sha256": "b49cbb6774f5a2259d1f346d0dda929554a7861ff631c7e371da9f3896e6b949"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/metrics.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/metrics.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 14310,
+        "sha256": "d5cee5e575230539ca99cd1e0dedddc569daa9d632a6611a2e67ece8c2bbf8a8"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/no_drop.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/no_drop.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 294,
+        "sha256": "f7fbd46c73b8fc51f986fe62be151845aac02460a6d64ce43faf41c0dfc55cde"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/slotmap.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/slotmap.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 723,
+        "sha256": "fd24d7f52c65bb0695b119bbe550a292476eabb05513495496406371a2c4a3a0"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/smallvec.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/smallvec.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 760,
+        "sha256": "d61070e5646a59222fe49159cd98c1e513d2296e5e71303c014f5c57d8069f48"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/static_wrapper.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/static_wrapper.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1363,
+        "sha256": "8e225e981b39750cef879cfbcd310ad865eebd2da270ecb226c0645122038c7e"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/types.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/types.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 15942,
+        "sha256": "b399b4bbbe7ef684daeee9a8725246e54360e6f3dbb150cd62f29dd34d414507"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/unsize.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/unsize.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 3076,
+        "sha256": "57b5f2203009f4383cd96e6e204d92b1363b397886a4aeffbc385f36be384526"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/zst_cache.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/src/zst_cache.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 4288,
+        "sha256": "607396ce79ff7782538b5ea289b32a8fb6782ae6efbdf4f175d0db654cafccfc"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/tests.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/tests.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 32667,
+        "sha256": "cef0036488485787110b3d2faa09e9666f5aca1fbd257e90a7443e9cfaff61c1"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 139,
+        "sha256": "09f7d5e855a10518f8792a851eca23c612d6d2ab861effde0347bf318a9ad378"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 1700,
+        "sha256": "a36310d03015cb0d2d19e858b907b4ce4599f7fcd93bf4374f5c91254cbeb865"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 703,
+        "sha256": "17f74ad93604ff89fa82b13088bd507865e5a6c0ec6e762aa8924fc8417098b1"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 2809,
+        "sha256": "0387ca384670870896490897574c6642146a1b8f85d6917af3c7fa313cfe7e0d"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 135,
+        "sha256": "25dc4c50a27ac4a4a82fd03f66562ff3a8128ff1632f8de81383f9cf3f0dbd43"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 181,
+        "sha256": "b1b7c4681f443d2b24d34ca9488efc99017f7d2aed3cd0c3ac5e0ca12c3a9d89"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 175,
+        "sha256": "9b70c4bf6cb6bace1350a0ab853635701a240395aa0e065bd4d28483cd467ff6"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 181,
+        "sha256": "a06d930d9db1d34cb2c531f3fe8d0f7fd60eb9acf0efcc7910cf5fc4c85ed09a"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 141,
+        "sha256": "fd49ac93e7d5860062cf17f3874f8dc3a94c11fc2b73f36efe534d4023486493"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 456,
+        "sha256": "72f956f45e1df80638a91f5033a8c8a2180199182d2d7400715a3ceb5c68bf95"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 160,
+        "sha256": "98477ca85f39668345a22c837d150746608ba33b52ad3e4a1acbc81e32c9f045"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 156,
+        "sha256": "74816e068ef501859a8ae8170d8b60a9d57097f1794ce886d71ead333cce9da8"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 278,
+        "sha256": "e45ae2ade1817ee3edf3d549d3a733cb2157c8b88fce17c2908d49d6cd6f5902"
+      }
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr",
+      "proposalPath": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr",
+      "repositoryBefore": null,
+      "candidate": {
+        "bytes": 333,
+        "sha256": "b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e"
+      }
+    }
+  ],
+  "requiredUnchangedEngineFiles": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string.rs",
+      "bytes": 532,
+      "sha256": "038fda50d9b640c82bee57f086ff2331ae1554dbd725dcdcda905ef800427e08"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/avm_string.rs",
+      "bytes": 5858,
+      "sha256": "dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/property_hash.rs",
+      "bytes": 1709,
+      "sha256": "bf830b558ce4be4ac700c0f5f3e94385861872578a7622f603d2d54912246655"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/common/src/avm_string/repr.rs",
+      "bytes": 8327,
+      "sha256": "255e9167c20c94db7803cf4b73205e83f4da3572b4be15652614266fb3a8c141"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/activation.rs",
+      "bytes": 125491,
+      "sha256": "7aab0b274d5ba3a80b0e22d14ed90074c894b9ff187b4cd42a61f672741d9727"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals.rs",
+      "bytes": 33610,
+      "sha256": "d7a632b1d66128761b3b9ef040d1ac9401b97084494daf011ab6ade47d39f649"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 44234,
+      "sha256": "87ed575bf2a2024aa928e0aeaf454c6ccf00294900a40c493def19eeafce074f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs",
+      "bytes": 45533,
+      "sha256": "7c66dcc658cbab9fac3c1068807f835433429c19fe22cab838e5e4f9f8eed2a7"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 84766,
+      "sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project.rs",
+      "bytes": 33798,
+      "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/activation_tests.rs",
+      "bytes": 7140,
+      "sha256": "58c42f21ab6cc83fcd4747797f859b58d6a93f040014827d2cfd9aeb369c5003"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/tests.rs",
+      "bytes": 44837,
+      "sha256": "a502021d37bfb5982af63f480219d2abd25a7602a20435cdd82dcc74872f7fa5"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12779,
+      "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence/compact_tests.rs",
+      "bytes": 38950,
+      "sha256": "ab013e4e154c99c184a8b3bc4a68df09ac41e4d8db6215a554ba754f62bfd39f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object.rs",
+      "bytes": 20276,
+      "sha256": "1929a336bd4b60cae4491b28542116f88027f823e36b2dd5b2936ffc4458b2bc"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object/boxhead_property_tests.rs",
+      "bytes": 44883,
+      "sha256": "27a57506ebf1af2a9b1c76c43cb475334d0816891fa1772943a76945380ef659"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/object/script_object.rs",
+      "bytes": 43753,
+      "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map.rs",
+      "bytes": 9568,
+      "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_equality_tests.rs",
+      "bytes": 17982,
+      "sha256": "193dc3ae52597f7efb92c8082cea1363e340d19e290ee464648454be32c770d2"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/boxhead_hash_tests.rs",
+      "bytes": 20165,
+      "sha256": "c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/runtime.rs",
+      "bytes": 26231,
+      "sha256": "e1d54cedfb23f3f87e1e7a071d97499c3574b2c20d62db8016faa4a9297980aa"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations.rs",
+      "bytes": 68385,
+      "sha256": "4f1aac19f991f13c50054f136d129a0f8287419bb3658ece2180834fb1fd9917"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit.rs",
+      "bytes": 14725,
+      "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_overwrite_frozen.rs",
+      "bytes": 4039,
+      "sha256": "54fcda2178cfbcbdc5634bee2b25d2552407ff710239b9c4f0b2ba2a99dc9070"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_overwrite_tests.rs",
+      "bytes": 24171,
+      "sha256": "5fa67313bfd4026f1cfef185d9f3de2e5a580aebbc0705cf1382e4f5526e1b36"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/compact_tests.rs",
+      "bytes": 9524,
+      "sha256": "3cdbae716ad3130708a419649591648ff952a314ebd8c0271e35f65676352e93"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "bytes": 9025,
+      "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope.rs",
+      "bytes": 10718,
+      "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "bytes": 34028,
+      "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/scope/frozen_v10.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+      "bytes": 3118,
+      "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed.rs",
+      "bytes": 2645,
+      "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+      "bytes": 8783,
+      "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14"
+    }
+  ],
+  "requiredUnchangedSupportFiles": [
+    {
+      "path": "tests/scripts/native-v12-normalization.test.mjs",
+      "bytes": 6358,
+      "sha256": "d45bc010b88a65931359f8dd8af7afa09a9bd5125a161b4ce4bec99f6fca3158"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v12-source.mjs",
+      "bytes": 3366,
+      "sha256": "3de8a81cee3bf3739e2cca76bd2e76ee7a5426a8a71b643767b6d0b56690dc12"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v12-source-delta.json",
+      "bytes": 60861,
+      "sha256": "e1c80508c711954b9f58d6e4cdc43178e951bb6e897e3e56257e73bc4138ce92"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v10-engine-manifest.json",
+      "bytes": 44549,
+      "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs",
+      "bytes": 4303,
+      "sha256": "9352a1580ae778145af9be1ff2f9517e6f61f2f67078f2e98181b9b11cae4379"
+    },
+    {
+      "path": "tools/ruffle-native-bitmap-overwrite/source-inventory.json",
+      "bytes": 4298,
+      "sha256": "ab0ca489efe3dc3d281b307f421c4af98ac134ff19cb1c9500893af78e19eeb5"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/apply-overlay.py",
+      "bytes": 3524,
+      "sha256": "eb03f0165f7d6297d87ee71eb1d7a43b538efa19ab1454149cae7f73e28e25c6"
+    }
+  ],
+  "requiredIsolatedPackageFiles": [
+    {
+      "path": "tools/ruffle-native-gc-slicing/GC_SLICING.md",
+      "bytes": 9988,
+      "sha256": "6a4bec91a109df5f10a85eb2788abc0dbedcb16b6bf4d7d89110fac2ad2c14be"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/baseline-identities.json",
+      "bytes": 8543,
+      "sha256": "01b49049efe22fdf967e1f8b08a0478db3e3052326b31b504a93d56c9b0d2ad2"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/Cargo.lock",
+      "bytes": 188526,
+      "sha256": "5d699d18c0eb06d9bf5350321c754ae5d98cfd3662b4103566c73f25354f0555"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/Cargo.toml",
+      "bytes": 5957,
+      "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 38949,
+      "sha256": "77d8417a5164590bae4055339f5633a4dbb150af2bd55469f7f7922e05813929"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/player/boxhead_gc/tests.rs",
+      "bytes": 20830,
+      "sha256": "0a8c1be65ca74236f9032d5cbac959b42d604f524c4e4ad203aeb361808450a7"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/player/boxhead_gc.rs",
+      "bytes": 4180,
+      "sha256": "26e3958f73cbc57ff39e72d8971224c17cf372f153286e94291dcd55dc70bd4d"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/player/boxhead_step_fence/gc_tests.rs",
+      "bytes": 39742,
+      "sha256": "197907ace98a212f0d3bc1cd1e47e13261912cad451e9b94868e495020e96a71"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/player/boxhead_step_fence.rs",
+      "bytes": 7770,
+      "sha256": "c64354477249b2af6b5f7d228deeb75ef0e6a26ab0d805afd396b1f07a603a01"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/core/src/player.rs",
+      "bytes": 131902,
+      "sha256": "be71219d896c52fd186a5d4c42aa49c9a2977c8d82d354df03be4307af26e3c9"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/.cargo_vcs_info.json",
+      "bytes": 94,
+      "sha256": "4f58c43b655f0b03d1e0c16e41f6a4fc44225a63ec6a201cc5709fa3c077314a"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/.circleci/config.yml",
+      "bytes": 1604,
+      "sha256": "5b78a664d012d99fceb75c0c4b7f7968321c59d8f9dc6b9a30a4fdece8921be9"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/.gitignore",
+      "bytes": 106,
+      "sha256": "f671c5401a1b46b1491f8d07f5e5ec5ca1625c8fbdb17b18f7516da4ea4726cb"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/CHANGELOG.md",
+      "bytes": 11788,
+      "sha256": "471d0db3a20b1aff8cf80831869add428cd1edd9dde6d01a261a7edfdb343638"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/Cargo.lock",
+      "bytes": 16008,
+      "sha256": "aae89dd5e83905c9688a54585a5135270cbc9ba1a3ad3062547a030eda5403c6"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/Cargo.toml",
+      "bytes": 1761,
+      "sha256": "29ccdc825e6ac5622a87bcb670710858462793258947849b76a9478c4225fa5b"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/Cargo.toml.orig",
+      "bytes": 1167,
+      "sha256": "13497ba2b10ea88c8c9f7a8dcedf290ba3525155f5c9c0260f14fa57e753605f"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/LICENSE-CC0",
+      "bytes": 7047,
+      "sha256": "6d489af6292662d9e36d34ce49423784984a5f6e41d7b58f49b01264df59fa03"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/LICENSE-MIT",
+      "bytes": 1024,
+      "sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/README.md",
+      "bytes": 5467,
+      "sha256": "dcf3b0489dc13796d8a825cf7411edae06d4963040e39e0a3a2013571eaa3676"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/examples/linked_list.rs",
+      "bytes": 6119,
+      "sha256": "fa4e5a1d8191f402fc4fb5609b087fe5ed6b14792d92f76705153109422fc944"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/arena.rs",
+      "bytes": 17808,
+      "sha256": "30baeedb410d2fd35c9df88815d4b68854282bc194b43b37c7e842a62df91a84"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/barrier.rs",
+      "bytes": 9437,
+      "sha256": "dfb55d737905b4877ab253ca83d7562bfc482e2e38f9ba38994b659342a6a7f0"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/collect.rs",
+      "bytes": 7848,
+      "sha256": "6682ad4b4a550c5ad63bf764ea2c7a30eab7477a1bf49055ca8a2e5e089c4b47"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/collect_impl.rs",
+      "bytes": 8218,
+      "sha256": "719f742e35ac0e24e36c1ad4cefcd256e20ce519f48bdf75a6e1c5df05d97561"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/context.rs",
+      "bytes": 35311,
+      "sha256": "57414577ed6e866b482e11700bae8102bb2d5974b1d76e24ced1eb4c41175c5c"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/dynamic_roots.rs",
+      "bytes": 9861,
+      "sha256": "5c93c6e36303afcfc6e2f17b0deaf1be42c35aa37824b5db13e4b95aeeeb2af5"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/enum_map.rs",
+      "bytes": 689,
+      "sha256": "967023479767760cea61a77e0bf5ef2cfb15f97dd5869d89ab2a6a048d578b10"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/gc.rs",
+      "bytes": 8803,
+      "sha256": "f5231deff95cee0b81e2baf9e582da613acc5eb4a95f7f403d9ef5a1e1139274"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/gc_weak.rs",
+      "bytes": 6033,
+      "sha256": "5e525a6982dd4bdf5743655c0c2a50a1fd5649c579a26f698bc6a0c759a6c4c8"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/hashbrown.rs",
+      "bytes": 1198,
+      "sha256": "64b93c1a5a3db7165da21b28e4e54052b1e5ce6f6d28e14bd035536b9e988f0d"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/indexmap.rs",
+      "bytes": 1440,
+      "sha256": "7e54c975c56ae42d118d8e156b25ba5c160e37b4394b7503f62a7f71225c692e"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/lib.rs",
+      "bytes": 980,
+      "sha256": "f9fcf405fb8a322d5fa38334c27d3b581d853fe4230bc37101f22d8b68a1d139"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/lock.rs",
+      "bytes": 11393,
+      "sha256": "b49cbb6774f5a2259d1f346d0dda929554a7861ff631c7e371da9f3896e6b949"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/metrics.rs",
+      "bytes": 14310,
+      "sha256": "d5cee5e575230539ca99cd1e0dedddc569daa9d632a6611a2e67ece8c2bbf8a8"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/no_drop.rs",
+      "bytes": 294,
+      "sha256": "f7fbd46c73b8fc51f986fe62be151845aac02460a6d64ce43faf41c0dfc55cde"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/slotmap.rs",
+      "bytes": 723,
+      "sha256": "fd24d7f52c65bb0695b119bbe550a292476eabb05513495496406371a2c4a3a0"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/smallvec.rs",
+      "bytes": 760,
+      "sha256": "d61070e5646a59222fe49159cd98c1e513d2296e5e71303c014f5c57d8069f48"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/static_wrapper.rs",
+      "bytes": 1363,
+      "sha256": "8e225e981b39750cef879cfbcd310ad865eebd2da270ecb226c0645122038c7e"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/types.rs",
+      "bytes": 15942,
+      "sha256": "b399b4bbbe7ef684daeee9a8725246e54360e6f3dbb150cd62f29dd34d414507"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/unsize.rs",
+      "bytes": 3076,
+      "sha256": "57b5f2203009f4383cd96e6e204d92b1363b397886a4aeffbc385f36be384526"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/src/zst_cache.rs",
+      "bytes": 4288,
+      "sha256": "607396ce79ff7782538b5ea289b32a8fb6782ae6efbdf4f175d0db654cafccfc"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/tests.rs",
+      "bytes": 32667,
+      "sha256": "cef0036488485787110b3d2faa09e9666f5aca1fbd257e90a7443e9cfaff61c1"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.rs",
+      "bytes": 139,
+      "sha256": "09f7d5e855a10518f8792a851eca23c612d6d2ab861effde0347bf318a9ad378"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/bad_collect_bound.stderr",
+      "bytes": 1700,
+      "sha256": "a36310d03015cb0d2d19e858b907b4ce4599f7fcd93bf4374f5c91254cbeb865"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.rs",
+      "bytes": 703,
+      "sha256": "17f74ad93604ff89fa82b13088bd507865e5a6c0ec6e762aa8924fc8417098b1"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/bad_write_field_projections.stderr",
+      "bytes": 2809,
+      "sha256": "0387ca384670870896490897574c6642146a1b8f85d6917af3c7fa313cfe7e0d"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.rs",
+      "bytes": 135,
+      "sha256": "25dc4c50a27ac4a4a82fd03f66562ff3a8128ff1632f8de81383f9cf3f0dbd43"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/invalid_collect_field.stderr",
+      "bytes": 181,
+      "sha256": "b1b7c4681f443d2b24d34ca9488efc99017f7d2aed3cd0c3ac5e0ca12c3a9d89"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.rs",
+      "bytes": 175,
+      "sha256": "9b70c4bf6cb6bace1350a0ab853635701a240395aa0e065bd4d28483cd467ff6"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/multiple_require_static.stderr",
+      "bytes": 181,
+      "sha256": "a06d930d9db1d34cb2c531f3fe8d0f7fd60eb9acf0efcc7910cf5fc4c85ed09a"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.rs",
+      "bytes": 141,
+      "sha256": "fd49ac93e7d5860062cf17f3874f8dc3a94c11fc2b73f36efe534d4023486493"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/no_drop_and_drop_impl.stderr",
+      "bytes": 456,
+      "sha256": "72f956f45e1df80638a91f5033a8c8a2180199182d2d7400715a3ceb5c68bf95"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.rs",
+      "bytes": 160,
+      "sha256": "98477ca85f39668345a22c837d150746608ba33b52ad3e4a1acbc81e32c9f045"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/require_static_enum_variant.stderr",
+      "bytes": 156,
+      "sha256": "74816e068ef501859a8ae8170d8b60a9d57097f1794ce886d71ead333cce9da8"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.rs",
+      "bytes": 278,
+      "sha256": "e45ae2ade1817ee3edf3d549d3a733cb2157c8b88fce17c2908d49d6cd6f5902"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/tests/ui/require_static_not_static.stderr",
+      "bytes": 333,
+      "sha256": "b71cd0ec89e397dcbc0107355db478b7147df31c951ecc3ba117555a53ccfa7e"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/source-delta.json",
+      "bytes": 23835,
+      "sha256": "991931a76afbf23dacc0645d5b8c382955aacc5d609687a208b8d7e39325923a"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/source-integrity.test.mjs",
+      "bytes": 9494,
+      "sha256": "17e1c970c6527e7bc7013c022cc3e51f6ad92af4ce370959f87e7d1b72bb0502"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/source-inventory.json",
+      "bytes": 25299,
+      "sha256": "731114e3bbcab3b29fb37ef0ac5638cf8818bea814298521df18fdb1a4d32d0c"
+    },
+    {
+      "path": "tools/ruffle-native-gc-slicing/source-normalization.mjs",
+      "bytes": 1479,
+      "sha256": "c6857a806600c0c4d1ac14714759a9c0f5f5bdc2ad05c1cc099e8d85a656c462"
+    }
+  ],
+  "explicitIgnoredTransferPaths": [
+    "tools/ruffle-native-gc-slicing/engine/third_party/boxhead-gc-arena/Cargo.lock",
+    "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal/tools/ruffle-native-smooth/engine/third_party/boxhead-gc-arena/Cargo.lock"
+  ],
+  "testCommand": "node --test tests/scripts/native-smooth-runtime-binding.test.mjs tests/scripts/native-v12-normalization.test.mjs tests/scripts/native-v13-gc-integration.test.mjs tools/ruffle-native-bitmap-overwrite/source-integrity.test.mjs tools/ruffle-native-lookup-v2/source-integrity.test.mjs tools/ruffle-native-packed-blit/source-integrity.test.mjs tools/ruffle-native-property-equality/source-integrity.test.mjs tools/ruffle-native-anchor-hotpath/source-integrity.test.mjs tools/ruffle-native-compact-fence/source-integrity.test.mjs tools/ruffle-native-gc-slicing/source-integrity.test.mjs",
+  "nodeTestDeclarations": 55,
+  "mandatoryRustTests": 294,
+  "runtimeBuiltHere": false,
+  "testsExecutedLocally": false,
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/README.md",
+      "bytes": 9403,
+      "sha256": "02c8e0d8c226afa0413eca49de8dd33008f8f5d1dfbb6087c1983d95e0a0b30b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/integration-plan.json",
+      "bytes": 52759,
+      "sha256": "f85d0328fac35d5285d3d5afaa982ff3e7589684a1fd62b82e960c8da3540000"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/integration-plans/v13-gc-slicing/proposal-source-delta.json",
+      "bytes": 76812,
+      "sha256": "a71c053cffb47c2cd46cb851aa02163bbf7a2f7a71341c3738a51591b9e76552"
+    }
+  ]
+}

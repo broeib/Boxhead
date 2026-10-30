@@ -1,0 +1,70 @@
+{
+  "schema": "boxhead-native-graph-source-v1",
+  "sourceOnly": true,
+  "tested": false,
+  "baseCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "requiresScalarOverlay": true,
+  "before": {
+    "core/src/avm1/globals.rs": {
+      "bytes": 32879,
+      "sha256": "143e26b78b70699f4c8809f9eea5a467a394fba95ece6a5785c98400cbae4fac"
+    },
+    "core/src/avm1/object/script_object.rs": {
+      "bytes": 36608,
+      "sha256": "bd7315a8dba39d24bdf27728a331b74d2c175c4f08235883614fc94cd029ed48"
+    }
+  },
+  "newAbsent": [
+    "core/src/avm1/globals/boxhead_native_graph.rs",
+    "core/src/avm1/globals/boxhead_native_graph/tests.rs"
+  ],
+  "files": {
+    "README.md": {
+      "bytes": 6585,
+      "sha256": "4fdd32704e229dcc6fd5ce05b8722abf67f5f0689d0cf5c26d8c7218ffca5445"
+    },
+    "core/src/avm1/globals/boxhead_native_graph/tests.rs": {
+      "bytes": 24422,
+      "sha256": "f3347c5b8f476fcb29ad10a45e2e952e20a3ef28feadc5e2615bd5c88c750a91"
+    },
+    "core/src/avm1/globals/boxhead_native_graph.rs": {
+      "bytes": 33367,
+      "sha256": "52727d8c1d6b443fa0789f6e029ee896830617efe46995700798aab0db937460"
+    },
+    "core/src/avm1/globals.rs": {
+      "bytes": 33023,
+      "sha256": "9e49cb8c7d59303b16484d8f0fa7e0ffb37ac681ad6d282e008b7bf75800eb39"
+    },
+    "core/src/avm1/object/script_object.rs": {
+      "bytes": 37891,
+      "sha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+    }
+  },
+  "requiredNativeFixtures": [
+    "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_64mib_decoded_packet_and_rejects_next_byte",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_64mib_without_mutating_source",
+    "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation"
+  ],
+  "sourceRevision": 4,
+  "revisionNote": "Increase only the decoded graph ceiling from 32 MiB to 64 MiB for complete map-14-scale bitmap graphs; preserve the previous native ASCII ceiling explicitly and every node, field, anchor, string, per-bitmap and application transport bound. Four additional fixtures preserve the original twelve native fixtures.",
+  "documentationRevision": 3,
+  "supersedes": {
+    "manifest": "../native-graph-engine-v3/manifest.json",
+    "bytes": 3406,
+    "sha256": "34b98c639c141cd8a5e96ea3002d9a657d6edd3e1ce23f8686f7bc0ae7892f91",
+    "preservedUnchanged": true
+  }
+}

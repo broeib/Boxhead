@@ -1,0 +1,110 @@
+{
+  "schema": "boxhead-native-packed-blit-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "baseEngineManifest": {
+    "path": "tools/ruffle-native-smooth/engine/manifest.json",
+    "bytes": 44549,
+    "sha256": "93a9b0b9d8556514e106b8e0a948f8768fe33b3d3d956477c2475bc3994044b6"
+  },
+  "files": [
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/frozen_v10.rs",
+      "bytes": 3118,
+      "sha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/packed.rs",
+      "bytes": 2645,
+      "sha256": "936247a242175622dc3310b3d018f6437379f017622a893a0fdfa8f56ca33bbb",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit/packed_tests.rs",
+      "bytes": 8783,
+      "sha256": "9ea3a88a6a201ae9737efff5ce60c67ae9d6118aac6acde63012cdcceb678c14",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit.rs",
+      "bytes": 14725,
+      "sha256": "8fcfbc6d4f1997aa60a25c459d1d1d49c3bc941f0bc30d5bfab0da060b8e8e7c",
+      "baseline": {
+        "bytes": 14782,
+        "sha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "bitmap_packed_",
+    "executedExpected": 10,
+    "ignoredExpected": 0,
+    "addedExpected": 10,
+    "exactNames": [
+      "bitmap_packed_all_source_destination_alpha_pairs_match_frozen_v10",
+      "bitmap_packed_alpha_zero_nonzero_rgb_is_never_treated_as_black",
+      "bitmap_packed_both_word_orders_scale_the_same_rgba_bytes",
+      "bitmap_packed_div255_exhaustive_product_domain",
+      "bitmap_packed_homogeneous_v10_fastpaths_keep_raw_opaque_destination_alpha_rules",
+      "bitmap_packed_independent_lane_carries_and_floor_boundaries",
+      "bitmap_packed_partial_row_before_overflow_is_identical_to_frozen_v10",
+      "bitmap_packed_public_copy_pixels_clips_real_short_rows_and_preserves_dirty_output",
+      "bitmap_packed_raw_source_channels_keep_actual_checked_or_wrapping_semantics",
+      "bitmap_packed_short_rows_blocks_and_all_tail_boundaries_match_v10"
+    ]
+  },
+  "retainedRustFixtureGroup": {
+    "filter": "bitmap_blit_",
+    "executedExpected": 6,
+    "ignoredExpected": 1,
+    "exactNames": [
+      "bitmap_blit_alpha_zero_with_nonzero_rgb_is_not_a_noop",
+      "bitmap_blit_exhaustive_source_destination_alpha_pairs",
+      "bitmap_blit_opaque_mixed_blocks_and_every_tail_boundary",
+      "bitmap_blit_real_bitmap_clipped_rows_and_destination_transparency",
+      "bitmap_blit_real_bitmap_self_overlap_keeps_original_forward_order",
+      "bitmap_blit_transparent_black_preserves_rgb_and_forces_opaque_alpha"
+    ],
+    "exactIgnoredNames": [
+      "bitmap_blit_row_microbenchmark"
+    ]
+  },
+  "sourceIntegrity": {
+    "command": "node --test tools/ruffle-native-packed-blit/source-integrity.test.mjs",
+    "executedExpected": 4,
+    "normalizedV10HelperSha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8",
+    "frozenProductionSha256": "26d2a8c7db0e2bc852efbe87796656f689fc33cd9a930c26973cd994092705c0",
+    "unchangedOperationsSha256": "4f1aac19f991f13c50054f136d129a0f8287419bb3658ece2180834fb1fd9917"
+  },
+  "readOnlyReferences": [
+    {
+      "path": "core/src/bitmap/bitmap_data.rs",
+      "bytes": 36903,
+      "sha256": "9f37995935693501091b3a08804d28dd43d1ed9fc4192570dc5ac6b62b965c8d"
+    },
+    {
+      "path": "web/packages/core/tools/build_wasm.ts",
+      "bytes": 5579,
+      "sha256": "51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e"
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "PACKED_BLIT.md",
+      "bytes": 9973,
+      "sha256": "f76529c43ffba4530816a9a7143f6abc0bb8f007c9ae8ecc31072d44124eb8a8"
+    },
+    {
+      "path": "source-integrity.test.mjs",
+      "bytes": 7668,
+      "sha256": "6393f1b08e2059edf8ca6959ff817ae0b7e9ec69efd8847e92158ef1f5322573"
+    }
+  ],
+  "qualificationLimits": [
+    "No local execution or tests.",
+    "No integration into the current smooth engine.",
+    "Native microbenchmark is diagnostic only; LLVM SIMD vectorization can erase or reverse the gain.",
+    "Both actual WASM builds, retained native/pixel checks and a controlled hardware gameplay comparison remain required."
+  ]
+}

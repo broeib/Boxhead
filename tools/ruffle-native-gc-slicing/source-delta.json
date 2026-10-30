@@ -1,0 +1,184 @@
+{
+  "schema": "boxhead-native-gc-slicing-source-delta-v1",
+  "files": [
+    {
+      "path": "core/src/player.rs",
+      "baseline": {
+        "bytes": 131004,
+        "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80"
+      },
+      "candidate": {
+        "bytes": 131902,
+        "sha256": "be71219d896c52fd186a5d4c42aa49c9a2977c8d82d354df03be4307af26e3c9"
+      },
+      "hunks": [
+        {
+          "before": "use web_time::Instant;\n\nmod boxhead_step_fence;\nuse boxhead_step_fence::{Deferred as BoxheadDeferred, Entry as BoxheadEntry};\n\n#[cfg(feature = \"default_font\")]\npub const FALLBACK_DEVICE_FONT: &[u8] = include_bytes!(\"../assets/notosans.subset.ttf.gz\");\n\n",
+          "after": "use web_time::Instant;\n\nmod boxhead_step_fence;\nuse boxhead_step_fence::{Deferred as BoxheadDeferred, Entry as BoxheadEntry};\nmod boxhead_gc;\nuse boxhead_gc::Scheduler as BoxheadGcScheduler;\n\n#[cfg(feature = \"default_font\")]\npub const FALLBACK_DEVICE_FONT: &[u8] = include_bytes!(\"../assets/notosans.subset.ttf.gz\");\n\n"
+        },
+        {
+          "before": "    /// Ambient VM entries retained while a private staged full tick is open.\n    /// This does not change the public run state or pause the audio backend.\n    boxhead_deferred: BoxheadDeferred,\n\n    renderer: Box<dyn RenderBackend>,\n    audio: Box<dyn AudioBackend>,\n    navigator: Box<dyn NavigatorBackend>,\n    storage: Box<dyn StorageBackend>,\n",
+          "after": "    /// Ambient VM entries retained while a private staged full tick is open.\n    /// This does not change the public run state or pause the audio backend.\n    boxhead_deferred: BoxheadDeferred,\n\n    /// Actual collection work shared by nested private-runtime host entries.\n    boxhead_gc: BoxheadGcScheduler,\n\n    renderer: Box<dyn RenderBackend>,\n    audio: Box<dyn AudioBackend>,\n    navigator: Box<dyn NavigatorBackend>,\n    storage: Box<dyn StorageBackend>,\n"
+        },
+        {
+          "before": "        FloatDuration::from_millis(self.frame_time(1000.0))\n    }\n\n    pub fn tick(&mut self, dt: FloatDuration) {\n        if self.boxhead_defer(BoxheadEntry::Tick(dt)) { return; }\n        if !self.is_playing() {\n            return;\n        }\n\n        self.frame_accumulator += dt;\n",
+          "after": "        FloatDuration::from_millis(self.frame_time(1000.0))\n    }\n\n    pub fn tick(&mut self, dt: FloatDuration) {\n        let _gc_turn = self.boxhead_gc_enter();\n        if self.boxhead_defer(BoxheadEntry::Tick(dt)) {\n            self.boxhead_gc_service();\n            return;\n        }\n        if !self.is_playing() {\n            self.boxhead_gc_service();\n            return;\n        }\n\n        self.frame_accumulator += dt;\n"
+        },
+        {
+          "before": "        self.update(|context| {\n            StreamManager::tick(context, dt);\n        });\n        self.audio.tick();\n    }\n\n    pub fn time_til_next_timer(&self) -> Option<f64> {\n        self.time_til_next_timer\n",
+          "after": "        self.update(|context| {\n            StreamManager::tick(context, dt);\n        });\n        self.audio.tick();\n        self.boxhead_gc_service();\n    }\n\n    pub fn time_til_next_timer(&self) -> Option<f64> {\n        self.time_til_next_timer\n"
+        },
+        {
+          "before": "\n    /// Handle an event sent into the player from the external windowing system\n    /// or an HTML element.\n    pub fn handle_event(&mut self, event: PlayerEvent) -> bool {\n        if self.boxhead_defer(BoxheadEntry::Input(event.clone())) {\n            // No listener has run yet. Reserve this input for the movie while\n            // it is queued, so the browser does not act on it a second time.\n            return true;\n",
+          "after": "\n    /// Handle an event sent into the player from the external windowing system\n    /// or an HTML element.\n    pub fn handle_event(&mut self, event: PlayerEvent) -> bool {\n        let _gc_turn = self.boxhead_gc_enter();\n        if self.boxhead_defer(BoxheadEntry::Input(event.clone())) {\n            // No listener has run yet. Reserve this input for the movie while\n            // it is queued, so the browser does not act on it a second time.\n            return true;\n"
+        },
+        {
+          "before": "    }\n\n    #[instrument(level = \"debug\", skip_all)]\n    pub fn run_frame(&mut self) {\n        if self.boxhead_defer(BoxheadEntry::RunFrame) { return; }\n        let frame_time = self.frame_time(750_000_000.0);\n        let frame_time = Duration::from_nanos(frame_time as u64);\n        let (mut execution_limit, may_execute_while_streaming) = match self.load_behavior {\n",
+          "after": "    }\n\n    #[instrument(level = \"debug\", skip_all)]\n    pub fn run_frame(&mut self) {\n        let _gc_turn = self.boxhead_gc_enter();\n        if self.boxhead_defer(BoxheadEntry::RunFrame) { return; }\n        let frame_time = self.frame_time(750_000_000.0);\n        let frame_time = Duration::from_nanos(frame_time as u64);\n        let (mut execution_limit, may_execute_while_streaming) = match self.load_behavior {\n"
+        },
+        {
+          "before": "    }\n\n    #[instrument(level = \"debug\", skip_all)]\n    pub fn render(&mut self) {\n        self.boxhead_drain();\n        let invalidated = self.enter_arena(|_, gc_root, _| gc_root.stage.invalidated());\n\n        if invalidated {\n",
+          "after": "    }\n\n    #[instrument(level = \"debug\", skip_all)]\n    pub fn render(&mut self) {\n        let _gc_turn = self.boxhead_gc_enter();\n        self.boxhead_drain();\n        let invalidated = self.enter_arena(|_, gc_root, _| gc_root.stage.invalidated());\n\n        if invalidated {\n"
+        },
+        {
+          "before": "        self.renderer\n            .submit_frame(background_color, commands, cache_draws);\n\n        self.needs_render = false;\n    }\n\n    /// The current frame of the main timeline, if available.\n    /// The first frame is frame 1.\n",
+          "after": "        self.renderer\n            .submit_frame(background_color, commands, cache_draws);\n\n        self.needs_render = false;\n        self.boxhead_gc_service();\n    }\n\n    /// The current frame of the main timeline, if available.\n    /// The first frame is frame 1.\n"
+        },
+        {
+          "before": "    pub fn update<F, R>(&mut self, func: F) -> R\n    where\n        F: for<'gc> FnOnce(&mut UpdateContext<'gc>) -> R,\n    {\n        let rval = self.mutate_with_update_context(|context| {\n            let rval = func(context);\n\n            Self::run_actions(context);\n",
+          "after": "    pub fn update<F, R>(&mut self, func: F) -> R\n    where\n        F: for<'gc> FnOnce(&mut UpdateContext<'gc>) -> R,\n    {\n        let _gc_turn = self.boxhead_gc_enter();\n        let rval = self.mutate_with_update_context(|context| {\n            let rval = func(context);\n\n            Self::run_actions(context);\n"
+        },
+        {
+          "before": "        });\n        self.update_mouse_state(EnumSet::empty(), false, &mut false);\n\n        // GC\n        self.gc_arena.borrow_mut().collect_debt();\n\n        rval\n    }\n\n",
+          "after": "        });\n        self.update_mouse_state(EnumSet::empty(), false, &mut false);\n\n        // GC\n        self.boxhead_gc_update();\n\n        rval\n    }\n\n"
+        },
+        {
+          "before": "        &mut self,\n        name: &str,\n        args: impl IntoIterator<Item = ExternalValue>,\n    ) -> ExternalValue {\n        self.boxhead_drain();\n        self.mutate_with_update_context_unchecked(|context| ExternalInterface::call_callback(context, name, args))\n    }\n\n    pub fn spoofed_url(&self) -> Option<&str> {\n        self.spoofed_url.as_deref()\n",
+          "after": "        &mut self,\n        name: &str,\n        args: impl IntoIterator<Item = ExternalValue>,\n    ) -> ExternalValue {\n        let _gc_turn = self.boxhead_gc_enter();\n        self.boxhead_drain();\n        let returned = self.mutate_with_update_context_unchecked(|context| ExternalInterface::call_callback(context, name, args));\n        // `returned` is an owned HostValue. Callback::call has completed all\n        // argument/result marshalling and the final native receipt gate.\n        self.boxhead_gc_service();\n        returned\n    }\n\n    pub fn spoofed_url(&self) -> Option<&str> {\n        self.spoofed_url.as_deref()\n"
+        },
+        {
+          "before": "                    RunState::Suspended\n                },\n                needs_render: true,\n                boxhead_deferred: BoxheadDeferred::default(),\n                self_reference: self_ref.clone(),\n                load_behavior: self.load_behavior,\n                spoofed_url: self.spoofed_url.clone(),\n                compatibility_rules: self.compatibility_rules.clone(),\n",
+          "after": "                    RunState::Suspended\n                },\n                needs_render: true,\n                boxhead_deferred: BoxheadDeferred::default(),\n                boxhead_gc: BoxheadGcScheduler::default(),\n                self_reference: self_ref.clone(),\n                load_behavior: self.load_behavior,\n                spoofed_url: self.spoofed_url.clone(),\n                compatibility_rules: self.compatibility_rules.clone(),\n"
+        }
+      ]
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "baseline": {
+        "bytes": 7659,
+        "sha256": "66958cbdb35fd43bd8367f05d73879700df3de55fe0771988c138e76ddffdc5c"
+      },
+      "candidate": {
+        "bytes": 7770,
+        "sha256": "c64354477249b2af6b5f7d228deeb75ef0e6a26ab0d805afd396b1f07a603a01"
+      },
+      "hunks": [
+        {
+          "before": "    /// work. The drain is bounded by entry count, not elapsed wall time: legal\n    /// original handlers, GC or OS scheduling can exceed a frame budget. Each\n    /// original handler retains the normal execution timeout.\n    pub(super) fn boxhead_drain(&mut self) {\n        if self.boxhead_deferred.draining || self.boxhead_deferred.entries.is_empty() || self.boxhead_frozen() { return; }\n        self.boxhead_deferred.draining = true;\n        let mut count = 0;\n        while !self.boxhead_deferred.entries.is_empty() {\n",
+          "after": "    /// work. The drain is bounded by entry count, not elapsed wall time: legal\n    /// original handlers, GC or OS scheduling can exceed a frame budget. Each\n    /// original handler retains the normal execution timeout.\n    pub(super) fn boxhead_drain(&mut self) {\n        let _gc_turn = self.boxhead_gc_enter();\n        if self.boxhead_deferred.draining || self.boxhead_deferred.entries.is_empty() || self.boxhead_frozen() { return; }\n        self.boxhead_deferred.draining = true;\n        let mut count = 0;\n        while !self.boxhead_deferred.entries.is_empty() {\n"
+        },
+        {
+          "before": "                break;\n            }\n        }\n        self.boxhead_deferred.draining = false;\n    }\n\n    /// Arbitrary asynchronous loader closures have arbitrary captured values,\n    /// lifetimes and return types. Running them would mutate the fenced world;\n",
+          "after": "                break;\n            }\n        }\n        self.boxhead_deferred.draining = false;\n        self.boxhead_gc_service();\n    }\n\n    /// Arbitrary asynchronous loader closures have arbitrary captured values,\n    /// lifetimes and return types. Running them would mutate the fenced world;\n"
+        },
+        {
+          "before": "mod tests;\n\n#[cfg(test)]\nmod compact_tests;\n",
+          "after": "mod tests;\n\n#[cfg(test)]\nmod compact_tests;\n\n#[cfg(test)]\nmod gc_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "baseline": {
+        "bytes": 38451,
+        "sha256": "fb0929bae8d3205d5d1df66588786856e2b38d5ac675950bff388afdad9f81c6"
+      },
+      "candidate": {
+        "bytes": 38949,
+        "sha256": "77d8417a5164590bae4055339f5633a4dbb150af2bd55469f7f7922e05813929"
+      },
+      "hunks": [
+        {
+          "before": "        self.poisoned || self.transaction.is_some() || self.invocation.is_some()\n    }\n\n    pub(crate) fn poisoned(&self) -> bool { self.poisoned }\n\n    pub(crate) fn needs_gate(&self, name: &str) -> bool {\n        self.frozen() || (self.installed.is_some() && matches!(Kind::from_name(name),\n            Some(Kind::Begin | Kind::Prepare | Kind::Project | Kind::Commit | Kind::Abort)))\n",
+          "after": "        self.poisoned || self.transaction.is_some() || self.invocation.is_some()\n    }\n\n    pub(crate) fn poisoned(&self) -> bool { self.poisoned }\n\n    /// The private installed owner roots all between-phase VM state. This\n    /// read-only opt-in does not admit a callback or change the fence protocol.\n    pub(crate) fn collection_enabled(&self) -> bool {\n        self.installed.is_some() && !self.poisoned\n    }\n\n    pub(crate) fn needs_gate(&self, name: &str) -> bool {\n        self.frozen() || (self.installed.is_some() && matches!(Kind::from_name(name),\n            Some(Kind::Begin | Kind::Prepare | Kind::Project | Kind::Commit | Kind::Abort)))\n"
+        },
+        {
+          "before": "pub(crate) mod tests;\n\n#[cfg(test)]\npub(crate) mod compact_tests;\n",
+          "after": "pub(crate) mod tests;\n\n#[cfg(test)]\npub(crate) mod compact_tests;\n\n// Weak-only collection witnesses from the Player test module. The original\n// avm1 object module remains private and the release API is unchanged.\n#[cfg(test)]\npub(crate) use crate::avm1::object::ObjectWeak as GcTestObjectWeak;\n"
+        }
+      ]
+    },
+    {
+      "path": "Cargo.toml",
+      "baseline": {
+        "bytes": 5842,
+        "sha256": "6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b"
+      },
+      "candidate": {
+        "bytes": 5957,
+        "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361"
+      },
+      "hunks": [
+        {
+          "before": "    \"tools/fuzzer\",\n    \"tools/stub-report\",\n]\ndefault-members = [\"desktop\"]\nresolver = \"2\"\n\n[workspace.package]\nauthors = [\"Ruffle LLC <ruffle@ruffle.rs>\"]\n",
+          "after": "    \"tools/fuzzer\",\n    \"tools/stub-report\",\n]\ndefault-members = [\"desktop\"]\nexclude = [\"third_party/boxhead-gc-arena\"]\nresolver = \"2\"\n\n[workspace.package]\nauthors = [\"Ruffle LLC <ruffle@ruffle.rs>\"]\n"
+        },
+        {
+          "before": "# This is also set with higher authority in `test_rust.yml`.\nincremental = true\n# Right between the defaults of 16 and 256, for crate fragment caching.\ncodegen-units = 64\n",
+          "after": "# This is also set with higher authority in `test_rust.yml`.\nincremental = true\n# Right between the defaults of 16 and 256, for crate fragment caching.\ncodegen-units = 64\n\n[patch.crates-io]\ngc-arena = { path = \"third_party/boxhead-gc-arena\" }\n"
+        }
+      ]
+    },
+    {
+      "path": "Cargo.lock",
+      "baseline": {
+        "bytes": 188669,
+        "sha256": "c5483f1461377c35a895f487b4c3e7e4e8e85aad0ab5eac1b63c1aecdfcf41c7"
+      },
+      "candidate": {
+        "bytes": 188526,
+        "sha256": "5d699d18c0eb06d9bf5350321c754ae5d98cfd3662b4103566c73f25354f0555"
+      },
+      "hunks": [
+        {
+          "before": "\n[[package]]\nname = \"gc-arena\"\nversion = \"0.7.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"160a11f93020eea95cb4c59e2eda2e4c6353f75aa4fbb01f2bf8729b2e4d6dd2\"\ndependencies = [\n \"enum-map\",\n \"gc-arena-derive\",\n \"hashbrown 0.17.1\",\n",
+          "after": "\n[[package]]\nname = \"gc-arena\"\nversion = \"0.7.0\"\ndependencies = [\n \"enum-map\",\n \"gc-arena-derive\",\n \"hashbrown 0.17.1\",\n"
+        }
+      ]
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/arena.rs",
+      "baseline": {
+        "bytes": 16138,
+        "sha256": "b0fb4d1562378e74b73d873a0a7d035414305872a7babe120dd0e81064e15ba0"
+      },
+      "candidate": {
+        "bytes": 17808,
+        "sha256": "30baeedb410d2fd35c9df88815d4b68854282bc194b43b37c7e842a62df91a84"
+      },
+      "hunks": [
+        {
+          "before": "                .do_collection(&self.root, RunUntil::PayDebt, Stop::Full);\n        }\n    }\n\n    /// Run only the *marking* part of incremental garbage collection until allocation debt is zero.\n    ///\n    /// This does *not* transition collection past the [`CollectionPhase::Marked`]\n    /// phase. Does nothing if the collection phase is [`CollectionPhase::Marked`] or\n",
+          "after": "                .do_collection(&self.root, RunUntil::PayDebt, Stop::Full);\n        }\n    }\n\n    /// Pay allocation debt cooperatively, completing at most `max_work` units.\n    ///\n    /// A unit is one complete iteration of the original collection loop: a\n    /// whole root/object trace, a whole object sweep, or a phase transition.\n    /// `may_continue` is called before each unit with the number already\n    /// completed in this call. Returning false yields without discarding debt.\n    /// No callback is made if there is no debt or `max_work` is zero.\n    ///\n    /// This is a work bound, not a hard time bound. A single user-defined\n    /// `Collect::trace` or destructor remains indivisible. Callers may check a\n    /// monotonic deadline in `may_continue`, including periodically, but must\n    /// account for the possible overrun of those complete operations.\n    ///\n    /// The callback receives no arena or GC reference. It must not attempt to\n    /// reenter this arena. Collection remains outside `mutate`, and all write\n    /// barriers, colors, counters, sweep pointers and carried allocation debt\n    /// retain their original meaning. A yielded cycle is incremental, rather\n    /// than an atomic full-cycle collection.\n    ///\n    /// Returns the number of work units completed, which may be zero. This\n    /// method does not promise to repay all debt; the caller must schedule\n    /// subsequent slices and ensure collection keeps up with allocation.\n    #[inline]\n    pub fn collect_debt_slice(\n        &mut self,\n        max_work: usize,\n        may_continue: impl FnMut(usize) -> bool,\n    ) -> usize {\n        unsafe {\n            self.context\n                .do_collection_slice(&self.root, max_work, may_continue)\n        }\n    }\n\n    /// Run only the *marking* part of incremental garbage collection until allocation debt is zero.\n    ///\n    /// This does *not* transition collection past the [`CollectionPhase::Marked`]\n    /// phase. Does nothing if the collection phase is [`CollectionPhase::Marked`] or\n"
+        }
+      ]
+    },
+    {
+      "path": "third_party/boxhead-gc-arena/src/context.rs",
+      "baseline": {
+        "bytes": 31114,
+        "sha256": "bb21cecf28bb7bfe433851dd7d848743ab42488c4c38dd9419380689469096ef"
+      },
+      "candidate": {
+        "bytes": 35311,
+        "sha256": "57414577ed6e866b482e11700bae8102bb2d5974b1d76e24ced1eb4c41175c5c"
+      },
+      "hunks": [
+        {
+          "before": "            }\n        }\n\n        cx.log_progress(\"GC: yielding...\");\n    }\n\n    #[inline]\n    fn allocate<'gc, T: Collect<'gc>>(&self, t: T) -> GcPtr<T> {\n",
+          "after": "            }\n        }\n\n        cx.log_progress(\"GC: yielding...\");\n    }\n\n    // Additive cooperative variant of do_collection. The original function and\n    // every original Arena API remain unchanged. A source-reversal fixture\n    // binds the phase/accounting body below to the registry implementation.\n    //\n    // Safety is identical to do_collection: there must be no unrooted live Gc\n    // pointers. A budget is checked only between complete collector units.\n    #[deny(unsafe_op_in_unsafe_fn)]\n    pub(crate) unsafe fn do_collection_slice<'gc, R: Collect<'gc> + ?Sized>(\n        &mut self,\n        root: &R,\n        max_work: usize,\n        mut may_continue: impl FnMut(usize) -> bool,\n    ) -> usize {\n        let run_until = RunUntil::PayDebt;\n        let stop = Stop::Full;\n        let mut cx = PhaseGuard::enter(self, None);\n\n        if run_until == RunUntil::PayDebt && !(cx.metrics.allocation_debt() > 0.0) {\n            cx.log_progress(\"GC: paused\");\n            return 0;\n        }\n\n        // Deliberately local to this call. If a slice yields, finishing that\n        // cycle in another call must preserve carried debt via finish_cycle(false).\n        let mut has_slept = false;\n        let mut work = 0;\n\n        loop {\n            if work >= max_work || !may_continue(work) {\n                break;\n            }\n            work += 1;\n            match cx.phase {\n                Phase::Sleep => {\n                    has_slept = true;\n                    // Immediately enter the mark phase\n                    cx.switch(Phase::Mark);\n                }\n                Phase::Mark => {\n                    if cx.mark_one(root).is_break() {\n                        if stop <= Stop::FullyMarked {\n                            break;\n                        } else {\n                            // If we have no gray objects left, we enter the sweep phase.\n                            cx.switch(Phase::Sweep);\n\n                            // Set `sweep to the current head of our `all` linked list. Any new\n                            // allocations during the newly-entered `Phase:Sweep` will update `all`,\n                            // but will *not* be reachable from `this.sweep`.\n                            cx.sweep = cx.all.get();\n                        }\n                    }\n                }\n                Phase::Sweep => {\n                    if stop <= Stop::AtSweep {\n                        break;\n                    } else if cx.sweep_one().is_break() {\n                        // Begin a new cycle.\n                        //\n                        // We reset our debt if we have done an entire collection cycle (marking and\n                        // sweeping) as a single atomic unit. This keeps inherited debt from growing\n                        // without bound.\n                        cx.metrics.finish_cycle(has_slept);\n                        cx.root_needs_trace = true;\n                        cx.switch(Phase::Sleep);\n\n                        // We treat a stop condition of `Stop::Finish` as special for the purposes\n                        // of logging, and log that we finished a cycle.\n                        if stop == Stop::FinishCycle {\n                            cx.log_progress(\"GC: finished\");\n                            return work;\n                        }\n\n                        // Otherwise we always break if we have performed a full cycle as a single\n                        // atomic unit, because there cannot be any more work to do in this case.\n                        if has_slept {\n                            // We shouldn't be stopping here if the stop condition is something like\n                            // `Stop::AtSweep`, but this should be impossible since the only way to\n                            // get here is to have gone through the entire cycle.\n                            assert!(stop == Stop::Full);\n                            break;\n                        }\n                    }\n                }\n                Phase::Drop => unreachable!(),\n            }\n\n            if run_until == RunUntil::PayDebt && !(cx.metrics.allocation_debt() > 0.0) {\n                break;\n            }\n        }\n\n        cx.log_progress(\"GC: yielding...\");\n        work\n    }\n\n    #[inline]\n    fn allocate<'gc, T: Collect<'gc>>(&self, t: T) -> GcPtr<T> {\n"
+        }
+      ]
+    }
+  ]
+}

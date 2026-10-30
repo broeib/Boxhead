@@ -1,0 +1,26 @@
+{
+  "schema": "boxhead-native-single-push-source-delta-v1",
+  "files": [
+    {
+      "path": "core/src/avm1/activation.rs",
+      "predecessorBytes": 125491,
+      "predecessorSha256": "7aab0b274d5ba3a80b0e22d14ed90074c894b9ff187b4cd42a61f672741d9727",
+      "candidateBytes": 126371,
+      "candidateSha256": "cfe62e1b715eea7a3dc0b2d9207e50d4f0d04e40186e98a6f99f970cc0ceb883",
+      "hunks": [
+        {
+          "before": "use super::object_reference::MovieClipReference;\n",
+          "after": "use super::object_reference::MovieClipReference;\n\n#[path = \"activation/boxhead_single_push.rs\"]\nmod boxhead_single_push;\n\n#[cfg(test)]\n#[path = \"activation/boxhead_single_push_tests.rs\"]\nmod boxhead_single_push_tests;\n"
+        },
+        {
+          "before": "        } else {\n            let action = reader.read_action()?;\n            avm_debug!(\n",
+          "after": "        } else {\n            // A fully validated singleton can avoid the parser's temporary Vec.\n            // Every other instruction, including all malformed forms and debug\n            // output, keeps the original parser and its cursor/error behavior.\n            if let Some(value) = boxhead_single_push::read_single_push(\n                reader,\n                self.context.avm1.show_debug_output(),\n            ) {\n                return self.action_push_values(std::iter::once(value));\n            }\n            let action = reader.read_action()?;\n            avm_debug!(\n"
+        },
+        {
+          "before": "    fn action_push(&mut self, action: Push) -> Result<FrameControl<'gc>, Error<'gc>> {\n        for value in action.values {\n",
+          "after": "    fn action_push(&mut self, action: Push) -> Result<FrameControl<'gc>, Error<'gc>> {\n        self.action_push_values(action.values)\n    }\n\n    fn action_push_values<'b>(\n        &mut self,\n        values: impl IntoIterator<Item = swf::avm1::types::Value<'b>>,\n    ) -> Result<FrameControl<'gc>, Error<'gc>> {\n        for value in values {\n"
+        }
+      ]
+    }
+  ]
+}

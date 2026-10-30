@@ -1,0 +1,706 @@
+{
+  "schema": "boxhead-ruffle-native-smooth-engine-source-v2",
+  "engineVariant": "native-smooth-v2",
+  "sourceRevision": 2,
+  "status": "source-package-new-ci-qualification-required",
+  "upstream": {
+    "repository": "ruffle-rs/ruffle",
+    "commit": "cac5c99ce4a17e606f4ee3090389bb878f852055"
+  },
+  "parentSource": {
+    "file": "tools/ruffle-native-projector/engine/manifest.json",
+    "bytes": 13405,
+    "sha256": "47d7f4e40bdf3b348d8dd21ad2c8b8cfbbe613b026a68772d72977794691b430"
+  },
+  "files": [
+    {
+      "path": "core/common/src/avm_string.rs",
+      "bytes": 532,
+      "sha256": "038fda50d9b640c82bee57f086ff2331ae1554dbd725dcdcda905ef800427e08",
+      "baselineBytes": 470,
+      "baselineSha256": "59f186c7769f48f6012c8bdeac40228589aa36c92a579d6d11dd45e40a9c15aa"
+    },
+    {
+      "path": "core/common/src/avm_string/avm_string.rs",
+      "bytes": 5858,
+      "sha256": "dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b",
+      "baselineBytes": 5517,
+      "baselineSha256": "ceeeeb9431c7c4f2601a6d61eb2ca47878225f5f78c61e73788808809d3ee38a"
+    },
+    {
+      "path": "core/common/src/avm_string/property_hash.rs",
+      "bytes": 1709,
+      "sha256": "bf830b558ce4be4ac700c0f5f3e94385861872578a7622f603d2d54912246655",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/common/src/avm_string/repr.rs",
+      "bytes": 8327,
+      "sha256": "255e9167c20c94db7803cf4b73205e83f4da3572b4be15652614266fb3a8c141",
+      "baselineBytes": 7433,
+      "baselineSha256": "61c9876a88dee4f473ea9030141ebfb3fca060f7d26fa96e5b31768fb4fdf4da"
+    },
+    {
+      "path": "core/src/avm1/activation.rs",
+      "bytes": 125491,
+      "sha256": "7aab0b274d5ba3a80b0e22d14ed90074c894b9ff187b4cd42a61f672741d9727",
+      "baselineBytes": 125386,
+      "baselineSha256": "88d48f22b33f01091d837fc097ca66bf528edee2f8b648331dc8b59c97ba789d"
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33610,
+      "sha256": "d7a632b1d66128761b3b9ef040d1ac9401b97084494daf011ab6ade47d39f649",
+      "baselineBytes": 33196,
+      "baselineSha256": "1fc43b5c2805b95138bb190ffd20c5100f6cf8e2e6cd980c67fd7417301052da"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 44234,
+      "sha256": "87ed575bf2a2024aa928e0aeaf454c6ccf00294900a40c493def19eeafce074f",
+      "baselineBytes": 33729,
+      "baselineSha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v6.rs",
+      "bytes": 45533,
+      "sha256": "7c66dcc658cbab9fac3c1068807f835433429c19fe22cab838e5e4f9f8eed2a7",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 84766,
+      "sha256": "1eac4f9aa838ed23f99b86467905984612ae2b1e2da941fa4c51e14030ad81b0",
+      "baselineBytes": 31537,
+      "baselineSha256": "a60a87805e8be141b9a3a501c53a3a5e327a99a67ed2522ff25f9af40dbad5d9"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project.rs",
+      "bytes": 33798,
+      "sha256": "844598c85638ba20605fda92a63056c25e9a6c2013b18a4898a6bd108f8e1778",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/activation_tests.rs",
+      "bytes": 7140,
+      "sha256": "58c42f21ab6cc83fcd4747797f859b58d6a93f040014827d2cfd9aeb369c5003",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/tests.rs",
+      "bytes": 44837,
+      "sha256": "a502021d37bfb5982af63f480219d2abd25a7602a20435cdd82dcc74872f7fa5",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12779,
+      "sha256": "5163451e77e51f6f5f2d1050d506795cee26713d9cb0852c46c9894bb99b842a",
+      "baselineBytes": 12289,
+      "baselineSha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 38451,
+      "sha256": "fb0929bae8d3205d5d1df66588786856e2b38d5ac675950bff388afdad9f81c6",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/compact_tests.rs",
+      "bytes": 38950,
+      "sha256": "ab013e4e154c99c184a8b3bc4a68df09ac41e4d8db6215a554ba754f62bfd39f",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/object.rs",
+      "bytes": 20276,
+      "sha256": "1929a336bd4b60cae4491b28542116f88027f823e36b2dd5b2936ffc4458b2bc",
+      "baselineBytes": 17992,
+      "baselineSha256": "b672d142ad23793f6ef95b4a505735458ca33b75b5b92488ddefbc5451eaa3a7"
+    },
+    {
+      "path": "core/src/avm1/object/boxhead_property_tests.rs",
+      "bytes": 44883,
+      "sha256": "27a57506ebf1af2a9b1c76c43cb475334d0816891fa1772943a76945380ef659",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 43753,
+      "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399",
+      "baselineBytes": 37891,
+      "baselineSha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+    },
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 9568,
+      "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b",
+      "baselineBytes": 6702,
+      "baselineSha256": "dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b"
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_equality_tests.rs",
+      "bytes": 17982,
+      "sha256": "193dc3ae52597f7efb92c8082cea1363e340d19e290ee464648454be32c770d2",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_hash_tests.rs",
+      "bytes": 20165,
+      "sha256": "c8b3efdece5af2f66ad681a7dcbb9673e796b5908f48a3dfc589db7a208fc00f",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/runtime.rs",
+      "bytes": 26231,
+      "sha256": "e1d54cedfb23f3f87e1e7a071d97499c3574b2c20d62db8016faa4a9297980aa",
+      "baselineBytes": 25992,
+      "baselineSha256": "d563a2bdcd09a0302a7bfc7f6d7bb798dda1f6d301e04e0b24c24a878a8b8109"
+    },
+    {
+      "path": "core/src/bitmap/operations.rs",
+      "bytes": 68385,
+      "sha256": "4f1aac19f991f13c50054f136d129a0f8287419bb3658ece2180834fb1fd9917",
+      "baselineBytes": 68276,
+      "baselineSha256": "0008286ba1c493f7edf64d7408169c97fbe75965b62d4a543160ecb3ebc49447"
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_blit.rs",
+      "bytes": 14782,
+      "sha256": "434b80a83c2179bf9d430f947efa1b70694574b9c32d6666140ca290ad70d7a8",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_frozen.rs",
+      "bytes": 4039,
+      "sha256": "54fcda2178cfbcbdc5634bee2b25d2552407ff710239b9c4f0b2ba2a99dc9070",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/bitmap/operations/boxhead_overwrite_tests.rs",
+      "bytes": 24171,
+      "sha256": "5fa67313bfd4026f1cfef185d9f3de2e5a580aebbc0705cf1382e4f5526e1b36",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c",
+      "baselineBytes": 14038,
+      "baselineSha256": "e7147763dc7547701ab5d0ac0f0db43f4ff077999b12ee0def0d19a6e54f3e6e"
+    },
+    {
+      "path": "core/src/player.rs",
+      "bytes": 131004,
+      "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80",
+      "baselineBytes": 126258,
+      "baselineSha256": "be765f0d43ff8a5933a93481da3f357645eca81e23de7a1db3656202cfe50937"
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "bytes": 7659,
+      "sha256": "66958cbdb35fd43bd8367f05d73879700df3de55fe0771988c138e76ddffdc5c",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/compact_tests.rs",
+      "bytes": 9524,
+      "sha256": "3cdbae716ad3130708a419649591648ff952a314ebd8c0271e35f65676352e93",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9",
+      "baselineAbsent": true
+    },
+    {
+      "path": "web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f",
+      "baselineBytes": 54638,
+      "baselineSha256": "7bffd2b40d3992f063112d6fef3a23330d794f22cd4ba1486dbfc3d55d71bafc"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project/lookup_names.rs",
+      "bytes": 9025,
+      "sha256": "770d3bea4d55cd7a570ad529d0ab87943f5d371b9278727a387979e22ed4c1fa",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/scope.rs",
+      "bytes": 10718,
+      "sha256": "8e753328af9d37cf80b7c82b9bd1c6ada07018ec8db38cd80386033d5d101264",
+      "baselineBytes": 9350,
+      "baselineSha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+    },
+    {
+      "path": "core/src/avm1/scope/boxhead_lookup_v2_tests.rs",
+      "bytes": 34028,
+      "sha256": "d816640560079b1c70c8d20ad91e2bdd98000df05d02f830de1b5953b98c3984",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/scope/frozen_v10.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d",
+      "baselineAbsent": true
+    }
+  ],
+  "unchangedParentFiles": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/activation_tests.rs",
+      "bytes": 12679,
+      "sha256": "37de1402d141d65bc7ca90cc700ee053c0725624872c79f1640d1a73b9548db8"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/tests.rs",
+      "bytes": 50555,
+      "sha256": "a72d480f00efaad664491bafddbd6d30aed2e700e403299d35b71ada70e2b532"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars.rs",
+      "bytes": 10277,
+      "sha256": "2a33f7c2f76db6b02fd95e8e534c53610efc3f83aa7193970e875c5138320a9d"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs",
+      "bytes": 3111,
+      "sha256": "420899c30a7f3f5582de9ae30cb77475d2cc217059a656241774aca389a2b396"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/tests.rs",
+      "bytes": 22935,
+      "sha256": "2a377f224648e03615441bcfd722127516dbd897472a5999cd3e4e013b3dbf9a"
+    }
+  ],
+  "rustUnitGroups": [
+    {
+      "label": "graph",
+      "filter": "native_graph",
+      "expectedExecuted": 37,
+      "expectedPassed": 37,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_numeric_payload_keeps_exact_object_paths_and_aliases",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_alias_keeps_exact_path_limit_rejection",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_anchor_filter_never_hides_unsupported_virtual_fields",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_match_frozen_v4_bytes_and_bfs_names",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_frozen_v4_error_precedence",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_raw_anchor_edges_match_complete_property_count_and_validation",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_shared_anchor_tables_keep_exact_capacity_and_duplicate_rules",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_pruned_anchor_queue_keeps_raw_field_and_timeout_bounds",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_preserve_explicit_generated_collisions_and_segment_boundaries",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_compare_forced_hash_collisions_without_aliasing",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_retain_utf16_empty_segments_and_exact_2048_limit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_rebind_fresh_receiving_assets_and_keep_packet_bytes",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_lazy_names_keep_unemitted_geometry_paths_lazy_and_iterative",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_dense_schedule_preserves_first_deep_alias_across_words",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_fresh_calls_observe_replaced_edges_kinds_and_flags",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_keeps_utf16_path_and_timeout_errors_before_alias_pruning",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_packets_for_mixed_aliases_and_variants",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_matches_frozen_v6_rejection_precedence",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_hotpath_reuses_buffer_without_retaining_prior_object_edges"
+      ]
+    },
+    {
+      "label": "scalar",
+      "filter": "native_scalar",
+      "expectedExecuted": 14,
+      "expectedPassed": 14,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_scalars::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_scalars::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_scalars::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_scalars::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_scalars::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_scalars::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_scalars::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_scalars::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::activation::native_scalar_boundary_tests::native_scalar_undefined_after_removal_ends_the_actual_caller_activation"
+      ]
+    },
+    {
+      "label": "projection",
+      "filter": "native_projection_scan",
+      "expectedExecuted": 30,
+      "expectedPassed": 30,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_projection_scan::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_projection_scan::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_projection_scan::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tags_null_and_primitive_only_records_do_not_allocate_deferred_arrays",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_keys_keep_enumeration_order_without_a_second_source_read_or_recursive_visit",
+        "avm1::globals::boxhead_native_projection_scan::tests::functions_are_read_once_but_omitted_before_field_policy_and_upgrade_handling",
+        "avm1::globals::boxhead_native_projection_scan::tests::upgrades_omit_levels_and_defer_multipliers_before_leaf_type_or_null_coercion",
+        "avm1::globals::boxhead_native_projection_scan::tests::sparse_array_own_fields_preserve_holes_and_leave_length_metadata_to_as2",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_policy_and_loose_null_leaf_comparisons_are_not_discriminant_tests",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_policy_cache_refresh_valueof_and_output_setter_have_original_order",
+        "avm1::globals::boxhead_native_projection_scan::tests::leaf_valueof_exceptions_propagate_without_defer_or_completed_result",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tag_uses_live_object_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_array_constructor_prototype_and_push_overrides_are_resolved_live",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_on_existing_keys_can_reconstruct_the_array_for_each_deferred_field",
+        "avm1::globals::boxhead_native_projection_scan::tests::unusual_native_constructor_return_values_keep_original_null_method_and_coercion_behavior",
+        "avm1::globals::boxhead_native_projection_scan::tests::constructor_and_push_exceptions_are_not_retried_or_reported_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_array_construction_or_push_stops_before_the_next_source_read",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_cache_replacement_with_primitive_uses_getmember_coercion_on_later_fields",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_undefined_after_removal_ends_the_actual_caller_activation",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_defer_matches_real_equality_newobject_and_callmethod_opcodes"
+      ]
+    },
+    {
+      "label": "project",
+      "filter": "boxhead_native_project::",
+      "expectedExecuted": 27,
+      "expectedPassed": 27,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_project::tests::capability_is_registered_fresh_hidden_and_readonly",
+        "avm1::globals::boxhead_native_project::tests::unsupported_roots_and_malformed_calls_do_not_touch_source",
+        "avm1::globals::boxhead_native_project::tests::recursive_sorted_graph_preserves_shared_references_cycles_and_field_count",
+        "avm1::globals::boxhead_native_project::tests::scalar_values_include_undefined_nonfinite_negative_zero_and_own_only_policy",
+        "avm1::globals::boxhead_native_project::tests::sparse_arrays_keep_original_length_and_scalar_metadata_overrides",
+        "avm1::globals::boxhead_native_project::tests::map_and_cell_specialcases_do_not_allocate_reference_ids",
+        "avm1::globals::boxhead_native_project::tests::upgrade_definitions_are_read_but_only_original_active_indices_are_projected",
+        "avm1::globals::boxhead_native_project::tests::deferred_getter_is_read_again_at_recursive_traversal_position",
+        "avm1::globals::boxhead_native_project::tests::enumeration_is_captured_once_and_does_not_admit_later_keys",
+        "avm1::globals::boxhead_native_project::tests::actual_array_sort_override_determines_recursive_reference_order",
+        "avm1::globals::boxhead_native_project::tests::collisions_budget_and_getter_failures_never_fall_back_after_partial_work",
+        "avm1::globals::boxhead_native_project::tests::recursion_budget_stops_before_marking_depth_65_and_keeps_cleanup_list",
+        "avm1::globals::boxhead_native_project::tests::execution_timeout_is_checked_before_source_reads",
+        "avm1::globals::boxhead_native_project::tests::no_world_values_or_shapes_survive_between_projections",
+        "avm1::globals::boxhead_native_project::tests::synthetic_metadata_preserves_live_reads_inherited_animation_names_and_reference_order",
+        "avm1::globals::boxhead_native_project::tests::scalar_metadata_shadows_output_but_animation_still_allocates_its_reference_ids",
+        "avm1::globals::boxhead_native_project::tests::virtual_or_replaced_code_identity_is_rejected_without_reading_the_getter_or_world",
+        "avm1::globals::boxhead_native_project::tests::code_mutation_after_source_reads_is_fatal_and_retains_the_outer_cleanup_list",
+        "avm1::globals::boxhead_native_project::tests::custom_or_virtual_scan_callbacks_fall_back_before_any_world_read",
+        "avm1::globals::boxhead_native_project::tests::scan_callback_mutation_during_projection_is_fatal_without_restarting_the_graph",
+        "avm1::globals::boxhead_native_project::tests::pinned_to_string_opcodes_do_not_resolve_the_replaceable_global_string_function",
+        "avm1::globals::boxhead_native_project::tests::active_frozen_scan_keeps_nonfinite_helper_validation_calls_and_actual_counter_deltas",
+        "avm1::globals::boxhead_native_project::tests::active_scan_envelope_fields_are_reread_after_has_own_property_mutates_them",
+        "avm1::globals::boxhead_native_project::tests::active_scan_helper_and_validation_errors_preserve_their_boundary_without_fallback",
+        "avm1::globals::boxhead_native_project::tests::active_scan_strict_false_reuses_the_captured_cache_and_runs_the_inline_scan_once",
+        "avm1::activation::boxhead_native_project::native_project_removal_returns_through_the_real_action_call_method_boundary",
+        "avm1::activation::boxhead_native_project::active_scan_nonfinite_helper_keeps_its_real_removal_boundary_before_result_validation"
+      ],
+      "exactIgnoredNames": []
+    },
+    {
+      "label": "bitmap",
+      "filter": "bitmap_blit_",
+      "expectedExecuted": 6,
+      "expectedPassed": 6,
+      "expectedFailed": 0,
+      "expectedIgnored": 1,
+      "exactNames": [
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_exhaustive_source_destination_alpha_pairs",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_transparent_black_preserves_rgb_and_forces_opaque_alpha",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_opaque_mixed_blocks_and_every_tail_boundary",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_alpha_zero_with_nonzero_rgb_is_not_a_noop",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_clipped_rows_and_destination_transparency",
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_real_bitmap_self_overlap_keeps_original_forward_order"
+      ],
+      "exactIgnoredNames": [
+        "bitmap::operations::boxhead_blit::tests::bitmap_blit_row_microbenchmark"
+      ]
+    },
+    {
+      "label": "hash",
+      "filter": "avm1::property_map::boxhead_hash_tests",
+      "expectedExecuted": 9,
+      "expectedPassed": 9,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_hash_tests::property_hash_exhaustive_utf16_units_match_original_fnv",
+        "avm1::property_map::boxhead_hash_tests::property_hash_narrow_and_wide_inputs_keep_original_stream",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cache_is_independent_for_slices_and_inline_concat",
+        "avm1::property_map::boxhead_hash_tests::property_hash_static_interned_and_owned_strings_share_exact_hash",
+        "avm1::property_map::boxhead_hash_tests::property_hash_mixed_case_queries_and_mutations_match_original_map",
+        "avm1::property_map::boxhead_hash_tests::property_hash_clone_borrowed_mutation_and_entry_removal_preserve_order",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_misses_observe_new_own_and_inherited_properties",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_preserve_swf_case_and_attribute_rules",
+        "avm1::property_map::boxhead_hash_tests::property_hash_cached_names_still_run_getters_setters_and_watchers"
+      ]
+    },
+    {
+      "label": "property",
+      "filter": "avm1::object::boxhead_property_tests",
+      "expectedExecuted": 28,
+      "expectedPassed": 28,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::object::boxhead_property_tests::ordinary_data_and_inherited_depth_match_the_original_lookup",
+        "avm1::object::boxhead_property_tests::stored_undefined_shadows_parent_getters_and_resolvers",
+        "avm1::object::boxhead_property_tests::getter_returning_undefined_stops_at_its_original_depth_and_receiver",
+        "avm1::object::boxhead_property_tests::getter_throws_and_nonfatal_error_handling_match_original",
+        "avm1::object::boxhead_property_tests::recursive_getter_error_reads_the_descriptor_again_after_replacement",
+        "avm1::object::boxhead_property_tests::getter_deletion_and_prototype_mutation_preserve_live_continuation",
+        "avm1::object::boxhead_property_tests::version_hidden_stored_and_virtual_descriptors_follow_the_parent",
+        "avm1::object::boxhead_property_tests::mixed_case_stored_names_use_the_same_runtime_collision_choice",
+        "avm1::object::boxhead_property_tests::own_watchers_do_not_change_read_semantics",
+        "avm1::object::boxhead_property_tests::unresolved_lookup_retains_resolver_switch_receiver_and_arguments",
+        "avm1::object::boxhead_property_tests::special_native_and_super_objects_keep_the_original_lookup_path",
+        "avm1::object::boxhead_property_tests::prototype_cycle_reaches_the_original_recursion_limit",
+        "avm1::object::boxhead_property_tests::own_data_writes_preserve_flags_order_and_version_clearing",
+        "avm1::object::boxhead_property_tests::own_data_shadows_inherited_virtual_setters_even_when_initially_hidden",
+        "avm1::object::boxhead_property_tests::watchers_and_own_virtual_setters_still_receive_every_write",
+        "avm1::object::boxhead_property_tests::missing_write_falls_back_without_insertion_and_preserves_inherited_setter",
+        "avm1::object::boxhead_property_tests::native_arrays_display_super_and_functions_never_use_the_write_fast_path",
+        "avm1::object::boxhead_property_tests::empty_property_name_keeps_its_original_early_return",
+        "avm1::object::boxhead_property_tests::stored_proto_write_changes_subsequent_lookup_without_any_cached_shape",
+        "avm1::object::boxhead_property_tests::mixed_case_writes_retain_collision_selection_and_enumeration_order",
+        "avm1::object::boxhead_property_tests::missing_write_searches_past_inherited_stored_slots_for_a_deeper_setter",
+        "avm1::object::boxhead_property_tests::missing_write_keeps_visible_getter_only_and_hidden_virtual_stopping_rules",
+        "avm1::object::boxhead_property_tests::missing_write_preserves_inherited_setter_mutations_and_error_precedence",
+        "avm1::object::boxhead_property_tests::missing_write_watchers_keep_slot_creation_reparenting_and_thrown_value_rules",
+        "avm1::object::boxhead_property_tests::missing_write_reads_proto_data_with_original_case_and_attribute_rules",
+        "avm1::object::boxhead_property_tests::missing_ordinary_write_retains_native_and_super_prototype_setter_paths",
+        "avm1::object::boxhead_property_tests::missing_write_keeps_new_field_case_flags_order_and_raw_proto_insertion",
+        "avm1::object::boxhead_property_tests::missing_write_rechecks_prototypes_watchers_and_native_kind_between_writes"
+      ]
+    },
+    {
+      "label": "fence",
+      "filter": "step_fence_",
+      "expectedExecuted": 35,
+      "expectedPassed": 35,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_step_fence::tests::step_fence_argument_marshalling_cannot_begin_or_execute_game_after_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_begin_reentry_from_an_ambient_player_update_is_rejected",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_capability_has_only_the_two_declared_fields",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_cleanup_failure_keeps_terminal_native_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_committed_rng_is_the_original_record_not_a_scalar",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_abort_and_phase_catch_abort_never_resume",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_explicit_causal_action_drain_remains_inside_entered_original_phase",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_full_chain_keeps_game_once_and_releases_only_after_serialized_receipt",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_info_and_receipt_cannot_precede_complete_commit",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_invalid_begin_arguments_never_execute_original_game",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_malformed_receipt_after_finish_stays_poisoned",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_missing_duplicate_and_malformed_phase_returns_poison",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_native_transition_requires_exact_phase_body_callee",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_nested_present_is_rejected_even_if_caught_by_phase_body",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_new_round_same_owner_accepts_reset_tick_with_fresh_epoch_and_world",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_pinned_registration_and_world_replacement_are_terminal",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_poisoned_player_disposal_does_not_flush_or_execute_queued_actions",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_present_is_not_admitted_after_commit_before_info_or_receipt",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_receipt_serialization_caught_reentry_prevents_release",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_stage_calls_cannot_skip_prepare",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_stale_token_epoch_and_tick_are_rejected_before_body",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_successful_receipt_does_not_reuse_prior_epoch",
+        "avm1::globals::boxhead_step_fence::tests::step_fence_unknown_callback_is_rejected_and_cleanup_runs_once",
+        "player::boxhead_step_fence::tests::step_fence_clipboard_retains_each_payload_before_its_paste_and_counts_bytes",
+        "player::boxhead_step_fence::tests::step_fence_context_menu_suppresses_transient_popup_and_runs_original_select_once",
+        "player::boxhead_step_fence::tests::step_fence_fifo_limits_account_for_ime_bytes_time_and_each_exact_entry",
+        "player::boxhead_step_fence::tests::step_fence_player_ambient_fifo_matches_unfenced_entry_order_and_timer_time",
+        "player::boxhead_step_fence::tests::step_fence_player_event_capacity_overflow_poison_cleans_and_never_drains",
+        "player::boxhead_step_fence::tests::step_fence_player_explicit_run_state_and_resize_wait_in_original_order",
+        "player::boxhead_step_fence::tests::step_fence_player_next_ei_drains_earlier_ambient_work_before_new_body",
+        "player::boxhead_step_fence::tests::step_fence_player_opaque_async_mutation_fails_before_executing_closure",
+        "player::boxhead_step_fence::tests::step_fence_player_readonly_api_does_not_poison_or_dispatch_vm_work",
+        "player::boxhead_step_fence::tests::step_fence_player_render_keeps_pure_paint_and_defers_broadcast_actions",
+        "player::boxhead_step_fence::tests::step_fence_player_slow_original_handler_keeps_fifo_tail_before_next_body",
+        "player::boxhead_step_fence::tests::step_fence_player_uninstalled_local_game_keeps_ordinary_input_and_frame_order"
+      ]
+    },
+    {
+      "label": "equality",
+      "filter": "property_equality_",
+      "expectedExecuted": 8,
+      "expectedPassed": 8,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_case_collisions_and_readonly_flags_match_frozen_table",
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_interned_reads_keep_getter_setter_and_watcher_calls",
+        "avm1::property_map::boxhead_equality_tests::property_equality_actual_swf6_and_7_reads_reobserve_own_and_prototype_slots",
+        "avm1::property_map::boxhead_equality_tests::property_equality_interned_names_keep_sensitive_and_folded_collision_choices",
+        "avm1::property_map::boxhead_equality_tests::property_equality_interning_after_insertion_does_not_change_membership",
+        "avm1::property_map::boxhead_equality_tests::property_equality_mixed_mutations_clone_entries_and_order_match_frozen_map",
+        "avm1::property_map::boxhead_equality_tests::property_equality_owned_identity_and_equal_allocations_match_frozen_queries",
+        "avm1::property_map::boxhead_equality_tests::property_equality_utf16_widths_and_dependent_ranges_keep_exact_contents"
+      ]
+    },
+    {
+      "label": "overwrite",
+      "filter": "bitmap_overwrite_",
+      "expectedExecuted": 15,
+      "expectedPassed": 15,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_cancels_only_destination_and_reads_fresh_dirty_source",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clean_and_cpu_dirty_targets_keep_upload_bytes_and_dirty_union",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_clipping_can_still_cover_the_whole_destination_from_an_offset_source",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_empty_public_copy_does_not_cancel_or_resolve_any_handle",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_existing_cpu_draw_caller_keeps_opaque_pixels_and_no_readback",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_destination_cancels_partial_gpu_dirty_region_with_padded_rows",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_nonblend_matches_frozen_pixels_for_all_transparency_pairs",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_full_transparent_blend_still_reads_destination",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_opaque_source_normalizes_requested_blend_before_guard",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_partial_and_source_clipped_destinations_keep_original_gpu_pixels",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_self_noop_and_overlap_keep_frozen_sync_and_forward_order",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_separate_alpha_mask_retains_original_three_handle_reads",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_source_read_area_does_not_resolve_unrelated_gpu_dirty_pixels",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_transparent_to_opaque_unmultiplied_branch_keeps_raw_alpha_edges",
+        "bitmap::operations::boxhead_overwrite_tests::bitmap_overwrite_unsupported_filter_copy_uses_the_same_frozen_full_overwrite"
+      ]
+    },
+    {
+      "label": "compact",
+      "filter": "compact_fence_",
+      "expectedExecuted": 28,
+      "expectedPassed": 28,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_accepts_exact_join_record_without_changing_the_phase_contract",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_ambient_reentry_is_rejected_before_game_and_disposal_never_drains",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_argument_setter_cannot_begin_before_the_pinned_body_or_hide_poison",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_callback_world_and_raw_body_replacement_are_terminal",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_capability_is_exact_and_leaves_full_capability_unchanged",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_caught_receipt_serialization_reentry_stays_poisoned_after_finish",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_causal_action_drain_is_allowed_only_inside_entered_body",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_commit_rng_and_world_tick_keep_the_original_result_contract",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_cross_family_external_callbacks_never_switch_the_open_transaction",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_explicit_and_catch_abort_clean_both_abilities_once",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_full_and_compact_transactions_share_one_monotonic_epoch",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_info_receipt_and_present_obey_exact_phase_order",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_install_requires_full_owner_and_cannot_repeat",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_missing_duplicate_or_malformed_begin_never_releases_the_owner",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_native_callee_and_protocol_are_authenticated_independently",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_new_round_can_reset_tick_only_with_a_fresh_epoch",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_present_cannot_reenter_an_entered_phase_even_when_rejection_is_caught",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_receipt_scope_header_and_finish_must_all_match_the_commit",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_rejects_full_tick_numbers_and_malformed_begin_before_game",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_shared_callback_identity_cannot_be_replaced_at_install",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_stale_tuple_and_duplicate_commit_are_rejected_before_another_body",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_terminal_begin_can_paint_nothing_and_still_return_the_verified_receipt",
+        "avm1::globals::boxhead_step_fence::compact_tests::compact_fence_two_phase_chain_keeps_game_once_and_releases_after_frame_receipt_serialization",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_fifo_matches_unfenced_input_timer_clipboard_and_frame_order",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_opaque_loader_mutation_fails_before_its_closure",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_paints_without_timeline_or_render_broadcast_during_the_split",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_queue_overload_cleans_once_and_never_resumes_partial_game",
+        "player::boxhead_step_fence::compact_tests::compact_fence_player_receipt_never_drains_and_next_external_entry_cannot_overtake_fifo"
+      ]
+    },
+    {
+      "label": "lookup",
+      "filter": "lookup_v2_",
+      "expectedExecuted": 23,
+      "expectedPassed": 23,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_keep_case_utf16_and_enumeration_contents",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_preserve_literals_and_lazy_identity",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_fixed_names_reobserve_values_getters_and_prototypes",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_actual_activation_resolves_fresh_values_and_special_this",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_arrays_and_functions_keep_ordinary_fields",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_case_collision_winners_match_frozen_after_mutations",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_deep_parent_chains_preserve_shadowing_and_receiver",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_empty_and_utf16_names_keep_exact_membership",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_fresh_reads_observe_reparenting_own_writes_and_watchers",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_getter_reentry_observes_new_slot_and_keeps_outer_result",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_stored_membership_keeps_original_get_path",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_hidden_virtual_slots_do_not_run_the_hidden_getter",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_inherited_getters_keep_original_receiver",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_missing_slots_follow_parent_without_resolver_calls",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_native_display_boxed_and_super_paths_match_frozen",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_positive_membership_keeps_get_prototype_recursion_error",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_raw_proto_keeps_case_visibility_and_virtual_data",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_recursive_getter_error_reobserves_mutated_descriptor",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_removed_clip_fallback_keeps_root_and_callable_undefined",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_resolver_requires_positive_raw_membership",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_getter_undefined_and_error_precedence_match_frozen",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_visible_own_values_keep_callable_receiver_and_flags",
+        "avm1::scope::boxhead_lookup_v2_tests::lookup_v2_scope_with_local_global_calls_keep_exact_this_owner"
+      ]
+    }
+  ],
+  "totalRequiredRustTests": 260,
+  "qualification": {
+    "compilerReproducedHere": false,
+    "gameplayPassClaimed": false,
+    "performancePassClaimed": false,
+    "inheritedParentPassesAccepted": false
+  },
+  "limits": {
+    "decodedGraphBytes": 134217728,
+    "nativeWireCharacters": 67109888,
+    "nodes": 65536,
+    "fields": 1000000,
+    "anchors": 250000,
+    "stringUnits": 1048576,
+    "pixelsPerBitmap": 8388608
+  },
+  "integrationScope": {
+    "activation": "one cfg(test) include; production methods unchanged",
+    "globals": "hidden readonly non-deletable projection and authenticated staged-step fence entry points",
+    "runtime": "six per-VM integer counters; no retained GC references",
+    "graph": "same wire, UTF16 BFS paths, exact collision/error order and fresh per-call descriptor traversal; lazy NameIds, one classified edge/identity insertion, per-call visited bits and reusable raw edge buffer; no cross-call cache",
+    "bitmap": "same copyPixels semantics and transparent/opaque block fast paths; cancel obsolete destination readback only for distinct, fully clipped destination overwrites after effective blend normalization; fresh source synchronization remains unchanged",
+    "propertyHash": "same case-folded FNV hash cached only for an immutable AvmString range; no value, membership or prototype caching",
+    "propertyAccess": "single-borrow ordinary lookup and guarded own writes; missing ordinary unwatched writes enter the unchanged original prototype setter loop from raw proto",
+    "projection": "same public scan ABI and counters; private projector reads Rust work counters without constructing temporary AVM capability objects",
+    "stagedFence": "fresh world transaction from actual Begin through complete serialized receipt; authenticated callback bodies; bounded ambient FIFO, pure render continues; no early ACK or persistent graph cache",
+    "propertyEquality": "managed immutable-name identity short-circuits with original full-content/case-fold fallback; same hash, collision choice, enumeration and live descriptor/prototype lookup",
+    "compactFence": "optional two-phase compact protocol on the original owner, world fence, epoch and ambient FIFO; positive non25 ticks, exact frame receipt after full outgoing serialization; original full ABI and full35 fixture bodies unchanged",
+    "fixedProjectionNames": "lazy per-call fixed enum of 88 interned immutable identifier strings; fresh value/descriptor/member calls, scalar validation, guards and public scan ABI remain unchanged",
+    "freshScopeLookup": "one fresh ordinary descriptor observation preserves visible stored values and original locals_cell receiver; raw hidden/virtual membership, raw proto, native/display/super and root fallback follow the original path; no value, index, prototype or membership cache"
+  }
+}

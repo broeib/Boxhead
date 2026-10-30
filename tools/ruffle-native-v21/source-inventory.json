@@ -1,0 +1,270 @@
+{
+  "schema": "boxhead-v21-property-miss-filter-source-inventory-v1",
+  "status": "prospective static candidate; not staged, compiled, executed or runtime-qualified",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 93496,
+    "sha256": "10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf"
+  },
+  "parentBinder": {
+    "bytes": 85125,
+    "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+  },
+  "engineManifest": {
+    "bytes": 96022,
+    "sha256": "34bed0818df9159ce54eb2c18cbcf5aea6d045bed07dd8cd9c4f1921b64ee201"
+  },
+  "binder": {
+    "bytes": 86788,
+    "sha256": "3247035ec714816040b95f0d3b28edf3505e9cfeab3e19ce3e2a7a75fb2ecd0a"
+  },
+  "buildDriver": {
+    "bytes": 16708,
+    "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+  },
+  "oldOverlayInputs": 117,
+  "retainedUnchangedInputs": 116,
+  "currentOverlayInputs": 118,
+  "previousRequiredRustTests": 418,
+  "requiredRustTests": 428,
+  "previousRustGroups": 21,
+  "rustGroups": 22,
+  "addedNativeRustNames": [
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_abandoned_vacant_entries_never_create_membership",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_getters_setters_and_watchers_keep_callbacks",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_movieclip_fallback_and_own_shadowing_are_preserved",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_prototype_reads_observe_later_writes_and_reparenting",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_resolve_mutation_and_thrown_getter_stay_fresh",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_all_deletions_and_reinsertion_keep_live_keys_and_order",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_casefold_utf16_and_range_aliases_match_frozen_table",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_clone_take_swap_and_value_mutation_preserve_coverage",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_new_default_and_all_insert_paths_preserve_unhinted_hits",
+    "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_zero_hash_collisions_and_saturation_keep_exact_fallback"
+  ],
+  "addedNativeRustGroup": {
+    "label": "property_miss_filter",
+    "filter": "avm1::property_map::boxhead_miss_filter_tests::",
+    "expectedExecuted": 10,
+    "expectedPassed": 10,
+    "expectedFailed": 0,
+    "expectedIgnored": 0,
+    "exactNames": [
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_abandoned_vacant_entries_never_create_membership",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_getters_setters_and_watchers_keep_callbacks",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_movieclip_fallback_and_own_shadowing_are_preserved",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_prototype_reads_observe_later_writes_and_reparenting",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_actual_resolve_mutation_and_thrown_getter_stay_fresh",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_all_deletions_and_reinsertion_keep_live_keys_and_order",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_casefold_utf16_and_range_aliases_match_frozen_table",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_clone_take_swap_and_value_mutation_preserve_coverage",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_new_default_and_all_insert_paths_preserve_unhinted_hits",
+      "avm1::property_map::boxhead_miss_filter_tests::property_miss_filter_zero_hash_collisions_and_saturation_keep_exact_fallback"
+    ]
+  },
+  "propertyTestSource": "core/src/avm1/property_map/boxhead_miss_filter_tests.rs",
+  "files": [
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 12091,
+      "sha256": "12465675660bdfadaf779fddba2b5760e6434f95bda5293c4863c2d0c4c145ae",
+      "installation": {
+        "baselineBytes": 6702,
+        "baselineSha256": "dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b"
+      },
+      "reviewPredecessor": {
+        "bytes": 10526,
+        "sha256": "2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42"
+      }
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_miss_filter_tests.rs",
+      "bytes": 21470,
+      "sha256": "14752d3e48aeaa17fd4bb372199cc7c8d0c9169b4c2f77883d90eeee08eb0a9e",
+      "installation": {
+        "baselineAbsent": true
+      },
+      "reviewPredecessor": null
+    }
+  ],
+  "scope": "Negative-only two-u32 possible-membership mask in each AVM1 PropertyMap. The exact positive current-key slot hint stays first. Both case modes mark before returning a vacant entry; deletes retain bits, new/default are empty, and clones/moves retain the table and mask together. Only a missing bit can reject an own-table query; possible matches use the original IndexMap, casefold FNV, descriptor and enumeration paths. No prototype/getter/watcher/native-display result, object identity or mutation epoch is cached. Added scalar payload is 8 bytes per map; ObjectData has two maps. Target layout/RSS and unprofiled FPS remain unmeasured, with no qualification or performance claim.",
+  "memoryTradeoff": {
+    "extraScalarBytesPerMap": 8,
+    "commonObjectDataMaps": 2,
+    "extraScalarPayloadPerCommonObject": 16,
+    "measuredObjectSize": false,
+    "newGcEdges": false,
+    "newPerMapHeapAllocation": false,
+    "limitation": "Scalar payload only; actual layout, GC cadence, RSS, saturation rate and FPS require fresh measurement."
+  },
+  "endpointAuthorities": [
+    {
+      "path": "tools/ruffle-native-v20/source-reversal.json",
+      "bytes": 54307,
+      "sha256": "ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e"
+    },
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-reversal.json",
+      "bytes": 52241,
+      "sha256": "8659cd04d5295eedfd6c68253adf66983d3c5bd05c1c7c1254c5810eb5c2f602"
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-v21/source-reversal.json",
+      "bytes": 46783,
+      "sha256": "360af60e3a8ddeb3c0de48af7d28cc408d9ada4ca49d6f1f4f054ae00e7ad2fe"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v21-source.mjs",
+      "bytes": 2217,
+      "sha256": "d621d524bf5de0e5b1606d9b02e4d4d1b623cd7798b7959df0588a971e3f06b5"
+    }
+  ],
+  "unchangedSources": [
+    {
+      "path": "tools/ruffle-native-smooth/build.py",
+      "bytes": 16708,
+      "sha256": "0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 55104,
+      "sha256": "047497a0849a042610209272b4017e342d033d4d4228f880ab50df1c6855476b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/lib.rs",
+      "bytes": 10243,
+      "sha256": "127b727cd28cbd691d0f930d8e1cb2a6a970e1d93d87be084da807e88a8356dc"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/render/wgpu/src/boxhead_readback.rs",
+      "bytes": 8719,
+      "sha256": "8b75864fd4597c0fb777cec72b1c71c53952f574da10ee3ffae46d62373e829e"
+    },
+    {
+      "path": "scripts/original-coop-campaign-phased.mjs",
+      "bytes": 230427,
+      "sha256": "148d6aa3bc80e8daf731888f6996427c1c8ed535beca7a48fe2be30afc69c1a2"
+    },
+    {
+      "path": "scripts/original-network-performance-phased.mjs",
+      "bytes": 85414,
+      "sha256": "ccc530064eb1bea48b034b2ed6c28da2d13bb29a3bdb0c80e028be1d10add790"
+    },
+    {
+      "path": "scripts/original-checkpoint-profile-phased.mjs",
+      "bytes": 110862,
+      "sha256": "fa072702625e57cbf20fcf20fa34d9969bfa9177bbc89f14651fdbf0eceb5cb0"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-phased.py",
+      "bytes": 9667,
+      "sha256": "65248812f0d3e5a5d4f924dd33b22fc6305e1d3235bcdb7bdd49d4acf188b99b"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer.mjs",
+      "bytes": 9081,
+      "sha256": "9f2294e966811786af7670d9abd69e876364c7fd8e88437468550b32988a72c8"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v19.mjs",
+      "bytes": 24871,
+      "sha256": "0757d3abb4af13bafa6a62d1d034810c1dadeebc5da402c8af9c51f9ae3ccdca"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-gl-readback-v19.py",
+      "bytes": 9719,
+      "sha256": "4c2a172c88fc4246e3a27c0aeebb541517dc62b1a045505121032ec56aed0f95"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-inventory.json",
+      "bytes": 12276,
+      "sha256": "67ed0e30ecfc675d9ae114dfe403cf0615ff06ee8f59f821fa2ff0d5b042cdee"
+    },
+    {
+      "path": "tools/ruffle-native-v19/source-reversal.json",
+      "bytes": 96022,
+      "sha256": "9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-inventory.json",
+      "bytes": 6287,
+      "sha256": "460a18f18abddde6bfaa51b159aeb788595aed658812bc861c30acdd24eaf837"
+    },
+    {
+      "path": "tools/ruffle-native-asset-index/source-reversal.json",
+      "bytes": 57010,
+      "sha256": "c55db22c3b58d5ae3c6c9d94683dd261d03389c438d214cf03bcc85506818ae6"
+    },
+    {
+      "path": "tools/ruffle-native-v20/source-inventory.json",
+      "bytes": 7818,
+      "sha256": "56c15912cc5a71a4ee5fc98fb58b0b91880ba3995615b16f1c8e22f1f986c8ba"
+    },
+    {
+      "path": "tools/ruffle-native-v20/source-reversal.json",
+      "bytes": 54307,
+      "sha256": "ac2b88cc7ad821eee96d8b56b77aad6fe1c09eb9fc60daa206d1a8e5a7780f1e"
+    },
+    {
+      "path": "scripts/lib/asset-index-initial-observer-v20.mjs",
+      "bytes": 9091,
+      "sha256": "d40efdd9dc0527a8438cb94c71f20cb97168e2c4e809bb8a53aa9c10129950e3"
+    },
+    {
+      "path": "scripts/original-network-gl-readback-v20.mjs",
+      "bytes": 24882,
+      "sha256": "e654f37f0ffc2214dbf63cdfaaeb1772cc988c335eed651ce38f39fe935a6ae9"
+    },
+    {
+      "path": "scripts/run-original-ci-gpu-gl-readback-v20.py",
+      "bytes": 9719,
+      "sha256": "c897b48dcf4282b8593608b892559e44445dc0628e38a5ace23b3569f38d5b5f"
+    },
+    {
+      "path": "tests/scripts/asset-index-initial-observer-v20.test.mjs",
+      "bytes": 15491,
+      "sha256": "888d592fbbc11858d1ac6a789427f8e2122e509cd1eda97f4485c8f2ebed6fe8"
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v19.test.mjs",
+      "bytes": 14608,
+      "sha256": "0c8252fcf66647f4e07034b9744472f7ab9816e409d307914f5dfbcce80e2f8e"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_index.rs",
+      "bytes": 25824,
+      "sha256": "056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs",
+      "bytes": 14161,
+      "sha256": "dfc8c5f77bfc47983041d4795901462a6a20247fb6e78ce1928526f7e42920bf"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 29576,
+      "sha256": "ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/property_map/frozen_v8.rs",
+      "bytes": 9038,
+      "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8"
+    },
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-reversal.json",
+      "bytes": 52241,
+      "sha256": "8659cd04d5295eedfd6c68253adf66983d3c5bd05c1c7c1254c5810eb5c2f602"
+    }
+  ],
+  "historicalDiagnosticContract": {
+    "retainedCases": 62,
+    "readerOnlyPath": "tests/scripts/gl-readback-entrypoint-v20.test.mjs",
+    "runtimeGlSourceChanges": false,
+    "priorGlRuntimeProofInherited": false,
+    "auditHelperChanges": false
+  },
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false,
+  "stable60Claimed": false
+}

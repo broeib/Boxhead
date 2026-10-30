@@ -1,0 +1,195 @@
+{
+  "schema": "boxhead-native-anchor-metadata-reversal-v1",
+  "files": [
+    {
+      "path": "engine/core/src/avm1.rs",
+      "before": {
+        "bytes": 3013,
+        "sha256": "1576168e3099b75ec369ad5df77cf97b04b4f43dedbc79993780711af9c6da7d"
+      },
+      "after": {
+        "bytes": 3045,
+        "sha256": "92334b585db21f08a06a06df1b0ee4f9ad1867e5e44749f69ef6a1deb7ee1621"
+      },
+      "hunks": [
+        {
+          "before": "mod property_decl;\n\nmod activation;\nmod amf;\nmod callable_value;\nmod clamp;\n",
+          "after": "mod property_decl;\n\nmod activation;\npub(crate) mod anchor_metadata;\nmod amf;\nmod callable_value;\nmod clamp;\n"
+        }
+      ]
+    },
+    {
+      "path": "engine/core/src/avm1/runtime.rs",
+      "before": {
+        "bytes": 26231,
+        "sha256": "e1d54cedfb23f3f87e1e7a071d97499c3574b2c20d62db8016faa4a9297980aa"
+      },
+      "after": {
+        "bytes": 26436,
+        "sha256": "6458b5ee92c7f7ec38d150e3dca03d5d381c40bad12073c44b2a8d9d8acf30e5"
+      },
+      "hunks": [
+        {
+          "before": "    /// More examples of this are in the movieclip_invalid_get_bounds_X tests.\n    use_new_invalid_bounds_value: bool,\n\n    /// Optional scalar-kernel witnesses only; never retains game objects.\n    #[collect(require_static)]\n    pub(crate) native_scalar_stats: super::globals::boxhead_native_scalars::NativeScalarStats,\n",
+          "after": "    /// More examples of this are in the movieclip_invalid_get_bounds_X tests.\n    use_new_invalid_bounds_value: bool,\n\n    /// Weak, bounded preparation queue plus a per-VM raw metadata memory cap.\n    pub(crate) anchor_metadata: super::anchor_metadata::MetadataState<'gc>,\n\n    /// Optional scalar-kernel witnesses only; never retains game objects.\n    #[collect(require_static)]\n    pub(crate) native_scalar_stats: super::globals::boxhead_native_scalars::NativeScalarStats,\n"
+        },
+        {
+          "before": "            #[cfg(feature = \"avm_debug\")]\n            debug_output: false,\n            use_new_invalid_bounds_value: false,\n            native_scalar_stats: Default::default(),\n            native_projection_scan_stats: Default::default(),\n            native_project_stats: Default::default(),\n",
+          "after": "            #[cfg(feature = \"avm_debug\")]\n            debug_output: false,\n            use_new_invalid_bounds_value: false,\n            anchor_metadata: Default::default(),\n            native_scalar_stats: Default::default(),\n            native_projection_scan_stats: Default::default(),\n            native_project_stats: Default::default(),\n"
+        }
+      ]
+    },
+    {
+      "path": "engine/core/src/avm1/globals.rs",
+      "before": {
+        "bytes": 33610,
+        "sha256": "d7a632b1d66128761b3b9ef040d1ac9401b97084494daf011ab6ade47d39f649"
+      },
+      "after": {
+        "bytes": 33728,
+        "sha256": "448d72aeb9aef16ac9e233f3cfaf5582f9c17f42c530ed149f062760d0d72b7d"
+      },
+      "hunks": [
+        {
+          "before": "        // Isolated, opt-in scalar-loop experiment. No prototype is extended.\n        \"boxheadNativeScalarsV1\" => method(boxhead_native_scalars::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeGraphV1\" => method(boxhead_native_graph::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeProjectionScanV1\" => method(boxhead_native_projection_scan::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeProjectV1\" => method(boxhead_native_project::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeStepFenceV1\" => method(boxhead_step_fence::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n",
+          "after": "        // Isolated, opt-in scalar-loop experiment. No prototype is extended.\n        \"boxheadNativeScalarsV1\" => method(boxhead_native_scalars::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeGraphV1\" => method(boxhead_native_graph::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeAnchorMetadataV1\" => method(super::anchor_metadata::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeProjectionScanV1\" => method(boxhead_native_projection_scan::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeProjectV1\" => method(boxhead_native_project::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n        \"boxheadNativeStepFenceV1\" => method(boxhead_step_fence::call; DONT_ENUM | DONT_DELETE | READ_ONLY);\n"
+        }
+      ]
+    },
+    {
+      "path": "engine/core/src/avm1/object/script_object.rs",
+      "before": {
+        "bytes": 45254,
+        "sha256": "75d9478f35f3c8d97108fb35ff27c544926b3a483d4d925d30bcd78643621239"
+      },
+      "after": {
+        "bytes": 49392,
+        "sha256": "4b200e17071d8bc822173ce288dce77530abb02a41415abb8bac7b9b7876fec9"
+      },
+      "hunks": [
+        {
+          "before": "use gc_arena::lock::RefLock;\nuse gc_arena::{Collect, DynamicRoot, Gc, GcWeak, Mutation, Rootable};\nuse ruffle_macros::istr;\nuse std::cell::Ref;\n\nuse super::super_object::SuperObject;\n\n",
+          "after": "use gc_arena::lock::RefLock;\nuse gc_arena::{Collect, DynamicRoot, Gc, GcWeak, Mutation, Rootable};\nuse ruffle_macros::istr;\nuse std::cell::{Ref, RefMut};\nuse crate::avm1::anchor_metadata::{CachedEdges, MetadataBudget};\nuse std::rc::Rc;\n\nuse super::super_object::SuperObject;\n\n"
+        },
+        {
+          "before": "    properties: PropertyMap<'gc, Property<'gc>>,\n    interfaces: Option<Vec<Object<'gc>>>,\n    watchers: PropertyMap<'gc, Watcher<'gc>>,\n}\n\nimpl fmt::Debug for Object<'_> {\n",
+          "after": "    properties: PropertyMap<'gc, Property<'gc>>,\n    interfaces: Option<Vec<Object<'gc>>>,\n    watchers: PropertyMap<'gc, Watcher<'gc>>,\n    // Positive raw-own metadata only. All semantic writes clear it first.\n    anchor_metadata: Option<Box<CachedEdges<'gc>>>,\n}\n\nimpl fmt::Debug for Object<'_> {\n"
+        },
+        {
+          "before": "}\n\nimpl<'gc> Object<'gc> {\n    pub fn as_weak(self) -> ObjectWeak<'gc> {\n        ObjectWeak(Gc::downgrade(self.0))\n    }\n",
+          "after": "}\n\nimpl<'gc> Object<'gc> {\n    // This is the only mutable access to semantic ObjectData fields. Clearing\n    // before a write also releases removed cached children immediately. Failed\n    // or readonly writes may invalidate conservatively; no outcome is cached.\n    #[inline]\n    fn metadata_write(self, gc: &Mutation<'gc>) -> RefMut<'gc, ObjectData<'gc>> {\n        let mut write = self.0.borrow_mut(gc);\n        write.anchor_metadata = None;\n        write\n    }\n\n    pub fn as_weak(self) -> ObjectWeak<'gc> {\n        ObjectWeak(Gc::downgrade(self.0))\n    }\n"
+        },
+        {
+          "before": "                properties: PropertyMap::new(),\n                interfaces: None,\n                watchers: PropertyMap::new(),\n            }),\n        ));\n        if let Some(proto) = proto {\n",
+          "after": "                properties: PropertyMap::new(),\n                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n            }),\n        ));\n        if let Some(proto) = proto {\n"
+        },
+        {
+          "before": "                properties: PropertyMap::new(),\n                interfaces: None,\n                watchers: PropertyMap::new(),\n            }),\n        ))\n    }\n",
+          "after": "                properties: PropertyMap::new(),\n                interfaces: None,\n                watchers: PropertyMap::new(),\n                anchor_metadata: None,\n            }),\n        ))\n    }\n"
+        },
+        {
+          "before": "        value: Value<'gc>,\n        activation: &Activation<'_, 'gc>,\n    ) -> super::BoxheadOwnWrite<'gc> {\n        let mut write = self.0.borrow_mut(activation.gc());\n        if !matches!(write.native, NativeObject::None) || write.watchers.iter().next().is_some() {\n            return super::BoxheadOwnWrite::Slow;\n        }\n",
+          "after": "        value: Value<'gc>,\n        activation: &Activation<'_, 'gc>,\n    ) -> super::BoxheadOwnWrite<'gc> {\n        let mut write = self.metadata_write(activation.gc());\n        if !matches!(write.native, NativeObject::None) || write.watchers.iter().next().is_some() {\n            return super::BoxheadOwnWrite::Slow;\n        }\n"
+        },
+        {
+          "before": "        activation: &mut Activation<'_, 'gc>,\n    ) -> Result<(), Error<'gc>> {\n        // TODO: Call watchers.\n        match self\n            .0\n            .borrow_mut(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n",
+          "after": "        activation: &mut Activation<'_, 'gc>,\n    ) -> Result<(), Error<'gc>> {\n        // TODO: Call watchers.\n        match self.metadata_write(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n"
+        },
+        {
+          "before": "            }\n        }\n        Ok(count)\n    }\n\n    // TODO: Make an iterator?\n",
+          "after": "            }\n        }\n        Ok(count)\n    }\n\n    /// Same raw result as the untouched fresh API, including every field count.\n    /// Cached rows never contain a resolved native kind or MovieClip target.\n    pub(crate) fn boxhead_graph_anchor_edges_cached_into(\n        self, edges: &mut Vec<(AvmString<'gc>, Value<'gc>)>,\n    ) -> Result<usize, &'static str> {\n        {\n            let read = self.0.borrow();\n            if let Some(cached) = &read.anchor_metadata {\n                edges.clear();\n                edges.extend_from_slice(&cached.edges);\n                return Ok(cached.raw_count);\n            }\n        }\n        // Only the explicit preparation walk admits cache entries. A normal\n        // checkpoint never begins caching mutable gameplay objects.\n        self.boxhead_graph_anchor_edges_into(edges)\n    }\n\n    fn publish_anchor_metadata(self, gc: &Mutation<'gc>, budget: &Rc<MetadataBudget>,\n        count: usize, edges: &[(AvmString<'gc>, Value<'gc>)]) -> bool {\n        if let Some(cached) = CachedEdges::new(budget, count, edges) {\n            // The real write barrier is required even for duplicate owned refs.\n            // No AVM code or arena collection runs between validation and here.\n            self.0.borrow_mut(gc).anchor_metadata = Some(Box::new(cached));\n            return true;\n        }\n        false\n    }\n\n    /// Optional prewarm: no getter, prototype/native property lookup or clip\n    /// resolution. Large/unsupported objects stay on the original fresh path.\n    pub(crate) fn boxhead_graph_anchor_edges_warm_into(\n        self, gc: &Mutation<'gc>, budget: &Rc<MetadataBudget>, limit: usize,\n        edges: &mut Vec<(AvmString<'gc>, Value<'gc>)>,\n    ) -> Option<(usize, bool)> {\n        edges.clear();\n        let read = self.0.borrow();\n        if !matches!(read.native, NativeObject::None | NativeObject::Array(_))\n            || read.watchers.iter().next().is_some() || read.interfaces.is_some() { return None; }\n        if let Some(cached) = &read.anchor_metadata {\n            if cached.raw_count > limit { return None; }\n            edges.extend_from_slice(&cached.edges);\n            return Some((cached.raw_count, true));\n        }\n        let mut count = 0;\n        for (key, property) in read.properties.iter() {\n            if count == limit { edges.clear(); return None; }\n            if property.getter().is_some() || property.setter().is_some() { edges.clear(); return None; }\n            count += 1;\n            let value = property.data();\n            if !key.eq_with_case(b\"__proto__\", true)\n                && matches!(value, Value::Object(_) | Value::MovieClip(_)) { edges.push((key, value)); }\n        }\n        drop(read);\n        let admitted = self.publish_anchor_metadata(gc, budget, count, edges);\n        Some((count, admitted))\n    }\n\n    /// Resolve only an original own stored slot for the six fixed XSI roots.\n    /// This intentionally does not run a getter, watcher, prototype or stage API.\n    pub(crate) fn boxhead_anchor_metadata_own(self, name: AvmString<'gc>) -> Option<Value<'gc>> {\n        let read = self.0.borrow();\n        if !matches!(read.native, NativeObject::None | NativeObject::Array(_) | NativeObject::Function(_))\n            || read.watchers.iter().next().is_some() || read.interfaces.is_some() { return None; }\n        let property = read.properties.get_avm(name, true)?;\n        if property.getter().is_some() || property.setter().is_some() { return None; }\n        Some(property.data())\n    }\n\n    // TODO: Make an iterator?\n"
+        },
+        {
+          "before": "            return Err(Error::ThrownValue(e));\n        }\n\n        match self\n            .0\n            .borrow_mut(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n",
+          "after": "            return Err(Error::ThrownValue(e));\n        }\n\n        match self.metadata_write(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n"
+        },
+        {
+          "before": "            return false;\n        }\n\n        if let Entry::Occupied(mut entry) = self\n            .0\n            .borrow_mut(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n            && entry.get().can_delete()\n",
+          "after": "            return false;\n        }\n\n        if let Entry::Occupied(mut entry) = self.metadata_write(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n            && entry.get().can_delete()\n"
+        },
+        {
+          "before": "            return;\n        }\n\n        match self.0.borrow_mut(gc_context).properties.entry(name, false) {\n            Entry::Occupied(mut entry) => entry.get_mut().set_virtual(getter, setter),\n            Entry::Vacant(entry) => entry.insert(Property::new_virtual(getter, setter, attributes)),\n        }\n",
+          "after": "            return;\n        }\n\n        match self.metadata_write(gc_context).properties.entry(name, false) {\n            Entry::Occupied(mut entry) => entry.get_mut().set_virtual(getter, setter),\n            Entry::Vacant(entry) => entry.insert(Property::new_virtual(getter, setter, attributes)),\n        }\n"
+        },
+        {
+          "before": "            return;\n        }\n\n        match self\n            .0\n            .borrow_mut(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n",
+          "after": "            return;\n        }\n\n        match self.metadata_write(activation.gc())\n            .properties\n            .entry(name, activation.is_case_sensitive())\n        {\n"
+        },
+        {
+          "before": "            return;\n        }\n\n        self.0.borrow_mut(activation.gc()).watchers.insert(\n            name,\n            Watcher::new(callback, user_data),\n            activation.is_case_sensitive(),\n",
+          "after": "            return;\n        }\n\n        self.metadata_write(activation.gc()).watchers.insert(\n            name,\n            Watcher::new(callback, user_data),\n            activation.is_case_sensitive(),\n"
+        },
+        {
+          "before": "            return false;\n        }\n\n        self.0\n            .borrow_mut(activation.gc())\n            .watchers\n            .remove_avm(name, activation.is_case_sensitive())\n            .is_some()\n",
+          "after": "            return false;\n        }\n\n        self.metadata_write(activation.gc())\n            .watchers\n            .remove_avm(name, activation.is_case_sensitive())\n            .is_some()\n"
+        },
+        {
+          "before": "            return;\n        }\n\n        self.0.borrow_mut(gc_context).properties.insert(\n            name.into(),\n            Property::new_stored(value, attributes),\n            true,\n",
+          "after": "            return;\n        }\n\n        self.metadata_write(gc_context).properties.insert(\n            name.into(),\n            Property::new_stored(value, attributes),\n            true,\n"
+        },
+        {
+          "before": "        match name {\n            None => {\n                // Change *all* attributes.\n                for (_name, prop) in self.0.borrow_mut(gc_context).properties.iter_mut() {\n                    let new_atts = (prop.attributes() - clear_attributes) | set_attributes;\n                    prop.set_attributes(new_atts);\n                }\n            }\n            Some(name) => {\n                if let Some(prop) = self\n                    .0\n                    .borrow_mut(gc_context)\n                    .properties\n                    .get_mut_avm(name, false)\n                {\n",
+          "after": "        match name {\n            None => {\n                // Change *all* attributes.\n                for (_name, prop) in self.metadata_write(gc_context).properties.iter_mut() {\n                    let new_atts = (prop.attributes() - clear_attributes) | set_attributes;\n                    prop.set_attributes(new_atts);\n                }\n            }\n            Some(name) => {\n                if let Some(prop) = self.metadata_write(gc_context)\n                    .properties\n                    .get_mut_avm(name, false)\n                {\n"
+        },
+        {
+          "before": "            return;\n        }\n\n        let mut write = self.0.borrow_mut(gc_context);\n        write.interfaces.get_or_insert(iface_list);\n    }\n\n",
+          "after": "            return;\n        }\n\n        let mut write = self.metadata_write(gc_context);\n        write.interfaces.get_or_insert(iface_list);\n    }\n\n"
+        },
+        {
+          "before": "        match old_native {\n            // TODO(moulins): can `super` point to another `super`?\n            NativeObject::Super(zuper) => zuper.this().set_native(mc, native),\n            NativeObject::None => self.0.borrow_mut(mc).native = native,\n            // Trying to construct the same object twice (e.g. with `super()`) does nothing.\n            _ if mem::discriminant(&old_native) == mem::discriminant(&native) => (),\n            // FIXME: in FP, some native classes (e.g. Sound) appear to be constructible over\n",
+          "after": "        match old_native {\n            // TODO(moulins): can `super` point to another `super`?\n            NativeObject::Super(zuper) => zuper.this().set_native(mc, native),\n            NativeObject::None => self.metadata_write(mc).native = native,\n            // Trying to construct the same object twice (e.g. with `super()`) does nothing.\n            _ if mem::discriminant(&old_native) == mem::discriminant(&native) => (),\n            // FIXME: in FP, some native classes (e.g. Sound) appear to be constructible over\n"
+        },
+        {
+          "before": "\n    name.parse::<std::num::Wrapping<i32>>().ok().map(|i| i.0)\n}\n",
+          "after": "\n    name.parse::<std::num::Wrapping<i32>>().ok().map(|i| i.0)\n}\n\n#[cfg(test)]\n#[path = \"anchor_metadata_tests.rs\"]\nmod anchor_metadata_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "engine/core/src/avm1/globals/boxhead_native_graph.rs",
+      "before": {
+        "bytes": 46215,
+        "sha256": "d7e560ebc3abb476d2fef6f0cbb0b826a81d4975092105130667cc9e3166d948"
+      },
+      "after": {
+        "bytes": 46307,
+        "sha256": "ce6ac40b99ce2677cafbe34915966b33df913b2411b772e997e8c4b1936bdd86"
+      },
+      "hunks": [
+        {
+          "before": "        let mut fields = Vec::new();\n        while let Some((id, object)) = deep.pop_front() {\n            check_time(activation)?;\n            let raw_fields = object.boxhead_graph_anchor_edges_into(&mut fields)\n                .map_err(|e| format!(\"deep anchor {}: {e}\", result.materialize(id)))?;\n            // The raw reader validates every descriptor and counts primitive\n            // payload too; only non-prototype object edges allocate entries.\n",
+          "after": "        let mut fields = Vec::new();\n        while let Some((id, object)) = deep.pop_front() {\n            check_time(activation)?;\n            let raw_fields = object.boxhead_graph_anchor_edges_cached_into(&mut fields)\n                .map_err(|e| format!(\"deep anchor {}: {e}\", result.materialize(id)))?;\n            // The raw reader validates every descriptor and counts primitive\n            // payload too; only non-prototype object edges allocate entries.\n"
+        },
+        {
+          "before": "#[cfg(test)]\n#[path = \"boxhead_native_graph/path_tests.rs\"]\nmod path_tests;\n",
+          "after": "#[cfg(test)]\n#[path = \"boxhead_native_graph/path_tests.rs\"]\nmod path_tests;\n\n#[cfg(test)]\n#[path = \"boxhead_native_graph/metadata_tests.rs\"]\nmod metadata_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "proposal/tools/original-bridge/CMain.bridge.asinc",
+      "before": {
+        "bytes": 61911,
+        "sha256": "27e4749c382c25c6c48bf33ed29017d81bf4d0be72d36f649ca4aae487adadde"
+      },
+      "after": {
+        "bytes": 62619,
+        "sha256": "87bd63670a303cddc56a52de951b04560eea38d5fd5e1f7bc19b7817151fddec"
+      },
+      "hunks": [
+        {
+          "before": "      var b = this.mBH;\n      var result = {version:1,menuVersion:1,menuScreen:this.mcScreen.idScreen,menuReady:this.mcScreen.idScreen == \"Screen_Main\" && this.mcScreen.mNormal,menuState:b.menuMode,menuBounds:this.BH_MenuBounds(),engine:\"original-swf\",state:b.state,tick:b.tick,qualified:false,digestSchema:\"native-projection-v3\",snapshotReceiptVersion:1,canPrepare:!b.active && CMain.mInput != undefined && this.mcWorld == undefined && CMain.mInitBGTasks};\n      result.presentationVersion = 1;\n      if(b.stagedStepVersion === 1 && b.replay !== true) result.stagedStepVersion = 1;\n      if(b.compactStepVersion === 1 && b.stagedStepVersion === 1 && b.state != \"error\" && b.replay !== true) result.compactStepVersion = 1;\n      if(this.BH_CheckpointAvailable()) result.checkpointVersion = 1;\n",
+          "after": "      var b = this.mBH;\n      var result = {version:1,menuVersion:1,menuScreen:this.mcScreen.idScreen,menuReady:this.mcScreen.idScreen == \"Screen_Main\" && this.mcScreen.mNormal,menuState:b.menuMode,menuBounds:this.BH_MenuBounds(),engine:\"original-swf\",state:b.state,tick:b.tick,qualified:false,digestSchema:\"native-projection-v3\",snapshotReceiptVersion:1,canPrepare:!b.active && CMain.mInput != undefined && this.mcWorld == undefined && CMain.mInitBGTasks};\n      result.presentationVersion = 1;\n      // A loading-time snapshot; no native metadata query is made per Info/frame.\n      if(b.anchorMetadataStats !== undefined) result.anchorMetadata = b.anchorMetadataStats;\n      if(b.stagedStepVersion === 1 && b.replay !== true) result.stagedStepVersion = 1;\n      if(b.compactStepVersion === 1 && b.stagedStepVersion === 1 && b.state != \"error\" && b.replay !== true) result.compactStepVersion = 1;\n      if(this.BH_CheckpointAvailable()) result.checkpointVersion = 1;\n"
+        },
+        {
+          "before": "      this.BH_MenuRemove();\n      b.active = true;\n      b.state = \"loading\";\n      b.tick = 0;\n      b.clock = 0;\n      b.seed = seed;\n",
+          "after": "      this.BH_MenuRemove();\n      b.active = true;\n      b.state = \"loading\";\n      delete b.anchorMetadataStats;\n      b.tick = 0;\n      b.clock = 0;\n      b.seed = seed;\n"
+        },
+        {
+          "before": "            {\n               CMain.ProcessBGTasks();\n               return;\n            }\n            b.state = \"ready\";\n            this.BH_State(true);\n",
+          "after": "            {\n               CMain.ProcessBGTasks();\n               return;\n            }\n            // Optional raw asset metadata only, after original render work.\n            // A bounded incomplete slice keeps loading at tick zero; no Game/Draw.\n            if(typeof _global.boxheadNativeAnchorMetadataV1 == \"function\")\n            {\n               if(_global.boxheadNativeAnchorMetadataV1(\"prewarm\") === false) return;\n               if(b.anchorMetadataStats === undefined)\n                  b.anchorMetadataStats = _global.boxheadNativeAnchorMetadataV1(\"status\");\n            }\n            b.state = \"ready\";\n            this.BH_State(true);\n"
+        }
+      ]
+    }
+  ]
+}

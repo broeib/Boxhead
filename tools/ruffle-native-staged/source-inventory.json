@@ -1,0 +1,114 @@
+{
+  "schema": "boxhead-staged-fence-source-review-v1",
+  "status": "source-frozen-CI-not-executed",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "files": [
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence/tests.rs",
+      "bytes": 28047,
+      "sha256": "7f90d591450012e5592851d12502e7063543163477955d8d8bc4ae9827f07303",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_step_fence.rs",
+      "bytes": 28121,
+      "sha256": "92d2491249068bd8f8935d8c0cc07f10939cc28db27f576783f6acd9bdaed10c",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33490,
+      "sha256": "d3b8596082ad35bd4ded2407609e6f5d548e17d14bb304bbb02186350da0c0e9",
+      "baseline": {
+        "bytes": 33346,
+        "sha256": "09702ebdc49fd1dec0cb346815c7bebaa9598fc74b479f1cb111533f43b572c3"
+      }
+    },
+    {
+      "path": "core/src/external.rs",
+      "bytes": 17190,
+      "sha256": "32426b1162c95983b458f7d2761f1d72b0ebb0c72da56c9c18c685e6f7d55d9c",
+      "baseline": {
+        "bytes": 14038,
+        "sha256": "e7147763dc7547701ab5d0ac0f0db43f4ff077999b12ee0def0d19a6e54f3e6e"
+      }
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence/tests.rs",
+      "bytes": 18019,
+      "sha256": "df683c88bfd1f7f89e4ffebce662fb20d4934405c815d94449eb0bb28d56c6b9",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player/boxhead_step_fence.rs",
+      "bytes": 7626,
+      "sha256": "e1e8ed7da173b2ce42ccf02451f9ef8a709ac0609c0dac7b68ccb0d377355d04",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/player.rs",
+      "bytes": 131004,
+      "sha256": "229f015ff0549af7f27d4fed1e8e70a1e537616f910f58a09f04350bdf134d80",
+      "baseline": {
+        "bytes": 126258,
+        "sha256": "be765f0d43ff8a5933a93481da3f357645eca81e23de7a1db3656202cfe50937"
+      }
+    },
+    {
+      "path": "web/src/lib.rs",
+      "bytes": 54683,
+      "sha256": "c56a400feccbdd7977f1fb006e7b8e21e9155fd7fed750649984bb7acccacb6f",
+      "baseline": {
+        "bytes": 54638,
+        "sha256": "7bffd2b40d3992f063112d6fef3a23330d794f22cd4ba1486dbfc3d55d71bafc"
+      }
+    }
+  ],
+  "rustFixtureGroup": {
+    "filter": "step_fence_",
+    "executedExpected": 35,
+    "ignoredExpected": 0,
+    "exactNames": [
+      "step_fence_argument_marshalling_cannot_begin_or_execute_game_after_poison",
+      "step_fence_begin_reentry_from_an_ambient_player_update_is_rejected",
+      "step_fence_capability_has_only_the_two_declared_fields",
+      "step_fence_cleanup_failure_keeps_terminal_native_poison",
+      "step_fence_clipboard_retains_each_payload_before_its_paste_and_counts_bytes",
+      "step_fence_committed_rng_is_the_original_record_not_a_scalar",
+      "step_fence_context_menu_suppresses_transient_popup_and_runs_original_select_once",
+      "step_fence_explicit_abort_and_phase_catch_abort_never_resume",
+      "step_fence_explicit_causal_action_drain_remains_inside_entered_original_phase",
+      "step_fence_fifo_limits_account_for_ime_bytes_time_and_each_exact_entry",
+      "step_fence_full_chain_keeps_game_once_and_releases_only_after_serialized_receipt",
+      "step_fence_info_and_receipt_cannot_precede_complete_commit",
+      "step_fence_invalid_begin_arguments_never_execute_original_game",
+      "step_fence_malformed_receipt_after_finish_stays_poisoned",
+      "step_fence_missing_duplicate_and_malformed_phase_returns_poison",
+      "step_fence_native_transition_requires_exact_phase_body_callee",
+      "step_fence_nested_present_is_rejected_even_if_caught_by_phase_body",
+      "step_fence_new_round_same_owner_accepts_reset_tick_with_fresh_epoch_and_world",
+      "step_fence_pinned_registration_and_world_replacement_are_terminal",
+      "step_fence_player_ambient_fifo_matches_unfenced_entry_order_and_timer_time",
+      "step_fence_player_event_capacity_overflow_poison_cleans_and_never_drains",
+      "step_fence_player_explicit_run_state_and_resize_wait_in_original_order",
+      "step_fence_player_next_ei_drains_earlier_ambient_work_before_new_body",
+      "step_fence_player_opaque_async_mutation_fails_before_executing_closure",
+      "step_fence_player_readonly_api_does_not_poison_or_dispatch_vm_work",
+      "step_fence_player_render_keeps_pure_paint_and_defers_broadcast_actions",
+      "step_fence_player_slow_original_handler_keeps_fifo_tail_before_next_body",
+      "step_fence_player_uninstalled_local_game_keeps_ordinary_input_and_frame_order",
+      "step_fence_poisoned_player_disposal_does_not_flush_or_execute_queued_actions",
+      "step_fence_present_is_not_admitted_after_commit_before_info_or_receipt",
+      "step_fence_receipt_serialization_caught_reentry_prevents_release",
+      "step_fence_stage_calls_cannot_skip_prepare",
+      "step_fence_stale_token_epoch_and_tick_are_rejected_before_body",
+      "step_fence_successful_receipt_does_not_reuse_prior_epoch",
+      "step_fence_unknown_callback_is_rejected_and_cleanup_runs_once"
+    ]
+  },
+  "documentation": {
+    "path": "tools/ruffle-native-staged/VM_FENCE.md",
+    "bytes": 10527,
+    "sha256": "68b985f91a8d8f3e7adad7341b043059def9e270e2029d541ecf3257d2dcc603"
+  }
+}

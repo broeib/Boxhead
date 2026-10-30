@@ -1,0 +1,18 @@
+{
+  "schema": "boxhead-anchor-inline-script-object-dependency-v1",
+  "path": "core/src/avm1/object/script_object.rs",
+  "predecessor": {
+    "bytes": 42307,
+    "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f"
+  },
+  "qualified": {
+    "bytes": 43753,
+    "sha256": "2189a94b6c6c789c2e702dd69ad6bfb56af244d457ce2bc3cca7f9f783f44399"
+  },
+  "hunks": [
+    {
+      "before": "        } else {\n            super::BoxheadOwnProperty::Stored(property.data())\n        }\n    }\n\n    /// Updates an ordinary own data slot or proves that its own write prefix\n",
+      "after": "        } else {\n            super::BoxheadOwnProperty::Stored(property.data())\n        }\n    }\n\n    /// Resolve's ordinary membership/read prefix in one borrowed descriptor\n    /// observation. Missing slots carry only the same raw __proto__ read that\n    /// has_property would perform next; no getter, watcher or native property\n    /// is consulted, and no value or membership survives this operation.\n    pub(crate) fn boxhead_scope_lookup(\n        self,\n        name: AvmString<'gc>,\n        activation: &Activation<'_, 'gc>,\n    ) -> crate::avm1::scope::OwnScopeLookup<'gc> {\n        use crate::avm1::scope::OwnScopeLookup;\n\n        let read = self.0.borrow();\n        if !matches!(read.native, NativeObject::None | NativeObject::Array(_) | NativeObject::Function(_)) {\n            return OwnScopeLookup::Special;\n        }\n        if let Some(property) = read.properties.get_avm(name, activation.is_case_sensitive()) {\n            if property.is_virtual() || !property.allow_swf_version(activation.swf_version()) {\n                return OwnScopeLookup::Present;\n            }\n            return OwnScopeLookup::Stored(property.data());\n        }\n        // Exactly proto() for these ordinary kinds: the current case rule,\n        // raw descriptor data and no SWF-version or virtual-getter filtering.\n        let raw_proto = read.properties\n            .get_avm(istr!(\"__proto__\"), activation.is_case_sensitive())\n            .map_or(Value::Undefined, |property| property.data());\n        OwnScopeLookup::Missing { raw_proto }\n    }\n\n    /// Updates an ordinary own data slot or proves that its own write prefix\n"
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "schema": "boxhead-v20-exact-v19-source-reversal-v1",
+  "purpose": "Test-only exact historical normalization; runtime validators read actual current sources.",
+  "files": [
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_index.rs",
+      "before": {
+        "bytes": 19253,
+        "sha256": "6dae428bd0ca60330d7e27a9d424320645718a7a64ee590b0aeead907421f570"
+      },
+      "after": {
+        "bytes": 25824,
+        "sha256": "056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a"
+      },
+      "hunks": [
+        {
+          "before": "use gc_arena::{Collect, Gc, Mutation};\nuse std::cell::Cell;\nuse std::collections::VecDeque;\nuse std::mem::size_of;\nuse std::rc::Rc;\nuse web_time::Instant;\n\npub(crate) const ROOT_IDS: [&str; 6] = [\"asset:player:0\", \"asset:player:1\", \"asset:player:2\",\n    \"asset:player:3\", \"asset:zombie\", \"asset:devil\"];\npub(crate) const MAX_ENTRIES: usize = 65_536;\npub(crate) const MAX_STAGE_EDGES: usize = 8_192;\npub(crate) const MAX_STORAGE_BYTES: usize = 16 * 1024 * 1024;\npub(crate) const MAX_CALLS: usize = 128;\npub(crate) const SLICE_MICROS: u128 = 4_000;\nconst MAX_OBJECTS_PER_SLICE: usize = 2_048;\n",
+          "after": "use gc_arena::{Collect, Gc, Mutation};\nuse std::cell::Cell;\nuse std::collections::VecDeque;\nuse std::hash::Hash;\nuse std::mem::size_of;\nuse std::rc::Rc;\nuse web_time::Instant;\n\npub(crate) const ROOT_IDS: [&str; 6] = [\"asset:player:0\", \"asset:player:1\", \"asset:player:2\",\n    \"asset:player:3\", \"asset:zombie\", \"asset:devil\"];\n// The fresh anchor reader permits 250000 names. Its separate 65536 mutable\n// graph-node limit does not bound the immutable asset catalog.\npub(crate) const MAX_ENTRIES: usize = 250_000;\nconst INITIAL_ENTRIES: usize = 65_536;\npub(crate) const MAX_STAGE_EDGES: usize = 8_192;\npub(crate) const MAX_STORAGE_BYTES: usize = 64 * 1024 * 1024;\npub(crate) const MAX_CALLS: usize = 128;\npub(crate) const SLICE_MICROS: u128 = 4_000;\nconst MAX_OBJECTS_PER_SLICE: usize = 2_048;\n"
+        },
+        {
+          "before": "const MAX_PATH: usize = 2_048;\nconst HASH_START: u64 = 0xcbf29ce484222325;\nconst HEX: &[u8; 16] = b\"0123456789abcdef\";\n\npub(crate) struct Validity(Cell<bool>);\n\n",
+          "after": "const MAX_PATH: usize = 2_048;\nconst HASH_START: u64 = 0xcbf29ce484222325;\nconst HEX: &[u8; 16] = b\"0123456789abcdef\";\n\nfn growth_capacity(capacity: usize, required: usize) -> Option<usize> {\n    if required > MAX_ENTRIES { return None; }\n    Some(capacity.saturating_mul(2).max(required).min(MAX_ENTRIES))\n}\n\nfn admit_growth(current: usize, new_buffer: usize, held_key: usize, limit: usize) -> bool {\n    current.checked_add(new_buffer).and_then(|bytes| bytes.checked_add(held_key))\n        .is_some_and(|bytes| bytes <= limit)\n}\n\nfn new_map_bytes<K, V>(capacity: usize) -> Option<usize> {\n    capacity.checked_mul(4)?.checked_mul(size_of::<(K, V)>().checked_add(1)?)\n}\n\nfn map_bytes<K, V>(capacity: usize) -> Option<usize> {\n    capacity.checked_mul(2)?.checked_mul(size_of::<(K, V)>().checked_add(1)?)\n}\n\nfn replace_map<K: Copy + Eq + Hash, V: Copy>(map: &mut FnvHashMap<K, V>, target: usize,\n    current: usize, held_key: usize, limit: usize) -> Result<(), &'static str> {\n    if target <= map.len() || target > MAX_ENTRIES { return Err(\"entry-limit\"); }\n    let reserve = new_map_bytes::<K, V>(target).ok_or(\"storage-limit\")?;\n    if !admit_growth(current, reserve, held_key, limit) { return Err(\"storage-limit\"); }\n    // Reserve an EMPTY table: no hidden doubling of the old table. The same\n    // four-slots/request certificate used for v19's initial allocation covers\n    // rounded buckets/control bytes. Current already includes the OLD table,\n    // so admission covers both allocations until the final swap/drop.\n    let mut replacement = FnvHashMap::<K, V>::default();\n    replacement.try_reserve(target).map_err(|_| \"storage-limit\")?;\n    if replacement.capacity() < target || map_bytes::<K, V>(replacement.capacity())\n        .is_none_or(|bytes| bytes > reserve) { return Err(\"storage-limit\"); }\n    // Only scalar map pairs are copied; no owned UTF-16 keys or GC values.\n    // target exceeds the old length, so insert cannot trigger another reserve.\n    replacement.extend(map.iter().map(|(key, value)| (*key, *value)));\n    *map = replacement;\n    Ok(())\n}\n\n#[cfg(test)]\npub(crate) mod capacity_test_support {\n    use super::*;\n\n    pub(crate) fn new_map_bytes(target: usize) -> Option<usize> {\n        super::new_map_bytes::<u64, usize>(target)\n    }\n    pub(crate) fn map_bytes(capacity: usize) -> Option<usize> {\n        super::map_bytes::<u64, usize>(capacity)\n    }\n    pub(crate) fn replace_map(map: &mut FnvHashMap<u64, usize>, target: usize,\n        current: usize, held_key: usize, limit: usize) -> Result<(), &'static str> {\n        super::replace_map(map, target, current, held_key, limit)\n    }\n    pub(crate) fn admit_growth(current: usize, new_buffer: usize, held_key: usize, limit: usize) -> bool {\n        super::admit_growth(current, new_buffer, held_key, limit)\n    }\n    pub(crate) fn growth_capacity(capacity: usize, required: usize) -> Option<usize> {\n        super::growth_capacity(capacity, required)\n    }\n}\n\npub(crate) struct Validity(Cell<bool>);\n\n"
+        },
+        {
+          "before": "fn hash_text(text: &str) -> u64 { text.bytes().fold(HASH_START, hash_byte) }\n\nimpl<'gc> Index<'gc> {\n    fn new() -> Self {\n        // Reserve once during loading, after Work's conservative byte check.\n        // Admission never grows these buffers, so a rejected next entry cannot\n        // cause an unbudgeted hash-table rehash or arena reallocation.\n        Self { entries: Vec::with_capacity(MAX_ENTRIES),\n            stage_edges: Vec::with_capacity(MAX_STAGE_EDGES),\n            names: FnvHashMap::with_capacity_and_hasher(MAX_ENTRIES, Default::default()),\n            buckets: FnvHashMap::with_capacity_and_hasher(MAX_ENTRIES, Default::default()),\n            token: Rc::new(Validity::new()), raw_fields: 0, owned_key_bytes: 0,\n            #[cfg(test)] bucket_mask: u64::MAX }\n    }\n",
+          "after": "fn hash_text(text: &str) -> u64 { text.bytes().fold(HASH_START, hash_byte) }\n\nimpl<'gc> Index<'gc> {\n    fn new(capacity: usize) -> Self {\n        // Initial reserve remains the v19 size. Later admission grows only the\n        // exhausted container, with retained + full new allocation charged.\n        Self { entries: Vec::with_capacity(capacity),\n            stage_edges: Vec::with_capacity(MAX_STAGE_EDGES),\n            names: FnvHashMap::with_capacity_and_hasher(capacity, Default::default()),\n            buckets: FnvHashMap::with_capacity_and_hasher(capacity, Default::default()),\n            token: Rc::new(Validity::new()), raw_fields: 0, owned_key_bytes: 0,\n            #[cfg(test)] bucket_mask: u64::MAX }\n    }\n"
+        },
+        {
+          "before": "    index: Index<'gc>,\n    #[collect(require_static)]\n    pending: VecDeque<usize>,\n}\n\nimpl<'gc> Work<'gc> {\n    fn new(gc: &Mutation<'gc>, roots: [Object<'gc>; 6]) -> Option<Self> {\n        if roots.into_iter().any(|object| !matches!(object.boxhead_graph_native(), NativeObject::None | NativeObject::Array(_))) {\n            return None;\n        }\n        // Four slots per requested hash capacity conservatively cover both\n        // rounding/load factor and controls. This bounds retained/requested\n        // buffers, not allocator pages/RSS. No buffer grows during admission.\n        let bound = MAX_ENTRIES * (size_of::<Entry<'gc>>() + size_of::<usize>())\n            + MAX_STAGE_EDGES * size_of::<StageEdge>()\n            + MAX_ENTRIES * 4 * (size_of::<(usize, usize)>() + size_of::<(u64, usize)>() + 2)\n            + MAX_FIELDS_PER_OBJECT * 2 * size_of::<(AvmString<'gc>, Value<'gc>)>()\n            + size_of::<Self>() + 1024;\n        if bound > MAX_STORAGE_BYTES { return None; }\n        let mut work = Self { index: Index::new(), pending: VecDeque::with_capacity(MAX_ENTRIES) };\n        if work.storage_bytes(MAX_FIELDS_PER_OBJECT) > MAX_STORAGE_BYTES { return None; }\n        for (root, object) in roots.into_iter().enumerate() {\n            let (id, fresh) = work.index.add(Name::Root(root as u8), object, true,\n                ROOT_IDS[root].len(), hash_text(ROOT_IDS[root]), gc)?;\n",
+          "after": "    index: Index<'gc>,\n    #[collect(require_static)]\n    pending: VecDeque<usize>,\n    #[collect(require_static)]\n    storage_limit: usize,\n}\n\nimpl<'gc> Work<'gc> {\n    fn new(gc: &Mutation<'gc>, roots: [Object<'gc>; 6], capacity: usize, storage_limit: usize) -> Option<Self> {\n        if !(ROOT_IDS.len()..=MAX_ENTRIES).contains(&capacity) || storage_limit > MAX_STORAGE_BYTES { return None; }\n        if roots.into_iter().any(|object| !matches!(object.boxhead_graph_native(), NativeObject::None | NativeObject::Array(_))) {\n            return None;\n        }\n        // Four slots per requested hash capacity conservatively cover both\n        // rounding/load factor and controls. This bounds retained/requested\n        // buffers, not allocator pages/RSS. Growth has a separate peak guard.\n        let bound = capacity * (size_of::<Entry<'gc>>() + size_of::<usize>())\n            + MAX_STAGE_EDGES * size_of::<StageEdge>()\n            + capacity * 4 * (size_of::<(usize, usize)>() + size_of::<(u64, usize)>() + 2)\n            + MAX_FIELDS_PER_OBJECT * 2 * size_of::<(AvmString<'gc>, Value<'gc>)>()\n            + size_of::<Self>() + 1024;\n        if bound > storage_limit { return None; }\n        let mut work = Self { index: Index::new(capacity), pending: VecDeque::with_capacity(capacity), storage_limit };\n        if work.storage_bytes(MAX_FIELDS_PER_OBJECT) > storage_limit { return None; }\n        for (root, object) in roots.into_iter().enumerate() {\n            let (id, fresh) = work.index.add(Name::Root(root as u8), object, true,\n                ROOT_IDS[root].len(), hash_text(ROOT_IDS[root]), gc)?;\n"
+        },
+        {
+          "before": "\n    fn same_roots(&self, roots: [Object<'gc>; 6], gc: &Mutation<'gc>) -> bool {\n        roots.into_iter().enumerate().all(|(index, root)| self.index.root_matches(index, root, gc))\n    }\n\n    fn step(&mut self, gc: &Mutation<'gc>) -> Result<bool, &'static str> {\n",
+          "after": "\n    fn same_roots(&self, roots: [Object<'gc>; 6], gc: &Mutation<'gc>) -> bool {\n        roots.into_iter().enumerate().all(|(index, root)| self.index.root_matches(index, root, gc))\n    }\n\n    fn reserve_entry(&mut self, traversable: bool, key_bytes: usize) -> Result<(), &'static str> {\n        let required = self.index.entries.len().checked_add(1).ok_or(\"entry-limit\")?;\n        if required > MAX_ENTRIES { return Err(\"entry-limit\"); }\n        // Reserves/copies are bounded operations during loading; the 4ms slice\n        // target is still checked between objects, not a hard realtime bound.\n        // The new key has not been allocated yet. Its complete future owned\n        // allocation participates in EVERY growth check, including old+new.\n        if !admit_growth(self.storage_bytes(MAX_FIELDS_PER_OBJECT), 0, key_bytes, self.storage_limit) {\n            return Err(\"storage-limit\");\n        }\n        if required > self.index.entries.capacity() {\n            let target = growth_capacity(self.index.entries.capacity(), required).ok_or(\"entry-limit\")?;\n            let reserve = target.checked_mul(size_of::<Entry<'gc>>()).ok_or(\"storage-limit\")?;\n            if !admit_growth(self.storage_bytes(MAX_FIELDS_PER_OBJECT), reserve, key_bytes, self.storage_limit) {\n                return Err(\"storage-limit\");\n            }\n            self.index.entries.try_reserve_exact(target - self.index.entries.len()).map_err(|_| \"storage-limit\")?;\n            if self.index.entries.capacity() > target { return Err(\"storage-limit\"); }\n        }\n        if self.index.names.len() == self.index.names.capacity() {\n            let target = growth_capacity(self.index.names.capacity(), self.index.names.len() + 1).ok_or(\"entry-limit\")?;\n            let current = self.storage_bytes(MAX_FIELDS_PER_OBJECT);\n            replace_map(&mut self.index.names, target, current, key_bytes, self.storage_limit)?;\n        }\n        if self.index.buckets.len() == self.index.buckets.capacity() {\n            let target = growth_capacity(self.index.buckets.capacity(), self.index.buckets.len() + 1).ok_or(\"entry-limit\")?;\n            let current = self.storage_bytes(MAX_FIELDS_PER_OBJECT);\n            replace_map(&mut self.index.buckets, target, current, key_bytes, self.storage_limit)?;\n        }\n        if traversable && self.pending.len() == self.pending.capacity() {\n            let target = growth_capacity(self.pending.capacity(), self.pending.len() + 1).ok_or(\"entry-limit\")?;\n            // Request a power of two explicitly; no ring-buffer rounding can\n            // create a buffer larger than the pre-admitted request.\n            let allocated = target.checked_next_power_of_two().ok_or(\"storage-limit\")?;\n            let reserve = allocated.checked_mul(size_of::<usize>()).ok_or(\"storage-limit\")?;\n            if !admit_growth(self.storage_bytes(MAX_FIELDS_PER_OBJECT), reserve, key_bytes, self.storage_limit) {\n                return Err(\"storage-limit\");\n            }\n            self.pending.try_reserve_exact(allocated - self.pending.len()).map_err(|_| \"storage-limit\")?;\n            if self.pending.capacity() > allocated { return Err(\"storage-limit\"); }\n        }\n        Ok(())\n    }\n\n    fn step(&mut self, gc: &Mutation<'gc>) -> Result<bool, &'static str> {\n"
+        },
+        {
+          "before": "                    if self.index.stage_edges.len() >= MAX_STAGE_EDGES { return Err(\"display-edge-limit\"); }\n                    let key_bytes = key.len().checked_mul(size_of::<u16>()).ok_or(\"storage-limit\")?;\n                    if self.storage_bytes(MAX_FIELDS_PER_OBJECT).checked_add(key_bytes)\n                        .is_none_or(|bytes| bytes > MAX_STORAGE_BYTES) { return Err(\"storage-limit\"); }\n                    let mut units = Vec::with_capacity(key.len()); units.extend(key.iter());\n                    self.index.owned_key_bytes += units.capacity() * size_of::<u16>();\n                    self.index.stage_edges.push(StageEdge { parent: id, key: units, length });\n",
+          "after": "                    if self.index.stage_edges.len() >= MAX_STAGE_EDGES { return Err(\"display-edge-limit\"); }\n                    let key_bytes = key.len().checked_mul(size_of::<u16>()).ok_or(\"storage-limit\")?;\n                    if self.storage_bytes(MAX_FIELDS_PER_OBJECT).checked_add(key_bytes)\n                        .is_none_or(|bytes| bytes > self.storage_limit) { return Err(\"storage-limit\"); }\n                    let mut units = Vec::with_capacity(key.len()); units.extend(key.iter());\n                    self.index.owned_key_bytes += units.capacity() * size_of::<u16>();\n                    self.index.stage_edges.push(StageEdge { parent: id, key: units, length });\n"
+        },
+        {
+          "before": "                    for shift in [12, 8, 4, 0] { hash = hash_byte(hash, HEX[((unit >> shift) & 15) as usize]); }\n                }\n                let key_bytes = key.len().checked_mul(size_of::<u16>()).ok_or(\"storage-limit\")?;\n                if self.storage_bytes(MAX_FIELDS_PER_OBJECT).checked_add(key_bytes)\n                    .is_none_or(|bytes| bytes > MAX_STORAGE_BYTES) { return Err(\"storage-limit\"); }\n                // Own the exact units, so an invalidated index cannot retain\n                // an arbitrarily large backing AVM string through a short key.\n                let mut units = Vec::with_capacity(key.len()); units.extend(key.iter());\n",
+          "after": "                    for shift in [12, 8, 4, 0] { hash = hash_byte(hash, HEX[((unit >> shift) & 15) as usize]); }\n                }\n                let key_bytes = key.len().checked_mul(size_of::<u16>()).ok_or(\"storage-limit\")?;\n                self.reserve_entry(traversable, key_bytes)?;\n                // Own the exact units, so an invalidated index cannot retain\n                // an arbitrarily large backing AVM string through a short key.\n                let mut units = Vec::with_capacity(key.len()); units.extend(key.iter());\n"
+        },
+        {
+          "before": "    fallbacks: Cell<usize>,\n    #[cfg(test)]\n    force_collisions: bool,\n}\n\nimpl<'gc> State<'gc> {\n    pub(crate) fn current(&self) -> Option<Gc<'gc, Index<'gc>>> {\n        self.ready.filter(|index| index.valid())\n    }\n",
+          "after": "    fallbacks: Cell<usize>,\n    #[cfg(test)]\n    force_collisions: bool,\n    #[cfg(test)]\n    test_capacity: Option<(usize, usize)>,\n}\n\nimpl<'gc> State<'gc> {\n    #[cfg(test)]\n    pub(crate) fn with_capacity_for_test(capacity: usize, storage_limit: usize) -> Self {\n        Self { test_capacity: Some((capacity, storage_limit)), ..Self::default() }\n    }\n\n    pub(crate) fn current(&self) -> Option<Gc<'gc, Index<'gc>>> {\n        self.ready.filter(|index| index.valid())\n    }\n"
+        },
+        {
+          "before": "            if let Some(work) = self.work.take() { work.index.token.invalidate(); }\n        }\n        if self.work.is_none() {\n            self.work = Work::new(gc, roots);\n            if self.work.is_none() { return self.unavailable(\"root-kind-or-storage-limit\"); }\n            #[cfg(test)]\n            if self.force_collisions { self.work.as_mut().unwrap().index.force_collisions(); }\n",
+          "after": "            if let Some(work) = self.work.take() { work.index.token.invalidate(); }\n        }\n        if self.work.is_none() {\n            let capacity = INITIAL_ENTRIES;\n            let storage_limit = MAX_STORAGE_BYTES;\n            #[cfg(test)]\n            let (capacity, storage_limit) = self.test_capacity.unwrap_or((capacity, storage_limit));\n            self.work = Work::new(gc, roots, capacity, storage_limit);\n            if self.work.is_none() { return self.unavailable(\"root-kind-or-storage-limit\"); }\n            #[cfg(test)]\n            if self.force_collisions { self.work.as_mut().unwrap().index.force_collisions(); }\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "before": {
+        "bytes": 29128,
+        "sha256": "f02f64650b00d212ec6d1d584e5764c78505c9717d26d5dc47678bcfad1ff3de"
+      },
+      "after": {
+        "bytes": 29576,
+        "sha256": "ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732"
+      },
+      "hunks": [
+        {
+          "before": "fn native_graph_asset_index_entry_budget_never_publishes_partial_coverage() {\n    with_avm(8, |a, _| {\n        let roots = std::array::from_fn(|_| bare(a));\n        for block in 0..8 {\n            let parent = bare(a); put(a, roots[0], &format!(\"block{block}\"), parent.into());\n            for index in 0..8192 { put(a, parent, &format!(\"n{index}\"), bare(a).into()); }\n        }\n        let state = prepared(a.gc(), roots, false);\n        assert!(state.report().unavailable && !state.report().completed && state.current().is_none());\n        assert_eq!(state.report().entries, asset_index::MAX_ENTRIES);\n        assert_eq!(state.report().bytes, 0);\n        a.context.avm1.anchor_metadata.index = state;\n        let registry = rows(a, &bindings(roots));\n        assert!(Anchors::read(registry, a).unwrap().assets.is_none());\n        compare(Value::Null, registry, a).unwrap();\n        Ok(())\n    });\n}\n",
+          "after": "fn native_graph_asset_index_entry_budget_never_publishes_partial_coverage() {\n    with_avm(8, |a, _| {\n        let roots = std::array::from_fn(|_| bare(a));\n        // The optional index now admits the fresh reader's existing 250000\n        // anchor envelope. Exceed that actual limit; the smaller v19 fixture\n        // is exercised as supported by the new capacity regression below.\n        for block in 0..(asset_index::MAX_ENTRIES / 8192 + 1) {\n            let parent = bare(a); put(a, roots[0], &format!(\"block{block}\"), parent.into());\n            for index in 0..8192 { put(a, parent, &index.to_string(), bare(a).into()); }\n        }\n        let state = prepared(a.gc(), roots, false);\n        assert!(state.report().unavailable && !state.report().completed && state.current().is_none());\n        assert_eq!(state.report().entries, asset_index::MAX_ENTRIES);\n        assert_eq!(state.report().reason, \"entry-limit\");\n        assert_eq!(state.report().bytes, 0);\n        a.context.avm1.anchor_metadata.index = state;\n        let registry = rows(a, &bindings(roots));\n        assert_eq!(Anchors::read(registry, a).err().unwrap(), \"anchor count limit exceeded\");\n        assert_eq!(compare(Value::Null, registry, a).unwrap_err(), \"anchor count limit exceeded\");\n        Ok(())\n    });\n}\n"
+        },
+        {
+          "before": "\n#[path = \"asset_display_tests.rs\"]\nmod display_tests;\n",
+          "after": "\n#[path = \"asset_display_tests.rs\"]\nmod display_tests;\n\n#[path = \"asset_capacity_tests.rs\"]\nmod capacity_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "before": {
+        "bytes": 91688,
+        "sha256": "0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921"
+      },
+      "after": {
+        "bytes": 93496,
+        "sha256": "10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf"
+      },
+      "hunks": [
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/anchor_index.rs\",\n      \"bytes\": 19253,\n      \"sha256\": \"6dae428bd0ca60330d7e27a9d424320645718a7a64ee590b0aeead907421f570\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/anchor_index.rs\",\n      \"bytes\": 25824,\n      \"sha256\": \"056fd861db029c90bf908fd8863ebfa855967c7ed737f30f6719c73f977ede4a\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "      \"baselineSha256\": \"739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72\"\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs\",\n      \"bytes\": 19682,\n      \"sha256\": \"91f08a6ddc7465df725ccd72df44998a6eaafa5ef227a3a29847996c37f53718\",\n",
+          "after": "      \"baselineSha256\": \"739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72\"\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs\",\n      \"bytes\": 14161,\n      \"sha256\": \"dfc8c5f77bfc47983041d4795901462a6a20247fb6e78ce1928526f7e42920bf\",\n      \"baselineAbsent\": true\n    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs\",\n      \"bytes\": 19682,\n      \"sha256\": \"91f08a6ddc7465df725ccd72df44998a6eaafa5ef227a3a29847996c37f53718\",\n"
+        },
+        {
+          "before": "    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs\",\n      \"bytes\": 29128,\n      \"sha256\": \"f02f64650b00d212ec6d1d584e5764c78505c9717d26d5dc47678bcfad1ff3de\",\n      \"baselineAbsent\": true\n    },\n    {\n",
+          "after": "    },\n    {\n      \"path\": \"core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs\",\n      \"bytes\": 29576,\n      \"sha256\": \"ced3a5c012c2bbfe813e40aaa82237cb7fe1820a33c1c84f5464fe97c1cf5732\",\n      \"baselineAbsent\": true\n    },\n    {\n"
+        },
+        {
+          "before": "    {\n      \"label\": \"graph\",\n      \"filter\": \"native_graph\",\n      \"expectedExecuted\": 76,\n      \"expectedPassed\": 76,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n",
+          "after": "    {\n      \"label\": \"graph\",\n      \"filter\": \"native_graph\",\n      \"expectedExecuted\": 82,\n      \"expectedPassed\": 82,\n      \"expectedFailed\": 0,\n      \"expectedIgnored\": 0,\n      \"exactNames\": [\n"
+        },
+        {
+          "before": "        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_rename_keeps_original_reference_target_semantics\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent\"\n      ]\n    },\n    {\n",
+          "after": "        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_rename_keeps_original_reference_target_semantics\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_growth_math_rejects_overflow_and_unfunded_keys\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_large_catalog_rebinds_beyond_initial_map_capacity\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_map_replacement_charges_old_and_new_tables\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_root_and_call_limits_remain_fail_closed\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_storage_denial_uses_complete_fresh_fallback\",\n        \"avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_tiny_tiers_preserve_aliases_and_collision_chains\"\n      ]\n    },\n    {\n"
+        },
+        {
+          "before": "      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 412,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n",
+          "after": "      ]\n    }\n  ],\n  \"totalRequiredRustTests\": 418,\n  \"qualification\": {\n    \"compilerReproducedHere\": false,\n    \"gameplayPassClaimed\": false,\n"
+        },
+        {
+          "before": "    \"webCompiler\": \"Both existing web-wasm profiles use thin LTO and one codegen unit; the existing wasm-opt calls use -O3 with their debug/feature arguments unchanged. Combined slot-hint/compiler candidate; separate attribution and gameplay/presentation qualification are not claimed by this source package.\",\n    \"assetIndex\": \"Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.\",\n    \"assetDisplayReplay\": \"Extends the prior six-root optional asset topology with bounded opaque display-edge replay. Preparation retains weak owners and immutable field names only. Each checkpoint rereads live values, replays original MovieClip reference resolution and exact alias/error order, and skips only freshly recognized explicit opaque constructors. Ordinary/namespace overlaps and unsupported states retain the unchanged fresh BFS. Read-only nested assetIndex status adds no traversal or native work.\",\n    \"webglReadbackAllocation\": \"Only wasm WebGL Rgba8Unorm NotCopied bitmap capture may replace a pooled MAP_READ buffer when its allocation exceeds twice the requested padded size and the excess is at least256KiB. Return the pooled guard before allocating an exact call-local COPY_DST|MAP_READ buffer; retain the original rectangle, row layout, submission, synchronous capture, unmap and copy-count sequence. Other backends, formats, AlreadyCopied and ordinary pool policy remain unchanged. No persistent cache is added.\"\n  }\n}\n",
+          "after": "    \"webCompiler\": \"Both existing web-wasm profiles use thin LTO and one codegen unit; the existing wasm-opt calls use -O3 with their debug/feature arguments unchanged. Combined slot-hint/compiler candidate; separate attribution and gameplay/presentation qualification are not claimed by this source package.\",\n    \"assetIndex\": \"Optional loading-prepared index for exactly six original XSI asset roots. Persistent state keeps weak object references and immutable names only; every indexed object has a semantic-write/collection invalidation witness. Each use freshly validates the complete explicit registry, all weak upgrades and native kinds; aliases, stage paths, mutations and every unsupported case keep the original fresh reader. Preparation and retained/requested buffers are bounded; no world checkpoint state is cached. Fresh CI Rust/WASM and native/gameplay/presentation qualification are required.\",\n    \"assetDisplayReplay\": \"Extends the prior six-root optional asset topology with bounded opaque display-edge replay. Preparation retains weak owners and immutable field names only. Each checkpoint rereads live values, replays original MovieClip reference resolution and exact alias/error order, and skips only freshly recognized explicit opaque constructors. Ordinary/namespace overlaps and unsupported states retain the unchanged fresh BFS. Read-only nested assetIndex status adds no traversal or native work.\",\n    \"webglReadbackAllocation\": \"Only wasm WebGL Rgba8Unorm NotCopied bitmap capture may replace a pooled MAP_READ buffer when its allocation exceeds twice the requested padded size and the excess is at least256KiB. Return the pooled guard before allocating an exact call-local COPY_DST|MAP_READ buffer; retain the original rectangle, row layout, submission, synchronous capture, unmap and copy-count sequence. Other backends, formats, AlreadyCopied and ordinary pool policy remain unchanged. No persistent cache is added.\",\n    \"assetIndexCapacity\": \"Only the optional six-root asset index allocation capacity changes: start at 65536 entries, grow adaptively up to the existing fresh-reader bound of 250000, and account for retained plus transient replacement buffers before admission within 64 MiB. The 128-call loading bound, slice, field/path/stage-edge limits, weak ownership, invalidation, traversal/classification, original fresh fallback and five-field version 1 loading snapshot remain unchanged. This bound concerns requested/accounted buffers, not whole-VM RSS. Fresh readiness, checkpoint and gameplay/FPS qualification require actual CI evidence.\"\n  }\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "before": {
+        "bytes": 84138,
+        "sha256": "9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff"
+      },
+      "after": {
+        "bytes": 85125,
+        "sha256": "45593e3af803fcd5afb73bd957924c79a1b9c43c41a564ec4ae3fbdbcc9b4b5f"
+      },
+      "hunks": [
+        {
+          "before": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '0ba9f431f19a41e47d4b096c1992d7cd88e884aab565920c8b9f3498952ce921',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n",
+          "after": "  sourceCommit: PROJECTION_RUNTIME_PINS.sourceCommit,\n  // Explicit reviewed source identity. Refresh only when the new package is\n  // frozen again; never derive this pin from a runtime-supplied manifest.\n  engineManifest: '10859178cb1f203f1e545e1700bf5c78c0faa451375cbd9085a1f148a6e606cf',\n  buildDriver: '0c6522920862dbdc2497c8ccbb47bda28093260fea9434f09c729c46c66e089b',\n  parentRuntimeManifest: '4cf43da0ad7f0be085ff6e36e769b916f9422482f6aa7a5c353ae2455cc5f50e',\n  parentBuildResult: '71a29ae5842aeae85acc635beb48c136efd562dfbe0b8d58c56de5f2c7059db4',\n"
+        },
+        {
+          "before": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs',\n  'render/wgpu/src/boxhead_readback.rs',\n  'render/wgpu/src/lib.rs',\n",
+          "after": "  imageId: PROJECTION_RUNTIME_PINS.imageId,\n});\nexport const SMOOTH_OVERLAY_PATHS = Object.freeze([\n  'core/src/avm1/globals/boxhead_native_graph/asset_capacity_tests.rs',\n  'core/src/avm1/globals/boxhead_native_graph/asset_display_tests.rs',\n  'render/wgpu/src/boxhead_readback.rs',\n  'render/wgpu/src/lib.rs',\n"
+        },
+        {
+          "before": "  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 76, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n  { label: 'projection', filter: 'native_projection_scan', passed: 30, ignored: 0 },\n  { label: 'project', filter: 'boxhead_native_project::', passed: 27, ignored: 0 },\n",
+          "after": "  \"avm1::object::boxhead_display_lookup::display_lookup_version_hidden_data_and_virtual_slots_keep_native_fallback\"\n]);\nconst GROUPS = Object.freeze([\n  { label: 'graph', filter: 'native_graph', passed: 82, ignored: 0 },\n  { label: 'scalar', filter: 'native_scalar', passed: 14, ignored: 0 },\n  { label: 'projection', filter: 'native_projection_scan', passed: 30, ignored: 0 },\n  { label: 'project', filter: 'boxhead_native_project::', passed: 27, ignored: 0 },\n"
+        },
+        {
+          "before": "    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent',\n  ]);\n  for (const index of [1, 2]) assert.deepEqual(engine.rustUnitGroups[index], parent.rustUnitGroups[index],\n    'Original scalar/scanner exact fixture sets changed');\n",
+          "after": "    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_replay_records_do_not_retain_owners_after_gc',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_display_same_path_conflicts_keep_exact_alias_error_order',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::display_tests::native_graph_asset_index_explicit_opaque_constructor_wins_and_generated_alias_is_absent',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_growth_math_rejects_overflow_and_unfunded_keys',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_large_catalog_rebinds_beyond_initial_map_capacity',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_map_replacement_charges_old_and_new_tables',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_root_and_call_limits_remain_fail_closed',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_storage_denial_uses_complete_fresh_fallback',\n    'avm1::globals::boxhead_native_graph::asset_index_tests::capacity_tests::native_graph_asset_capacity_tiny_tiers_preserve_aliases_and_collision_chains',\n  ]);\n  for (const index of [1, 2]) assert.deepEqual(engine.rustUnitGroups[index], parent.rustUnitGroups[index],\n    'Original scalar/scanner exact fixture sets changed');\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "before": {
+        "bytes": 65166,
+        "sha256": "2b5bef5ea11ca85c4698c884fb5bcb0d39558d76d667bfea564706d69b0e1a07"
+      },
+      "after": {
+        "bytes": 65166,
+        "sha256": "6ee0db3e64553cecfc00405a64e2b335af3efd517c8ca97cddacaf749a7d1187"
+      },
+      "hunks": [
+        {
+          "before": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 412;\nconst EXPECTED_GROUPS = 21;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'readback_buffer', 'wasm', 'selfhosted'];\n",
+          "after": "const time = seconds => new Date(Date.UTC(2026, 9, 28, 0, 0, seconds)).toISOString();\nconst row = value => ({ path: value.path, bytes: value.bytes, sha256: value.sha256 });\nconst ignored = group => group.exactIgnoredNames ?? [];\nconst EXPECTED_TESTS = 418;\nconst EXPECTED_GROUPS = 21;\nconst EXPECTED_STAGE_LABELS = ['graph', 'scalar', 'projection', 'project', 'bitmap', 'hash', 'property', 'fence',\n  'equality', 'overwrite', 'compact', 'lookup', 'packed', 'gc_slice', 'gc_fence', 'single_push', 'display_lookup', 'anchor_metadata_object', 'anchor_metadata_loading', 'slot_hint', 'readback_buffer', 'wasm', 'selfhosted'];\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 23);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v13.files.some(old => old.path === file.path));\n  assert.equal(added.length, 24);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        },
+        {
+          "before": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit display-replay/readback candidate pin, 116 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 116);\n  assert.equal(engine.files.length, 116);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n",
+          "after": "  value.plan.stages[index].command = command; value.capture.stages[index].command = [...command];\n}\n\ntest('smooth engine has an explicit adaptive asset-capacity candidate pin, 117 overlay paths and all reviewed fixture groups', () => {\n  assert.equal(sha(engineBytes), PINS.engineManifest);\n  assert.equal(NATIVE_SMOOTH_RUNTIME_SCHEMA, 'boxhead-native-smooth-runtime-v2');\n  assert.equal(SMOOTH_OVERLAY_PATHS.length, 117);\n  assert.equal(engine.files.length, 117);\n  assert.equal(validateSmoothEngine(engine, parent, graphParent).length, EXPECTED_TESTS);\n  assert.deepEqual(retainedV13Groups().slice(0, 11), v10.rustUnitGroups,\n    'All original 237 exact fixture names/counts and the ignored diagnostic remain unchanged');\n"
+        },
+        {
+          "before": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly94 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 94);\n  assert.equal(proof.length, value.parentSource.files.length + 94);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n",
+          "after": "  return validateSmoothSourceProof(value.before, value.after, value.parentSource, engine, value.seal, value.stages, '/synthetic/source');\n}\n\ntest('complete trees retain inherited files and add exactly95 reviewed sources with one declared ignored lock', () => {\n  const value = sourceDocuments(); const proof = sourceProof(value);\n  assert.equal(engine.files.filter(file => file.baselineAbsent).length, 95);\n  assert.equal(proof.length, value.parentSource.files.length + 95);\n  const graphFile = 'core/src/avm1/globals/boxhead_native_graph.rs';\n  assert(value.before.gitUntracked.includes(graphFile)); assert(!value.before.gitDiffNames.includes(graphFile));\n  assert(value.before.gitDiffNames.includes('core/src/bitmap/operations.rs'));\n"
+        },
+        {
+          "before": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 17);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n",
+          "after": "    ]) assert.throws(() => validateSmoothRustLogs(group, broken, resources));\n  }\n  const added = engine.files.filter(file => !v14a.files.some(old => old.path === file.path));\n  assert.equal(added.length, 18);\n  for (const expected of added) {\n    const value = sourceDocuments();\n    for (const capture of [value.before, value.after]) {\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/native-v19-display-readback-integration.test.mjs",
+      "before": {
+        "bytes": 20579,
+        "sha256": "5726efc5dd7f7d865c7b4fb6dffedc4f5a733f59fa6c8b2ecda11d5c8cd31254"
+      },
+      "after": {
+        "bytes": 21719,
+        "sha256": "9b5499de1507ff993f6a5323d3a67b4122e78a4108c7edfa262f56dc4f13dfa6"
+      },
+      "hunks": [
+        {
+          "before": "import { reviewedV19Paths, restoreV18Source, v19HistoricalSource, v19HistoricalEndpoints } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source, v18HistoricalSource } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE }\n  from '../../scripts/lib/native-smooth-runtime-binding.mjs';\n\n// Source authentication and rejection fixtures only. Actual Rust/WASM builds,\n// native equivalence, gameplay and presentation qualification remain separate.\nconst read = path => readFileSync(new URL('../../' + path, import.meta.url), 'utf8');\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v19/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 12276,\n",
+          "after": "import { reviewedV19Paths, restoreV18Source, v19HistoricalSource, v19HistoricalEndpoints } from './fixtures/native-v19-source.mjs';\nimport { reviewedV18Paths, restoreV17Source, v18HistoricalSource } from './fixtures/native-v18-source.mjs';\nimport { reviewedV17Paths, restoreV16Source } from './fixtures/native-v17-source.mjs';\nimport { v20HistoricalSource } from './fixtures/native-v20-source.mjs';\n\n// Source authentication and rejection fixtures only. Actual Rust/WASM builds,\n// native equivalence, gameplay and presentation qualification remain separate.\nconst read = path => v20HistoricalSource(path, readFileSync(new URL('../../' + path, import.meta.url), 'utf8'));\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst root = 'tools/ruffle-native-smooth/engine/';\nconst packageRoot = 'tools/ruffle-native-v19/';\nconst manifestPath = root + 'manifest.json';\nconst binderPath = 'scripts/lib/native-smooth-runtime-binding.mjs';\nconst driverPath = 'tools/ruffle-native-smooth/build.py';\n\n// Exercise the exact sealed v19 validator and its original 412-case contract.\n// Only its three relative import URLs change for this test-only data module.\nconst historicalBinderSource = read(binderPath);\nassert.deepEqual(identity(historicalBinderSource), { bytes: 84138,\n  sha256: '9eb0d9b1c6e44e8dfa633f3f52b88aebe6f34f2e62e1a4d09e20b4bb9b269bff' });\nconst binderURL = new URL('../../' + binderPath, import.meta.url);\nconst siblingImports = ['./native-runtime-bundle.mjs', './native-graph-runtime-binding.mjs', './native-projection-runtime-binding.mjs'];\nassert.deepEqual([...historicalBinderSource.matchAll(/from '(\\.\\/[^']+)'/g)].map(match => match[1]), siblingImports);\nlet historicalBinderModule = historicalBinderSource;\nfor (const specifier of siblingImports) {\n  const from = \"from '\" + specifier + \"'\";\n  assert.equal(historicalBinderModule.split(from).length, 2);\n  historicalBinderModule = historicalBinderModule.replace(from, \"from '\" + new URL(specifier, binderURL).href + \"'\");\n}\nconst { SMOOTH_RUNTIME_PINS, SMOOTH_OVERLAY_PATHS, SMOOTH_UPSTREAM_BASELINES,\n  validateSmoothEngine, validateSmoothRustLogs, SMOOTH_RESOURCE_SCOPE } =\n  await import('data:text/javascript;base64,' + Buffer.from(historicalBinderModule).toString('base64'));\nconst inventoryText = read(packageRoot + 'source-inventory.json');\nassert.deepEqual(identity(inventoryText), {\n  \"bytes\": 12276,\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v19-source.mjs",
+      "before": {
+        "bytes": 2218,
+        "sha256": "259b3c2d873a76a711fd2f6852da94518d2cfe82389aabb688530fb1ad18285b"
+      },
+      "after": {
+        "bytes": 2327,
+        "sha256": "a65a2c1c6de0d977ac996a06bf56398f5ce8a1ecd8dd3791ab05b1282f415949"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v19/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 96022, \"sha256\": \"9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12\"}, 'Unreviewed v19 exact source delta');\n",
+          "after": "import assert from 'node:assert/strict';\nimport { createHash } from 'node:crypto';\nimport { readFileSync } from 'node:fs';\nimport { v20HistoricalSource } from './native-v20-source.mjs';\nconst identity = source => ({ bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') });\nconst encoded = readFileSync(new URL('../../../tools/ruffle-native-v19/source-reversal.json', import.meta.url), 'utf8');\nassert.deepEqual(identity(encoded), {\"bytes\": 96022, \"sha256\": \"9a19dd9183ed482acc35bd62a557b78b1694c061ff623fc5ffcc932ca8fefa12\"}, 'Unreviewed v19 exact source delta');\n"
+        },
+        {
+          "before": "}\nexport function v19HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n",
+          "after": "}\nexport function v19HistoricalSource(path, source) {\n  assert.equal(typeof path, 'string'); assert.equal(typeof source, 'string');\n  source = v20HistoricalSource(path, source);\n  const row = rows.get(path);\n  if (!row) return source;\n  const current = identity(source);\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/scripts/gl-readback-entrypoint-v19.test.mjs",
+      "before": {
+        "bytes": 14360,
+        "sha256": "09672e106bf13767fa73ab7cb8eb78afdf651f7c4bbb3133d119abfa1fb7275c"
+      },
+      "after": {
+        "bytes": 14608,
+        "sha256": "0c8252fcf66647f4e07034b9744472f7ab9816e409d307914f5dfbcce80e2f8e"
+      },
+      "hunks": [
+        {
+          "before": "import assert from 'node:assert/strict';\nimport { readFile } from 'node:fs/promises';\nimport { createHash } from 'node:crypto';\nimport path from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\n",
+          "after": "import assert from 'node:assert/strict';\nimport { readFile } from 'node:fs/promises';\nimport { createHash } from 'node:crypto';\nimport { v20HistoricalSource } from './fixtures/native-v20-source.mjs';\nimport path from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\n"
+        },
+        {
+          "before": "\ntest('new GPU wrapper is an exact one-entry whitelist delta; original producer and wrapper stay pinned', async () => {\n  for (const [file, expected] of Object.entries(GL_DIAGNOSTIC_PINS)) {\n    const bytes = await readFile(path.join(root, file));\n    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);\n  }\n  const before = await readFile(path.join(root, 'scripts/run-original-ci-gpu-phased.py'), 'utf8');\n",
+          "after": "\ntest('new GPU wrapper is an exact one-entry whitelist delta; original producer and wrapper stay pinned', async () => {\n  for (const [file, expected] of Object.entries(GL_DIAGNOSTIC_PINS)) {\n    const currentBytes = await readFile(path.join(root, file));\n    const bytes = file === 'scripts/lib/native-smooth-runtime-binding.mjs'\n      ? Buffer.from(v20HistoricalSource(file, currentBytes.toString('utf8'))) : currentBytes;\n    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);\n  }\n  const before = await readFile(path.join(root, 'scripts/run-original-ci-gpu-phased.py'), 'utf8');\n"
+        }
+      ]
+    }
+  ],
+  "historicalEndpoints": [
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 77023,
+      "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 78565,
+      "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+    },
+    {
+      "path": "scripts/lib/native-smooth-runtime-binding.mjs",
+      "bytes": 80552,
+      "sha256": "9210dea20bf3a26f3aaee84ee12230152c75b074caf3f0afce4bd792d3710adc"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61069,
+      "sha256": "35ef5605592ddeb9d9f1fc547c1f3f2903e2948f649d103d30ac11e6c06460a3"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61231,
+      "sha256": "ad9b3eece33148396381d1d5f580e98e19a7488212079469a38b81f741bbf516"
+    },
+    {
+      "path": "tests/scripts/native-smooth-runtime-binding.test.mjs",
+      "bytes": 61238,
+      "sha256": "e9ff2866cf7d00f440ef9c17f9284cc5f7bdbd45ad694efa6d23877de3e8ac1b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/anchor_index.rs",
+      "bytes": 16116,
+      "sha256": "e80c96f3c4cacc32eea996b44aed517f9bf8a4d8e5053e045307b287a441d380"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/core/src/avm1/globals/boxhead_native_graph/asset_index_tests.rs",
+      "bytes": 28407,
+      "sha256": "957be44d213bf008aa672b08a9108534397bc3e21fdb5d4bdf923fdf447722af"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 81095,
+      "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 83585,
+      "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+    },
+    {
+      "path": "tools/ruffle-native-smooth/engine/manifest.json",
+      "bytes": 86545,
+      "sha256": "dbaa143491c78e4d995be3cab9a78dfbff24b2894db2ee8ba56d78fdf946146f"
+    }
+  ]
+}

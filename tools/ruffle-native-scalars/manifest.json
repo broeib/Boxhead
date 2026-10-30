@@ -1,0 +1,242 @@
+{
+  "schema": "boxhead-ruffle-native-scalars-repository-source-v1",
+  "status": "source-only-repository-deliverable",
+  "repoRoot": "tools/ruffle-native-scalars",
+  "selectedEngineVariant": "native-scalars-v2",
+  "upstream": {
+    "repository": "https://github.com/ruffle-rs/ruffle",
+    "commit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+    "binding": {
+      "file": "tools/ruffle-native-scalars/UPSTREAM.json",
+      "bytes": 3164,
+      "sha256": "c6b4fa46db4463413bbb2df4396b944dcc771c089a7a8d4ec33327762d5d8c70"
+    }
+  },
+  "selectedSourceManifest": {
+    "file": "tools/ruffle-native-scalars/engine/manifest.json",
+    "bytes": 8345,
+    "sha256": "bdb740ade0c05141254b3f224703fdc320240dac7b6c532895dda3b6eab35a7e"
+  },
+  "selectedBuiltRuntimeManifest": {
+    "file": "tools/ruffle-native-scalars/provenance/built-runtime-manifest.json",
+    "bytes": 5844,
+    "sha256": "c3d398935a1fa237b93e9493e4815a5ad38f116440d031d21d1da0c515f6b2d7"
+  },
+  "exactHistoricalBuildDriver": {
+    "file": "tools/ruffle-native-scalars/ci/candidate-build-v3.py",
+    "bytes": 26409,
+    "sha256": "7ea579e057c2521e8f71bf0f19764255a675c3d04465cd90219ac983379d2e9a"
+  },
+  "integration": {
+    "swfSha256": "e437cb29823dd1b57df838715892bfb14f743126613ce9cf5ad6ae8304f871fc",
+    "bridgeFile": "tools/original-bridge/CMain.bridge.asinc",
+    "bridgeSha256": "b56a3d7fa86af4fe82311ef618031a2c0b6f39fbfba523fcd3e07e4757c265dd",
+    "includedInThisSourceDirectory": false
+  },
+  "inventory": {
+    "filesIncludingThisManifest": 19,
+    "recordsExcludingThisManifest": 18,
+    "rustOverlayFiles": 6,
+    "nativeFixtures": 14,
+    "runtimeBinaryFiles": 0,
+    "rejectedActionPushFiles": 0
+  },
+  "exactCopies": {
+    "engineTree": {
+      "origin": "ruffle-native-scalars-v1/engine-v2",
+      "destination": "tools/ruffle-native-scalars/engine",
+      "files": 10,
+      "byteIdentityVerified": true
+    },
+    "otherFiles": [
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/candidate-build-v3.py",
+        "destination": "tools/ruffle-native-scalars/ci/candidate-build-v3.py",
+        "bytes": 26409,
+        "sha256": "7ea579e057c2521e8f71bf0f19764255a675c3d04465cd90219ac983379d2e9a"
+      },
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/candidate-v3-final-bindings.json",
+        "destination": "tools/ruffle-native-scalars/provenance/candidate-v3-final-bindings.json",
+        "bytes": 2794,
+        "sha256": "e4dffc6162a28646e7bedac4b6967aed1c7b837d8cfbb765e3381fa121df2486"
+      },
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/actual-probe-smoke-timing-handoff.json",
+        "destination": "tools/ruffle-native-scalars/provenance/actual-probe-smoke-timing-handoff.json",
+        "bytes": 5266,
+        "sha256": "9063542cbdb26245a80b74b989c58fc5e8792ff82b4c12da3ee65162ad3a0906"
+      },
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/c3d-runtime-source-handoff/manifest.json",
+        "destination": "tools/ruffle-native-scalars/provenance/built-runtime-manifest.json",
+        "bytes": 5844,
+        "sha256": "c3d398935a1fa237b93e9493e4815a5ad38f116440d031d21d1da0c515f6b2d7"
+      },
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/c3d-runtime-source-handoff/LICENSE_APACHE",
+        "destination": "tools/ruffle-native-scalars/LICENSE_APACHE",
+        "bytes": 9723,
+        "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+      },
+      {
+        "origin": "ruffle-native-scalars-v1/toolchain/c3d-runtime-source-handoff/LICENSE_MIT",
+        "destination": "tools/ruffle-native-scalars/LICENSE_MIT",
+        "bytes": 1097,
+        "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c"
+      }
+    ],
+    "historicalPathsPreserved": true,
+    "historicalPathsAreNotRebasedToRepository": true,
+    "originalEngineSourceFreezeStatusPreserved": true
+  },
+  "evidence": {
+    "actualBuildBindings": {
+      "file": "tools/ruffle-native-scalars/provenance/candidate-v3-final-bindings.json",
+      "bytes": 2794,
+      "sha256": "e4dffc6162a28646e7bedac4b6967aed1c7b837d8cfbb765e3381fa121df2486"
+    },
+    "componentEvidenceHandoff": {
+      "file": "tools/ruffle-native-scalars/provenance/actual-probe-smoke-timing-handoff.json",
+      "bytes": 5266,
+      "sha256": "9063542cbdb26245a80b74b989c58fc5e8792ff82b4c12da3ee65162ad3a0906"
+    },
+    "actualBuildResult": {
+      "bytes": 3099,
+      "sha256": "04508cbd002236b5ef47be539ef7ef6cace57f2401bd970963af84a68a56da9a",
+      "rawBodyIncluded": false
+    },
+    "actualNativeUnitResult": {
+      "bytes": 2585,
+      "sha256": "70450844202361287e831a445c6ed247c8bead87075ca54cec98fc6375291672",
+      "executed": 14,
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0,
+      "rawBodyIncluded": false
+    },
+    "source": "Retained ROOT-produced records; no execution was performed to create this repository copy.",
+    "finalColdPassClaimed": false,
+    "freshNineteenCasePassClaimed": false,
+    "freshFifteenWaveCampaignPassClaimed": false,
+    "realGuestLatencyImprovementClaimed": false,
+    "deploymentClaimed": false
+  },
+  "authorValidation": {
+    "fileReadHashDiffCopyAndPackagingOnly": true,
+    "imports": false,
+    "syntaxOrCompile": false,
+    "tests": false,
+    "browserOrNative": false,
+    "remoteOperations": false,
+    "engineDirectoryDiff": "No differences against frozen engine-v2.",
+    "exactCopiedFilesHashesVerified": true,
+    "review": {
+      "reviewer": "history_audit",
+      "scope": "New README and read-only references",
+      "result": "No concrete blocker",
+      "sourceOnly": true
+    }
+  },
+  "reproduction": {
+    "sourcePatchAndFullFilesIncluded": true,
+    "completeUpstreamAndDependenciesIncluded": false,
+    "imageIncluded": false,
+    "exactHistoricalDriverIncluded": true,
+    "portableFreshBuildDriverClaimed": false,
+    "crossEnvironmentBinaryReproducibilityClaimed": false,
+    "selectedRuntimeFilesNotEmbedded": "Use the exact full c3d runtime manifest; do not mix assets or infer runtime acceptance from this source package."
+  },
+  "files": [
+    {
+      "file": "tools/ruffle-native-scalars/LICENSE_APACHE",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/LICENSE_MIT",
+      "bytes": 1097,
+      "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/README.md",
+      "bytes": 13007,
+      "sha256": "44d03305f61de47a84c4769233edf79f6a86f7965b2d7d2e47fe7605a68ff97d"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/UPSTREAM.json",
+      "bytes": 3164,
+      "sha256": "c6b4fa46db4463413bbb2df4396b944dcc771c089a7a8d4ec33327762d5d8c70"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/ci/candidate-build-v3.py",
+      "bytes": 26409,
+      "sha256": "7ea579e057c2521e8f71bf0f19764255a675c3d04465cd90219ac983379d2e9a"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/README.md",
+      "bytes": 10951,
+      "sha256": "06b74c2d5f49ff98f28643b5f74d0d6b0670ea6a3c7be60e05e5133ea561378c"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/activation.rs",
+      "bytes": 125258,
+      "sha256": "b4de53507de89d971dfc25b1114cc9b9ce972f611a2fae0d45803966de3e3c83"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/globals.rs",
+      "bytes": 32879,
+      "sha256": "143e26b78b70699f4c8809f9eea5a467a394fba95ece6a5785c98400cbae4fac"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/globals/boxhead_native_scalars.rs",
+      "bytes": 10277,
+      "sha256": "2a33f7c2f76db6b02fd95e8e534c53610efc3f83aa7193970e875c5138320a9d"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs",
+      "bytes": 3111,
+      "sha256": "420899c30a7f3f5582de9ae30cb77475d2cc217059a656241774aca389a2b396"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/globals/boxhead_native_scalars/tests.rs",
+      "bytes": 22935,
+      "sha256": "2a377f224648e03615441bcfd722127516dbd897472a5999cd3e4e013b3dbf9a"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/core/src/avm1/runtime.rs",
+      "bytes": 25713,
+      "sha256": "849948fd11f906262199379694e4928697d4169f612df32251681f2538b3b3e2"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/engine-v1-to-v2.patch",
+      "bytes": 1059,
+      "sha256": "6348e1de65cd59dcc7ad95568475509954cb92f39d9ae8b96c38e881042c8bbe"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/manifest.json",
+      "bytes": 8345,
+      "sha256": "bdb740ade0c05141254b3f224703fdc320240dac7b6c532895dda3b6eab35a7e"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/engine/native-scalars-cac5c99.patch",
+      "bytes": 39211,
+      "sha256": "8e18a95c9ac49113847246a27b09914e812eba76e29fed317730a68a6412c04f"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/provenance/actual-probe-smoke-timing-handoff.json",
+      "bytes": 5266,
+      "sha256": "9063542cbdb26245a80b74b989c58fc5e8792ff82b4c12da3ee65162ad3a0906"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/provenance/built-runtime-manifest.json",
+      "bytes": 5844,
+      "sha256": "c3d398935a1fa237b93e9493e4815a5ad38f116440d031d21d1da0c515f6b2d7"
+    },
+    {
+      "file": "tools/ruffle-native-scalars/provenance/candidate-v3-final-bindings.json",
+      "bytes": 2794,
+      "sha256": "e4dffc6162a28646e7bedac4b6967aed1c7b837d8cfbb765e3381fa121df2486"
+    }
+  ]
+}

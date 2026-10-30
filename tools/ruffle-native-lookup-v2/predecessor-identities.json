@@ -1,0 +1,25 @@
+{
+  "schema": "boxhead-native-lookup-predecessors-v1",
+  "files": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_project.rs",
+      "bytes": 32804,
+      "sha256": "73f9240d39fd9c179963acd201cfb2dea7019ae14b1d6f7d7c2ca31098b4efb3"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12637,
+      "sha256": "11451ab0d11b1617f9859164888a6077fb34173c11ec7e8cc85575ab0394bbc0"
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 42307,
+      "sha256": "67cfbecc52f4db6c7321efe0015c7503aad1706b0161b0664474a42c67f6905f"
+    },
+    {
+      "path": "core/src/avm1/scope.rs",
+      "bytes": 9350,
+      "sha256": "85d7998c61e2f65c0c77116799ad32dc7f04f231a4f6d81a2829ee777dffbd2d"
+    }
+  ]
+}

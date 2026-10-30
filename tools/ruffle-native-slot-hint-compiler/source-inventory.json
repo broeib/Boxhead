@@ -1,0 +1,147 @@
+{
+  "schema": "boxhead-v17-slot-hint-compiler-source-inventory-v1",
+  "status": "source candidate; CI Rust/WASM/web and native/gameplay/presentation qualification required",
+  "upstreamCommit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "parentEngine": {
+    "bytes": 81095,
+    "sha256": "a1ad49fc6c2c38c1479236308584ecd95e636f27662232fec2522571a47a347b"
+  },
+  "parentBinder": {
+    "bytes": 77023,
+    "sha256": "3b473daa9f3a9279c18f90a73538a498d502a658f2c9cf33b29bf36a1198e5a7"
+  },
+  "engineManifest": {
+    "bytes": 83585,
+    "sha256": "dc0d269400f6ba2225ff3df29a66674746dc80656d4e533ae65cbaf585571c57"
+  },
+  "binder": {
+    "bytes": 78565,
+    "sha256": "5fffa8346ad12f5b129c86dfdb43f0e983514031d94be3a2147afc827b9a0092"
+  },
+  "oldOverlayInputs": 109,
+  "retainedUnchangedInputs": 105,
+  "currentOverlayInputs": 111,
+  "previousRequiredRustTests": 366,
+  "totalRequiredRustTests": 375,
+  "previousRustGroups": 19,
+  "currentRustGroups": 20,
+  "addedRustGroup": {
+    "label": "slot_hint",
+    "filter": "slot_hint",
+    "expectedExecuted": 9,
+    "expectedPassed": 9,
+    "expectedFailed": 0,
+    "expectedIgnored": 0,
+    "exactNames": [
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_actual_avm_warm_slot_reobserves_virtual_descriptor_and_new_watcher",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_borrowed_wstr_operations_do_not_consume_or_rewrite_the_hint",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_case_insensitive_collisions_and_mutations_keep_frozen_selection",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_positive_queries_recheck_wrong_keys_and_out_of_bounds_indices",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_range_aliases_append_and_equal_widths_keep_range_local_hints",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_shared_query_revalidates_each_map_and_independently_mutated_clone",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_shift_remove_entry_remove_and_reinsert_preserve_order",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_warm_reads_observe_insert_get_mut_entry_and_iter_mut_values",
+      "avm1::property_map::boxhead_slot_hint_tests::slot_hint_zero_and_checked_u32_encoding_never_truncate_indices"
+    ]
+  },
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "bytes": 6019,
+      "sha256": "50ae24b1bd4a0b45c1194f33ee8aac08e9b0b6cb8adac493b5f8ac44d051ed50",
+      "reviewPredecessor": {
+        "bytes": 5957,
+        "sha256": "cb19e2ac51c759eb0f42be27be5d39c852b0262f70b04b98cb133a7d1ca9d361"
+      },
+      "installation": {
+        "baselineBytes": 5842,
+        "baselineSha256": "6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b"
+      }
+    },
+    {
+      "path": "core/common/src/avm_string/avm_string.rs",
+      "bytes": 6267,
+      "sha256": "aaed4cd525c83b77aaeddb2ef17f18f602ba09afea8e04c9c7aa41948738f26a",
+      "reviewPredecessor": {
+        "bytes": 5858,
+        "sha256": "dfff8d9696a0b7160b5479a6d08c76f3c816fd1f0cd21d6dd75d0c6ba60c7a2b"
+      },
+      "installation": {
+        "baselineBytes": 5517,
+        "baselineSha256": "ceeeeb9431c7c4f2601a6d61eb2ca47878225f5f78c61e73788808809d3ee38a"
+      }
+    },
+    {
+      "path": "core/common/src/avm_string/repr.rs",
+      "bytes": 9320,
+      "sha256": "383f46468df1eeb3340e261ceea3c8c9b5c7ec58f1984b14ddac9a571f2f2107",
+      "reviewPredecessor": {
+        "bytes": 8327,
+        "sha256": "255e9167c20c94db7803cf4b73205e83f4da3572b4be15652614266fb3a8c141"
+      },
+      "installation": {
+        "baselineBytes": 7433,
+        "baselineSha256": "61c9876a88dee4f473ea9030141ebfb3fca060f7d26fa96e5b31768fb4fdf4da"
+      }
+    },
+    {
+      "path": "core/src/avm1/property_map.rs",
+      "bytes": 10526,
+      "sha256": "2a4cde42ed973d96213df36b2fdf9081dccf364dc1e14dad625cf5b327782a42",
+      "reviewPredecessor": {
+        "bytes": 9568,
+        "sha256": "2c0c0be67182848befd77a26d543e1556038d2e7ff05e6a0287e718ce2c95a2b"
+      },
+      "installation": {
+        "baselineBytes": 6702,
+        "baselineSha256": "dc05653e0c870ec685937c05a2cfbbad405453221c4c48ee69574dc46a9a991b"
+      }
+    },
+    {
+      "path": "core/src/avm1/property_map/boxhead_slot_hint_tests.rs",
+      "bytes": 17489,
+      "sha256": "05c752cea2020acc15d2de267241e4e325b49aa6ec89e37483d16e74254eb80e",
+      "baselineAbsent": true,
+      "installation": {
+        "baselineAbsent": true
+      }
+    },
+    {
+      "path": "web/packages/core/tools/build_wasm.ts",
+      "bytes": 5580,
+      "sha256": "5a8bc1daad24204909c8081784a9e262571572f2081b81650ca4c753b60113c1",
+      "reviewPredecessor": {
+        "bytes": 5579,
+        "sha256": "51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e"
+      },
+      "installation": {
+        "baselineBytes": 5579,
+        "baselineSha256": "51383a1bab1e5c81f548796368c3a29a34ac85194dc46462db66c7ee1ab0961e"
+      }
+    }
+  ],
+  "supportFiles": [
+    {
+      "path": "tools/ruffle-native-slot-hint-compiler/source-reversal.json",
+      "bytes": 52241,
+      "sha256": "8659cd04d5295eedfd6c68253adf66983d3c5bd05c1c7c1254c5810eb5c2f602"
+    },
+    {
+      "path": "tests/scripts/fixtures/native-v17-source.mjs",
+      "bytes": 1961,
+      "sha256": "9c92a32d085fdbba36b38a2e2f65f27c9577824d696b639e60943d845529dc72"
+    }
+  ],
+  "unchangedBuildDriver": {
+    "path": "tools/ruffle-native-smooth/build.py",
+    "bytes": 16458,
+    "sha256": "e72554fe684dbaaf4fb97838f6cc2b35ff72d72b40f537b5583a0de68f35093d"
+  },
+  "frozenOracle": {
+    "file": "core/src/avm1/property_map/frozen_v8.rs",
+    "sha256": "c711bf584d4c45259cf22e55184795034ce235d1576c81bd470cbee47df46ef8"
+  },
+  "performanceAttribution": "Combined slot-hint and compiler candidate; no independent causal attribution.",
+  "gameplayPassClaimed": false,
+  "performancePassClaimed": false
+}

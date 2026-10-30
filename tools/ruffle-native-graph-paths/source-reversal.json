@@ -1,0 +1,55 @@
+{
+  "schema": "boxhead-native-graph-paths-reversal-v1",
+  "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+  "predecessor": {
+    "bytes": 45856,
+    "sha256": "25bcdd5010eb7edc02b588a0ba80b2a970fa0f28bb400e12da4205e67bea61da"
+  },
+  "candidate": {
+    "bytes": 46215,
+    "sha256": "d7e560ebc3abb476d2fef6f0cbb0b826a81d4975092105130667cc9e3166d948"
+  },
+  "hunks": [
+    {
+      "before": "        fn atom(&mut self, value: Value<'gc>, path: &str, anchors: &Anchors<'gc>, activation: &mut Activation<'_, 'gc>) -> ResultG<Atom> {",
+      "after": "        // Diagnostic paths do not participate in graph identity or the wire.\n        // The closure reads only the immutable key and this node's saved path;\n        // retain a String only for a newly discovered node or an actual error.\n        fn atom<P: FnOnce() -> String>(&mut self, value: Value<'gc>, path: P, anchors: &Anchors<'gc>, activation: &mut Activation<'_, 'gc>) -> ResultG<Atom> {"
+    },
+    {
+      "before": "if v.len() > MAX_STRING { return Err(format!(\"oversized string at {path}\")); }",
+      "after": "if v.len() > MAX_STRING { return Err(format!(\"oversized string at {}\", path())); }"
+    },
+    {
+      "before": "Value::MovieClip(_) => return Err(format!(\"unbound MovieClip reference at {path}\")),",
+      "after": "Value::MovieClip(_) => return Err(format!(\"unbound MovieClip reference at {}\", path())),"
+    },
+    {
+      "before": "return Err(format!(\"unbound function/native object at {path}, kind {}{detail}\", anchor_kind(value)?));",
+      "after": "return Err(format!(\"unbound function/native object at {}, kind {}{detail}\", path(), anchor_kind(value)?));"
+    },
+    {
+      "before": "self.pending.push((object, path.to_owned()));",
+      "after": "self.pending.push((object, path()));"
+    },
+    {
+      "before": "let root = builder.atom(root, \"root\", anchors, activation)?;",
+      "after": "let root = builder.atom(root, || \"root\".to_owned(), anchors, activation)?;"
+    },
+    {
+      "before": "            let child_path = if path.len() <= 2048 {\n                format!(\"{path}.{}\",key.to_utf8_lossy())\n            } else { format!(\"node[{}].{}\",nodes.len(),key.to_utf8_lossy()) };\n            let atom = builder.atom(value, &child_path, anchors, activation)?;\n            if key.eq_with_case(b\"__proto__\", true) && !matches!(atom, Atom::Anchor(_, _) | Atom::Undefined | Atom::Null) {\n                return Err(format!(\"unbound prototype at {child_path}\"));\n            }",
+      "after": "            let child_path = || if path.len() <= 2048 {\n                format!(\"{path}.{}\",key.to_utf8_lossy())\n            } else { format!(\"node[{}].{}\",nodes.len(),key.to_utf8_lossy()) };\n            let atom = builder.atom(value, &child_path, anchors, activation)?;\n            if key.eq_with_case(b\"__proto__\", true) && !matches!(atom, Atom::Anchor(_, _) | Atom::Undefined | Atom::Null) {\n                return Err(format!(\"unbound prototype at {}\", child_path()));\n            }"
+    },
+    {
+      "before": "#[cfg(test)]\n#[path = \"boxhead_native_graph/inline_tests.rs\"]\nmod inline_tests;\n",
+      "after": "#[cfg(test)]\n#[path = \"boxhead_native_graph/inline_tests.rs\"]\nmod inline_tests;\n\n#[cfg(test)]\n#[path = \"boxhead_native_graph/path_tests.rs\"]\nmod path_tests;\n"
+    }
+  ],
+  "oracle": {
+    "path": "core/src/avm1/globals/boxhead_native_graph/frozen_v14.rs",
+    "marker": "// FROZEN_V14_GRAPH_PATH_ORACLE_ADAPTER_START\n",
+    "removedTestSuffix": "#[cfg(test)]\n#[path = \"boxhead_native_graph/tests.rs\"]\nmod tests;\n\n#[cfg(test)]\n#[path = \"boxhead_native_graph/inline_tests.rs\"]\nmod inline_tests;\n",
+    "identity": {
+      "bytes": 46385,
+      "sha256": "063eba0c3f6dd4aa00476fa26174b8b51b8ba3a0e5de12e7bcb3852dc3fe16f4"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "boxhead-ruffle-native-scalars-repo-upstream-v1",
+  "repository": "https://github.com/ruffle-rs/ruffle",
+  "commit": "cac5c99ce4a17e606f4ee3090389bb878f852055",
+  "applicationBase": "Clean complete upstream checkout at the exact commit; no other engine overlay.",
+  "engineManifest": {
+    "file": "engine/manifest.json",
+    "bytes": 8345,
+    "sha256": "bdb740ade0c05141254b3f224703fdc320240dac7b6c532895dda3b6eab35a7e"
+  },
+  "patch": {
+    "file": "engine/native-scalars-cac5c99.patch",
+    "bytes": 39211,
+    "sha256": "8e18a95c9ac49113847246a27b09914e812eba76e29fed317730a68a6412c04f"
+  },
+  "requiredBaselineFiles": [
+    {
+      "file": "core/src/avm1/globals.rs",
+      "bytes": 32650,
+      "sha256": "6e121b210d2e4705f60bae02a47f26616a3c26f38deeffb730c41dfaef26b6f9"
+    },
+    {
+      "file": "core/src/avm1/runtime.rs",
+      "bytes": 25458,
+      "sha256": "b586254ad6beadbaf232180160d7e5ab2175ef963dcb741604779d3f9143cf98"
+    },
+    {
+      "file": "core/src/avm1/activation.rs",
+      "bytes": 125147,
+      "sha256": "5cbbaa1a78c6cff6f9fcb3df1ef1432f95077f35208f539c4bdb3108dc3e579d"
+    }
+  ],
+  "requiredAbsentPaths": [
+    "core/src/avm1/globals/boxhead_native_scalars.rs",
+    "core/src/avm1/globals/boxhead_native_scalars/tests.rs",
+    "core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs"
+  ],
+  "retainedUpstreamBuildInputIdentities": [
+    {
+      "file": "Cargo.lock",
+      "bytes": 188669,
+      "sha256": "c5483f1461377c35a895f487b4c3e7e4e8e85aad0ab5eac1b63c1aecdfcf41c7"
+    },
+    {
+      "file": "Cargo.toml",
+      "bytes": 5842,
+      "sha256": "6129981168edf498e1a7ef61c10789f3688e610c818956327fdd7ed5de70891b"
+    },
+    {
+      "file": "core/Cargo.toml",
+      "bytes": 3423,
+      "sha256": "6f0d7b4822c59b41bc2bdb8eee968b175912a7e1648eb8dd8ba0359588c5bcc5"
+    },
+    {
+      "file": "web/Cargo.toml",
+      "bytes": 3421,
+      "sha256": "2fe9e35972cd85aa76b667e7aa06179e8ae5ea93fae828beda1dd6ee606aeba3"
+    }
+  ],
+  "retainedSourceSubset": {
+    "manifestSha256": "efb9ab699a3161551f9aef8e3ddd680aef187e3281262d8c4a36c3ab97cf9322",
+    "scope": "Historical read-only source transfer, not a complete upstream or dependency archive."
+  },
+  "licenses": [
+    {
+      "file": "LICENSE_APACHE",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+    },
+    {
+      "file": "LICENSE_MIT",
+      "bytes": 1097,
+      "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c"
+    }
+  ],
+  "selectedBuiltRuntimeManifest": {
+    "file": "provenance/built-runtime-manifest.json",
+    "bytes": 5844,
+    "sha256": "c3d398935a1fa237b93e9493e4815a5ad38f116440d031d21d1da0c515f6b2d7"
+  },
+  "reproducibilityScope": {
+    "sourceOverlayIsExact": true,
+    "fullUpstreamCheckoutIncluded": false,
+    "buildEnvironmentIncluded": false,
+    "runtimeBinaryFilesIncluded": false,
+    "crossEnvironmentBinaryReproducibilityClaimed": false,
+    "note": "The exact historical CI driver and selected runtime inventory are retained. Rebuilding requires the original pinned inputs and tooling or a separately reviewed new build procedure."
+  }
+}

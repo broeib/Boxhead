@@ -1,0 +1,239 @@
+{
+  "schema": "boxhead-ruffle-native-projector-engine-source-v1",
+  "engineVariant": "native-scalars-v2-plus-native-graph-v1-plus-projection-scan-v1",
+  "sourceRevision": 1,
+  "status": "source-package-new-ci-qualification-required",
+  "upstream": {
+    "repository": "ruffle-rs/ruffle",
+    "commit": "cac5c99ce4a17e606f4ee3090389bb878f852055"
+  },
+  "parentSource": {
+    "file": "tools/ruffle-native-graph/engine/manifest.json",
+    "bytes": 9526,
+    "sha256": "f2b8f6fd6de2fe5eb7754aae091cefcfaa49d25833b32daf0c4fe5c642acd34d"
+  },
+  "files": [
+    {
+      "path": "core/src/avm1/activation.rs",
+      "bytes": 125386,
+      "sha256": "88d48f22b33f01091d837fc097ca66bf528edee2f8b648331dc8b59c97ba789d",
+      "baselineBytes": 125258,
+      "baselineSha256": "b4de53507de89d971dfc25b1114cc9b9ce972f611a2fae0d45803966de3e3c83"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/activation_tests.rs",
+      "bytes": 12679,
+      "sha256": "37de1402d141d65bc7ca90cc700ee053c0725624872c79f1640d1a73b9548db8",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan/tests.rs",
+      "bytes": 50555,
+      "sha256": "a72d480f00efaad664491bafddbd6d30aed2e700e403299d35b71ada70e2b532",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_projection_scan.rs",
+      "bytes": 12289,
+      "sha256": "3dcba9725e150c47eb78ffaac8eb7c3fa635d96a4f9572766b301562d21ea9d1",
+      "baselineAbsent": true
+    },
+    {
+      "path": "core/src/avm1/globals.rs",
+      "bytes": 33196,
+      "sha256": "1fc43b5c2805b95138bb190ffd20c5100f6cf8e2e6cd980c67fd7417301052da",
+      "baselineBytes": 33023,
+      "baselineSha256": "9e49cb8c7d59303b16484d8f0fa7e0ffb37ac681ad6d282e008b7bf75800eb39"
+    },
+    {
+      "path": "core/src/avm1/runtime.rs",
+      "bytes": 25992,
+      "sha256": "d563a2bdcd09a0302a7bfc7f6d7bb798dda1f6d301e04e0b24c24a878a8b8109",
+      "baselineBytes": 25713,
+      "baselineSha256": "849948fd11f906262199379694e4928697d4169f612df32251681f2538b3b3e2"
+    }
+  ],
+  "unchangedParentFiles": [
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph.rs",
+      "bytes": 33729,
+      "sha256": "739862e7817340799db3b03953a8a360ab5408b333d6335ada3cb44658c59a72"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_graph/tests.rs",
+      "bytes": 31537,
+      "sha256": "a60a87805e8be141b9a3a501c53a3a5e327a99a67ed2522ff25f9af40dbad5d9"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars.rs",
+      "bytes": 10277,
+      "sha256": "2a33f7c2f76db6b02fd95e8e534c53610efc3f83aa7193970e875c5138320a9d"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/activation_tests.rs",
+      "bytes": 3111,
+      "sha256": "420899c30a7f3f5582de9ae30cb77475d2cc217059a656241774aca389a2b396"
+    },
+    {
+      "path": "core/src/avm1/globals/boxhead_native_scalars/tests.rs",
+      "bytes": 22935,
+      "sha256": "2a377f224648e03615441bcfd722127516dbd897472a5999cd3e4e013b3dbf9a"
+    },
+    {
+      "path": "core/src/avm1/object/script_object.rs",
+      "bytes": 37891,
+      "sha256": "e4d1fa9f2383fdf4d4ffb4796623289ecf9df310b68bde8d22367c43e8ddc993"
+    }
+  ],
+  "abi": {
+    "scan": {
+      "global": "boxheadNativeProjectionScanV1",
+      "version": 1,
+      "contract": "bh-projection-scan-v1",
+      "operations": [
+        "capability",
+        "run"
+      ],
+      "capabilityOwnFields": [
+        "version",
+        "contract",
+        "calls",
+        "completed",
+        "unsupported",
+        "keys",
+        "ownReads"
+      ],
+      "runArguments": [
+        "run",
+        "source",
+        "as2CreatedOutput",
+        "initialFieldCache",
+        "CMain",
+        "upgradesBoolean"
+      ],
+      "successOwnFields": [
+        "version",
+        "scalarFields",
+        "keys"
+      ],
+      "unsupported": "strict Boolean false before source enumeration, member reads or coercion",
+      "partialFailure": "throw or removed-clip undefined; never retry",
+      "retainedState": "five independent safe-integer counters only; no game-object references"
+    }
+  },
+  "rustUnitGroups": [
+    {
+      "label": "graph",
+      "filter": "native_graph",
+      "expectedExecuted": 18,
+      "expectedPassed": 18,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_graph::tests::native_graph_capability_is_hidden_readonly_and_registered",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_cycles_aliases_holes_hidden_flags_and_order",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_preserves_every_number_bit_and_utf16_units",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_prototypes_and_functions_to_receiving_registry",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rebinds_both_movieclip_value_kinds_to_one_receiving_stage_object",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_unbound_functions_native_objects_and_prototypes",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_virtual_properties_watchers_and_interfaces_without_callbacks",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_deep_assets_use_stable_key_paths_and_preserve_aliases",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_dynamic_bitmap_and_existing_target_copy_preserve_raw_alpha_pixels",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_bad_references_duplicate_fields_and_trailing_data",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_requires_matching_anchor_kind_and_swf_version",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_timeout_prevents_export_and_bitmap_commit",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_three_map14_scale_surfaces_above_old_budget",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_accepts_exact_128mib_decoded_packet_and_rejects_next_byte",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_export_rejects_sum_above_128mib_without_mutating_source",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_rejects_oversized_bitmap_and_count_headers_before_allocation",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_roundtrips_map18_geometry_envelope_above_64mib",
+        "avm1::globals::boxhead_native_graph::tests::native_graph_bulk_packet_matches_v4_bytes_and_keeps_wire_limit"
+      ]
+    },
+    {
+      "label": "scalar",
+      "filter": "native_scalar",
+      "expectedExecuted": 14,
+      "expectedPassed": 14,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_scalars::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_scalars::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_scalars::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_scalars::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_scalars::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_scalars::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_scalars::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_scalars::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_scalars::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_scalars::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::activation::native_scalar_boundary_tests::native_scalar_undefined_after_removal_ends_the_actual_caller_activation"
+      ]
+    },
+    {
+      "label": "projection",
+      "filter": "native_projection_scan",
+      "expectedExecuted": 30,
+      "expectedPassed": 30,
+      "expectedFailed": 0,
+      "expectedIgnored": 0,
+      "exactNames": [
+        "avm1::globals::boxhead_native_projection_scan::tests::registered_capability_is_hidden_readonly_fresh_and_data_only",
+        "avm1::globals::boxhead_native_projection_scan::tests::unsupported_kinds_and_malformed_arguments_never_read_source_properties",
+        "avm1::globals::boxhead_native_projection_scan::tests::own_method_is_resolved_live_for_every_collected_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_mutation_uses_the_original_key_list_and_live_membership",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_miss_refreshes_the_local_cache_before_the_next_key",
+        "avm1::globals::boxhead_native_projection_scan::tests::finite_bits_and_nonfinite_tags_are_preserved_without_value_caching",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_exceptions_are_not_retried_or_published_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::output_writes_use_the_original_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_at_entry_precedes_enumeration_and_value_reads",
+        "avm1::globals::boxhead_native_projection_scan::tests::timeout_is_checked_again_after_at_most_32_visited_keys",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_has_own_stops_before_the_source_getter",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_policy_stops_before_cache_refresh_and_output_write",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_string_stops_before_constructing_the_number_tag",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tags_null_and_primitive_only_records_do_not_allocate_deferred_arrays",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_keys_keep_enumeration_order_without_a_second_source_read_or_recursive_visit",
+        "avm1::globals::boxhead_native_projection_scan::tests::functions_are_read_once_but_omitted_before_field_policy_and_upgrade_handling",
+        "avm1::globals::boxhead_native_projection_scan::tests::upgrades_omit_levels_and_defer_multipliers_before_leaf_type_or_null_coercion",
+        "avm1::globals::boxhead_native_projection_scan::tests::sparse_array_own_fields_preserve_holes_and_leave_length_metadata_to_as2",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_policy_and_loose_null_leaf_comparisons_are_not_discriminant_tests",
+        "avm1::globals::boxhead_native_projection_scan::tests::getter_policy_cache_refresh_valueof_and_output_setter_have_original_order",
+        "avm1::globals::boxhead_native_projection_scan::tests::leaf_valueof_exceptions_propagate_without_defer_or_completed_result",
+        "avm1::globals::boxhead_native_projection_scan::tests::undefined_tag_uses_live_object_prototype_setter_semantics",
+        "avm1::globals::boxhead_native_projection_scan::tests::deferred_array_constructor_prototype_and_push_overrides_are_resolved_live",
+        "avm1::globals::boxhead_native_projection_scan::tests::loose_undefined_on_existing_keys_can_reconstruct_the_array_for_each_deferred_field",
+        "avm1::globals::boxhead_native_projection_scan::tests::unusual_native_constructor_return_values_keep_original_null_method_and_coercion_behavior",
+        "avm1::globals::boxhead_native_projection_scan::tests::constructor_and_push_exceptions_are_not_retried_or_reported_as_completed",
+        "avm1::globals::boxhead_native_projection_scan::tests::removal_in_array_construction_or_push_stops_before_the_next_source_read",
+        "avm1::globals::boxhead_native_projection_scan::tests::policy_cache_replacement_with_primitive_uses_getmember_coercion_on_later_fields",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_undefined_after_removal_ends_the_actual_caller_activation",
+        "avm1::activation::native_projection_scan_boundary_tests::native_projection_scan_defer_matches_real_equality_newobject_and_callmethod_opcodes"
+      ]
+    }
+  ],
+  "totalRequiredRustTests": 62,
+  "qualification": {
+    "compilerReproducedHere": false,
+    "gameplayPassClaimed": false,
+    "performancePassClaimed": false,
+    "inheritedParentPassesAccepted": false
+  },
+  "limits": {
+    "decodedGraphBytes": 134217728,
+    "nativeWireCharacters": 67109888,
+    "nodes": 65536,
+    "fields": 1000000,
+    "anchors": 250000,
+    "stringUnits": 1048576,
+    "pixelsPerBitmap": 8388608
+  },
+  "integrationScope": {
+    "activation": "one cfg(test) include; production methods byte-identical to v5",
+    "globals": "one module and hidden read-only non-deletable global registration",
+    "runtime": "five per-AVM1 integer counters; no retained GC pointers"
+  }
+}

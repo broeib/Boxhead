@@ -1,0 +1,297 @@
+   // Private compiled lifecycle fixtures. The menu's real owner/registrations
+   // are retained, but a disposable MovieClip and explicit fixture data stand
+   // in for a world. This never prepares a game, advances a zombie wave, or
+   // qualifies gameplay/FPS. Every successful fixture restores its menu state;
+   // a poisoned runtime is disposed by the runner without trying to resume it.
+   var mBHStagedProbeFixture;
+
+   function BH_StagedProbeStaticSpecs()
+   {
+      // Explicit private-world inputs. Original menu animation preparation can
+      // change mPFactor between successful arms; none of that ambient menu
+      // state is an input to this disposable fixture. Preserve every actual
+      // prior own-slot/value identity and restore it before returning to menu.
+      return [
+         {target:Thing.Math.CThing_Position,key:"mPFactor",value:1},
+         {target:Thing.CThing,key:"mAllocate_ID",value:0},
+         {target:Thing.CThing,key:"mAllocate_ProcessID_Count",value:3},
+         {target:World.Map.CMap_Cell,key:"nState",value:0},
+         {target:World.Map.CMap_Cell,key:"nSID",value:0},
+         {target:World.Map.CMap_Cell,key:"nSTimer",value:0},
+         {target:World.Map.CMap_Cell,key:"nSDist",value:0},
+         {target:World.Map.CMap_Cell,key:"nFullScanCount",value:0},
+         {target:World.Map.CMap_Cell,key:"nList",value:new Array()},
+         {target:World.Map.CMap_Cell,key:"pList",value:new Array()},
+         {target:World.Map.CMap_Cell,key:"mCurrentSessionID",value:0},
+         {target:World.Map.CMap,key:"mCheckSessionID",value:1}];
+   }
+
+   function BH_StagedProbeInstallStatics()
+   {
+      var specs = this.BH_StagedProbeStaticSpecs();
+      for(var i = 0; i < specs.length; i++)
+      {
+         var spec = specs[i];
+         spec.own = Object.prototype.hasOwnProperty.call(spec.target,spec.key);
+         spec.previous = spec.target[spec.key];
+         spec.target[spec.key] = spec.value;
+      }
+      return specs;
+   }
+
+   function BH_StagedProbeReadStatics()
+   {
+      var nav = World.Map.CMap_Cell;
+      return {positionFactor:Thing.Math.CThing_Position.mPFactor,nextThingID:Thing.CThing.mAllocate_ID,
+         processAllocator:Thing.CThing.mAllocate_ProcessID_Count,
+         navStatics:{state:nav.nState,id:nav.nSID,time:nav.nSTimer,distance:nav.nSDist,
+            fullScans:nav.nFullScanCount,list:nav.nList,pending:nav.pList,
+            session:nav.mCurrentSessionID,mapSession:World.Map.CMap.mCheckSessionID}};
+   }
+
+   function BH_StagedProbeRestoreStatics(specs)
+   {
+      for(var i = 0; i < specs.length; i++)
+      {
+         var spec = specs[i];
+         if(spec.own) spec.target[spec.key] = spec.previous;
+         else if(!(delete spec.target[spec.key])) return false;
+      }
+      for(i = 0; i < specs.length; i++)
+      {
+         spec = specs[i];
+         if(Object.prototype.hasOwnProperty.call(spec.target,spec.key) != spec.own
+            || spec.target[spec.key] !== spec.previous) return false;
+      }
+      return true;
+   }
+
+   static function BH_StagedProbePlayer(slot)
+   {
+      return {_CLASSID_:"CThing_Creature_Player",mPlayerIndex:slot - 1,mUniqueID:slot + 100,
+         sUniqueID:"private" + slot,mPosition:{mX:slot,mY:2,mZ:0},mAngle:{mAngle:0},
+         mLife:100,mFlags:0,mStateID:"private",mWeapon_Current:{mNameID:"pistol",mAmmo:20}};
+   }
+
+   static function BH_StagedProbePersonal(player)
+   {
+      var upgrades = {mBHOwnerSlot:player.mPlayerIndex + 1,mMultiplier:1,mMultiplierTick:0,
+         mWorld:{mThing_Collection:{mPlayerThings:{owner:player}}},
+         CThing_Weapon_Pistol:{power:7,mOriginalStats:{power:5}},Level:{Zombie_Count:2},
+         mMultipliers:[[{mActive:true},{mActive:false}]],mMultipleKills:{double:[{score:30}]}};
+      return {slot:player.mPlayerIndex + 1,score:10 * player.mPlayerIndex,kills:player.mPlayerIndex,
+         level:0,initialized:true,upgrades:upgrades};
+   }
+
+   function BH_StagedProbeSetup(kind, mode)
+   {
+      var original = this.mBH;
+      if(arguments.length != 2 || (mode != "sync" && mode != "staged")
+         || (kind != "normal" && kind != "personal" && kind != "terminal" && kind != "join"
+            && kind != "wrong-phase" && kind != "abort" && kind != "project-reentry" && kind != "receipt-reentry")
+         || original.active || original.state != "menu" || this.mcWorld != undefined
+         || this.mBHStagedStep !== undefined || this.mBHStagedProbeFixture !== undefined
+         || original.stagedStepVersion !== 1 || original.nativeProjectKernel === undefined)
+         throw new Error("private staged fixture requires an idle menu and the actual native kernels");
+      var saved = {bridge:original,world:this.mcWorld,state:this.fState,
+         input:CMain.mInput,background:CMain.ProcessBGTasks,sound:CSound.ProcessAll,
+         fps:CMain.mFPS,timeSlice:this.mTimeSlice,stateCount:this.mStateCount,
+         secondCharacter:CMain.mSaveData._Player2_CharacterIndex,secondCharacterOwn:CMain.mSaveData.hasOwnProperty("_Player2_CharacterIndex"),
+         twoPlayer:World.CWorld.m2Player,
+         cache:CMain.mBHFieldCache,cacheCount:CMain.mBHFieldCacheCount,
+         menuBounds:this.BH_MenuBounds,menuBoundsOwn:this.hasOwnProperty("BH_MenuBounds"),
+         stateMethod:this.BH_State,stateMethodOwn:this.hasOwnProperty("BH_State"),
+         debrief:this.State_Debrief,debriefOwn:this.hasOwnProperty("State_Debrief"),
+         statics:this.BH_StagedProbeInstallStatics()};
+      var fixture = {saved:saved,kind:kind,mode:mode,trace:new Array(),ambient:new Array(),
+         getters:0,serializationGetters:0,debriefCalls:0,markerTargets:new Array()};
+      this.mBHStagedProbeFixture = fixture;
+      var witness = fixture.witness = {ambient:0,keys:0,pointers:0,p1:0,p2:0};
+      var p1 = CMain.BH_StagedProbePlayer(1);
+      var p2 = CMain.BH_StagedProbePlayer(2);
+      var first = {value:7,alias:p1};
+      first.self = first;
+      first.addProperty("observed",function()
+      {
+         fixture.getters++;
+         if(fixture.kind == "project-reentry")
+            flash.external.ExternalInterface.call("boxheadStagedReentryProbe","project",CMain._this.mBHStagedStep === undefined);
+         return 19;
+      },null);
+      var players = {p1:p1};
+      var things = {p1:p1,first:first,witness:witness};
+      if(kind != "join") { players.p2 = p2; things.p2 = p2; }
+      var collection = {mThings:things,mPlayerThings:players,mDeleteThings:new Array(),
+         mRespawnPlayer:new Array(),mThingCounters:{players:kind == "join" ? 1 : 2},
+         mTimeSlice_25:new Array(),mTimeSlice_8:new Array(),mTimeSlice_4:new Array()};
+      var world = this.createEmptyMovieClip("_bhStagedFixtureWorld",this.getNextHighestDepth());
+      fixture.world = world;
+      this.mcWorld = world;
+      world._visible = false;
+      world.mLoaded = true;
+      world.mPaused = false;
+      world.mTick = 24;
+      world.mThing_Collection = collection;
+      world.mMap = {mCells:[[{mCollide:0,mChildCount:0,nID:1,nDist:0,nVD:0,mObjects:{p1:p1}}]],mCheck:1};
+      world.mUpgrades = {Level:{Zombie_Count:2},mLevelIndex:0};
+      world.mHud = {mTotalScore:10};
+      world.mShake = 0;
+      world.lTrackPosition = {mX:1,mY:2,mZ:0};
+      world.mSpawnPoint_Player = [{mX:1,mY:2}];
+      world.mSpawnPoint_Zombie = [{mX:3,mY:4}];
+      world.mSpawnPoint_Devil = new Array();
+      world.mBHPersonalProgress = [CMain.BH_StagedProbePersonal(p1),CMain.BH_StagedProbePersonal(p2)];
+      world.addProperty("fixtureScalar",function() { fixture.trace.push("world-scalar"); return 11; },null);
+      world.Process = function()
+      {
+         if(!CMain.BH_EnterWorld("logic")) throw new Error("private fixture logic guard failed");
+         fixture.trace.push("process");
+         witness.ambient = 0; witness.keys = 0; witness.pointers = 0;
+         CMain._this.mBH.rng = 2; CMain._this.mBH.rngCalls = 3;
+         this.mTick++;
+         if(fixture.kind == "terminal") this.mCompleteState = "player dead";
+      };
+      world.Draw = function()
+      {
+         if(!CMain.BH_EnterWorld("draw")) throw new Error("private fixture draw guard failed");
+         fixture.trace.push("draw");
+         this.bmDraw.fillRect(this.bmDraw.rectangle,0xff102030);
+         this.bmDraw.copyPixels(fixture.sprite,fixture.sprite.rectangle,new flash.geom.Point(1,1),undefined,undefined,true);
+      };
+      world.Spawn_Player_Other = function(index)
+      {
+         fixture.trace.push("join:" + index);
+         if(index != 1 || players.p2 !== undefined) throw new Error("invalid private fixture spawn");
+         players.p2 = p2; things.p2 = p2; collection.mThingCounters.players = 2;
+         return true;
+      };
+      world.onEnterFrame = function()
+      {
+         witness.ambient++;
+         flash.external.ExternalInterface.call("boxheadStagedAmbientProbe","frame",this.mTick,witness.ambient);
+      };
+      fixture.listener = {onKeyDown:function()
+      {
+         witness.keys++;
+         flash.external.ExternalInterface.call("boxheadStagedAmbientProbe","key",world.mTick,witness.keys);
+      },onMouseMove:function()
+      {
+         witness.pointers++;
+         flash.external.ExternalInterface.call("boxheadStagedAmbientProbe","mouse",world.mTick,witness.pointers);
+      }};
+      Key.addListener(fixture.listener);
+      Mouse.addListener(fixture.listener);
+      CMain.mInput = {mKey_List_Registered:[0,1],BH_ApplyMasks:function(one,two)
+      {
+         fixture.trace.push("masks:" + one + ":" + two); witness.p1 = one; witness.p2 = two;
+      }};
+      CMain.ProcessBGTasks = function() { fixture.trace.push("background"); };
+      CSound.ProcessAll = function() { fixture.trace.push("sound"); };
+      this.State_Debrief = function()
+      {
+         fixture.debriefCalls++;
+         flash.external.ExternalInterface.call("boxheadStagedAmbientProbe","debrief",world.mTick,fixture.debriefCalls);
+      };
+      this.BH_MenuBounds = function()
+      {
+         var tx = this.mBHStagedStep;
+         if(fixture.kind == "receipt-reentry" && tx !== undefined && tx.phase == "committed")
+         {
+            var outgoing = new Object();
+            outgoing.addProperty("value",function()
+            {
+               fixture.serializationGetters++;
+               return flash.external.ExternalInterface.call("boxheadStagedReentryProbe","receipt",CMain._this.mBHStagedStep === undefined);
+            },null);
+            tx.snapshot.privateOutgoingProbe = outgoing;
+         }
+         return saved.menuBounds.call(this);
+      };
+      // Only the baseline arm substitutes these separately compiled, exact
+      // byte-predecessor methods. Staged callbacks use production bodies.
+      if(mode == "sync") this.BH_State = this.BH_StagedOriginalState;
+      this.mBH = {active:true,state:"playing",tick:24,clock:960,error:"",stepping:false,cache:false,
+         logicCalls:0,drawCalls:0,seed:1,rng:2,rngCalls:3,cacheRng:104730,cacheCalls:0,
+         snapshotReceiptEpoch:0,snapshotReceiptBusy:false,frameMs:40,replay:false,
+         mode:"Coop",map:"private-staged-fixture",settings:{difficulty:0,speed:1,devils:1,collisions:1,damage:1,gameAmount:1},
+         initialPlayers:kind == "join" ? 1 : 2,playerCount:kind == "join" ? 1 : 2,
+         characters:kind == "join" ? [0] : [0,3],personalProgression:kind == "personal",
+         nativeScalarKernel:original.nativeScalarKernel,nativeProjectionScanKernel:original.nativeProjectionScanKernel,
+         nativeProjectKernel:original.nativeProjectKernel,nativeProjectOwner:original.nativeProjectOwner,
+         nativeProjectFunction:original.nativeProjectFunction,stagedFenceKernel:original.stagedFenceKernel,
+         stagedStepVersion:1,presentationRequested:true};
+      CMain.mBHFieldCache = Object();
+      CMain.mBHFieldCacheCount = 0;
+      this.fState = this.State_RunWorld;
+      world.bmDraw = new flash.display.BitmapData(8,8,true,0);
+      fixture.sprite = new flash.display.BitmapData(2,2,true,0xffaabbcc);
+      CMain.BH_PresentationAttach(world,world.bmDraw,0);
+      fixture.markerTargets = [first,p1,p2,witness,things,players,collection,
+         world.mMap,world.mUpgrades,world.mHud,world.lTrackPosition,
+         world.mSpawnPoint_Player,world.mSpawnPoint_Zombie,world.mSpawnPoint_Devil];
+      return {version:1,kind:kind,mode:mode,privateFixture:true,worldTick:world.mTick,tick:this.mBH.tick,
+         fixtureStatics:this.BH_StagedProbeReadStatics(),previousPositionFactor:saved.statics[0].previous,
+         nativeBefore:CMain.BH_NativeProjectInfo(original.nativeProjectKernel),
+         actualFence:original.stagedFenceKernel === _global.boxheadNativeStepFenceV1};
+   }
+
+   function BH_StagedProbeInspect()
+   {
+      var fixture = this.mBHStagedProbeFixture;
+      var b = this.mBH;
+      if(fixture === undefined || this.mBHStagedStep !== undefined || b.snapshotReceiptPending !== undefined)
+         throw new Error("private staged fixture observation requires a completed receipt");
+      var clean = true;
+      for(var i = 0; i < fixture.markerTargets.length; i++)
+         if(fixture.markerTargets[i].hasOwnProperty("__bhSnapshotRef")) clean = false;
+      return {version:1,kind:fixture.kind,mode:fixture.mode,tick:b.tick,worldTick:this.mcWorld.mTick,
+         logicCalls:b.logicCalls,drawCalls:b.drawCalls,trace:fixture.trace,getters:fixture.getters,
+         markersClean:clean,receiptAbsent:b.snapshotReceiptPending === undefined && b.snapshotReceiptRequest === undefined && b.snapshotReceiptProof === undefined,
+         stagedAbsent:this.mBHStagedStep === undefined,ambient:fixture.witness.ambient,
+         fixtureStatics:this.BH_StagedProbeReadStatics(),
+         keys:fixture.witness.keys,pointers:fixture.witness.pointers,debriefCalls:fixture.debriefCalls,
+         snapshotDigest:b.snapshot.digest,snapshotScope:b.snapshot.scope,snapshotObjects:b.snapshot.snapshotObjects,
+         snapshotFields:b.snapshot.snapshotFields,nativeAfter:CMain.BH_NativeProjectInfo(b.nativeProjectKernel)};
+   }
+
+   function BH_StagedProbeRestore()
+   {
+      var observed = this.BH_StagedProbeInspect();
+      var fixture = this.mBHStagedProbeFixture;
+      var saved = fixture.saved;
+      Key.removeListener(fixture.listener);
+      Mouse.removeListener(fixture.listener);
+      delete fixture.world.onEnterFrame;
+      this.BH_PresentationDispose();
+      fixture.world.bmDraw.dispose();
+      fixture.sprite.dispose();
+      fixture.world.removeMovieClip();
+      this.mcWorld = saved.world;
+      this.fState = saved.state;
+      this.mTimeSlice = saved.timeSlice;
+      this.mStateCount = saved.stateCount;
+      if(saved.menuBoundsOwn) this.BH_MenuBounds = saved.menuBounds;
+      else delete this.BH_MenuBounds;
+      if(saved.stateMethodOwn) this.BH_State = saved.stateMethod;
+      else delete this.BH_State;
+      if(saved.debriefOwn) this.State_Debrief = saved.debrief;
+      else delete this.State_Debrief;
+      CMain.mInput = saved.input;
+      CMain.ProcessBGTasks = saved.background;
+      CSound.ProcessAll = saved.sound;
+      CMain.mFPS = saved.fps;
+      if(saved.secondCharacterOwn) CMain.mSaveData._Player2_CharacterIndex = saved.secondCharacter;
+      else delete CMain.mSaveData._Player2_CharacterIndex;
+      World.CWorld.m2Player = saved.twoPlayer;
+      CMain.mBHFieldCache = saved.cache;
+      CMain.mBHFieldCacheCount = saved.cacheCount;
+      var staticsRestored = this.BH_StagedProbeRestoreStatics(saved.statics);
+      this.mBH = saved.bridge;
+      delete this.mBHStagedProbeFixture;
+      return {version:1,restored:this.mBH === saved.bridge && this.mcWorld === saved.world
+         && this.fState === saved.state && CMain.mInput === saved.input
+         && CMain.ProcessBGTasks === saved.background && CSound.ProcessAll === saved.sound
+         && CMain.mBHFieldCache === saved.cache && CMain.mBHFieldCacheCount === saved.cacheCount && staticsRestored,
+         staticsRestored:staticsRestored,
+         state:this.mBH.state,tick:this.mBH.tick,active:this.mBH.active,observed:observed};
+   }
